@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>地形地貌与地质条件</title>
+    <style>
+        /* --- 1. 核心配色 --- */
+        :root {
+            --crcc-blue: #003366;
+            --crcc-light-blue: #f0f7ff;
+            --crcc-red: #E60012;
+            --warn-bg: #fffbf0;
+            --warn-border: #f6ad55;
+            --safe-bg: #f0fff4;
+            --safe-text: #2f855a;
+            --text-main: #1a202c;
+            --bg-grad: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            background: var(--bg-grad);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: var(--text-main);
+        }
+
+        /* --- 2. 主布局 --- */
+        .container {
+            width: 96vw;
+            height: 92vh;
+            display: grid;
+            grid-template-columns: 28% 71%; /* 左侧背景，右侧重难点 */
+            grid-template-rows: auto 1fr;
+            gap: 20px;
+            padding: 30px;
+            background: rgba(255,255,255,0.7);
+            backdrop-filter: blur(15px);
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+            border: 1px solid rgba(255,255,255,0.6);
+        }
+
+        /* 标题区 */
+        .header-section {
+            grid-column: 1 / -1;
+            border-bottom: 2px solid rgba(0, 51, 102, 0.1);
+            padding-bottom: 10px;
+            margin-bottom: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+        h2 { font-size: 2.2rem; color: var(--crcc-blue); display: flex; align-items: center; gap: 15px; }
+        h2::before { content:''; width: 8px; height: 35px; background: var(--crcc-red); display: block; }
+        .subtitle { font-size: 1rem; color: #666; font-weight: normal; margin-bottom: 5px;}
+
+        /* --- 红圈序号样式 --- */
+        .num-badge {
+            display: inline-flex; justify-content: center; align-items: center;
+            width: 26px; height: 26px; background: var(--crcc-red); color: white;
+            border-radius: 50%; font-size: 0.9rem; font-weight: bold; margin-right: 10px;
+            flex-shrink: 0; box-shadow: 0 2px 5px rgba(230, 0, 18, 0.3);
+        }
+
+        /* 统一卡片标题样式 */
+        .card-title { 
+            font-size: 1.1rem; font-weight: bold; color: var(--crcc-blue); 
+            margin-bottom: 10px; 
+            display: flex; align-items: center; /* 确保红圈和文字垂直居中 */
+        }
+
+        /* --- 左侧：环境背景 --- */
+        .left-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .l-card {
+            background: white; border-radius: 12px; padding: 15px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            display: flex; flex-direction: column;
+            animation: fadeInLeft 0.8s ease backwards;
+        }
+
+        /* 2.1 地形地貌可视化 */
+        .terrain-viz {
+            height: 140px; /* 稍微增加高度以容纳底部文字 */
+            position: relative;
+            background: linear-gradient(to bottom, #e3f2fd 0%, #fff 80%);
+            border-radius: 8px; overflow: hidden; border: 1px solid #eee;
+        }
+        
+        /* 山脉SVG动画 */
+        .mountain-path {
+            fill: rgba(0, 51, 102, 0.1); stroke: var(--crcc-blue); stroke-width: 2;
+            stroke-dasharray: 1000; stroke-dashoffset: 1000;
+            animation: drawLine 2s ease-out forwards;
+        }
+        
+        .t-label { 
+            position: absolute; font-size: 0.75rem; color: #555; 
+            background: rgba(255,255,255,0.8); padding: 2px 4px; border-radius: 4px; 
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+        
+        /* SVG 内部文本样式 */
+        text { font-family: Consolas, monospace, sans-serif; font-size: 12px; fill: var(--crcc-blue); font-weight: bold; }
+
+        /* 2.2 地层岩性 (柱状图) */
+        .geo-layer-box {
+            display: flex; flex-direction: column; gap: 2px; margin-top: 5px;
+            border: 1px solid #ddd; padding: 2px; border-radius: 6px;
+        }
+        .geo-layer {
+            padding: 8px 10px; font-size: 0.85rem; color: #444;
+            display: flex; justify-content: space-between; align-items: center;
+            border-radius: 4px; position: relative; overflow: hidden;
+        }
+        /* 土层纹理 */
+        .gl-1 { background: #d7ccc8; height: 30px; } /* 种植土 */
+        .gl-2 { background: #ffe0b2; height: 50px; } /* 膨胀土/粘土 */
+        .gl-3 { background: #cfd8dc; height: 40px; } /* 软土/淤泥 */
+        .gl-4 { background: #90a4ae; height: 60px; color: white; font-weight: bold;} /* 基岩 */
+        
+        .layer-name { z-index: 1; }
+        .layer-desc { font-size: 0.75rem; opacity: 0.8; z-index: 1; }
+
+        /* --- 右侧：不良地质 (Grid) --- */
+        .right-panel {
+            display: flex; flex-direction: column; gap: 15px;
+        }
+
+        .risk-grid {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            gap: 15px;
+        }
+
+        /* 风险卡片 */
+        .risk-card {
+            background: white; border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            display: flex; flex-direction: column;
+            overflow: hidden;
+            transition: transform 0.3s;
+            animation: fadeInUp 0.6s ease backwards;
+            border-top: 4px solid transparent;
+        }
+        .risk-card:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+
+        /* 不同类型的颜色 */
+        .rc-expand { border-top-color: #ed8936; } /* 膨胀土-橙 */
+        .rc-soft { border-top-color: #4299e1; }   /* 软土-蓝 */
+        .rc-karst { border-top-color: #667eea; }  /* 岩溶-紫 */
+        .rc-fall { border-top-color: #e53e3e; }   /* 危岩-红 */
+
+        .rc-header {
+            padding: 10px 15px; display: flex; align-items: center; gap: 10px;
+            background: #fcfcfc; border-bottom: 1px solid #eee;
+        }
+        .rc-icon { width: 30px; height: 30px; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: white; }
+        .rc-title { font-weight: bold; color: #333; font-size: 1.05rem; }
+
+        .rc-body { padding: 12px 15px; flex: 1; display: flex; flex-direction: column; gap: 10px; }
+        
+        .risk-desc { font-size: 0.9rem; color: #555; line-height: 1.5; background: var(--warn-bg); padding: 8px; border-radius: 6px; border-left: 3px solid var(--warn-border); }
+        .risk-label { font-weight: bold; color: #d69e2e; font-size: 0.8rem; display: block; margin-bottom: 3px; }
+
+        .solution-box {
+            background: var(--safe-bg); padding: 8px; border-radius: 6px; 
+            border-left: 3px solid var(--safe-text); font-size: 0.9rem; color: #333; line-height: 1.5;
+        }
+        .sol-label { font-weight: bold; color: var(--safe-text); font-size: 0.8rem; display: block; margin-bottom: 3px; }
+
+        /* 底部信息条 */
+        .bottom-bar {
+            background: white; padding: 12px 20px; border-radius: 12px;
+            display: flex; justify-content: space-between; align-items: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            animation: fadeInUp 0.8s ease 0.6s backwards;
+        }
+        .b-item { display: flex; align-items: center; gap: 10px; font-size: 0.95rem; }
+        .b-icon { color: var(--crcc-blue); }
+        .b-val { font-weight: bold; color: var(--crcc-blue); margin-left: 5px; }
+
+        /* 导航按钮 */
+        .nav-btn {
+            position: fixed; bottom: 30px; right: 30px;
+            padding: 12px 30px; background: var(--crcc-blue); color: white;
+            border-radius: 30px; text-decoration: none; font-weight: bold;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2); transition: 0.3s; z-index: 100;
+        }
+        .nav-btn:hover { background: var(--crcc-red); }
+        .prev-btn { right: 150px; background: white; color: var(--crcc-blue); border: 1px solid var(--crcc-blue); }
+
+        /* 动画 */
+        @keyframes drawLine { to { stroke-dashoffset: 0; } }
+        @keyframes fadeInLeft { from { opacity:0; transform:translateX(-20px); } to { opacity:1; transform:translateX(0); } }
+        @keyframes fadeInUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+
+        /* 延时 */
+        .risk-card:nth-child(1) { animation-delay: 0.2s; }
+        .risk-card:nth-child(2) { animation-delay: 0.3s; }
+        .risk-card:nth-child(3) { animation-delay: 0.4s; }
+        .risk-card:nth-child(4) { animation-delay: 0.5s; }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        
+        <div class="header-section">
+            <h2>地形地貌与地质条件</h2>
+            <div class="subtitle">不良地质发育，是施工组织的关键控制因素</div>
+        </div>
+
+        <div class="left-panel">
+            
+            <div class="l-card">
+                <div class="card-title">
+                    <span class="num-badge">1</span> 地形地貌 (东底西高)
+                </div>
+                <div class="terrain-viz">
+                    <svg width="100%" height="100%" viewBox="0 0 300 140" preserveAspectRatio="none">
+                        <line x1="10" y1="120" x2="290" y2="120" stroke="#ccc" stroke-dasharray="4"/>
+                        <path class="mountain-path" d="M10,100 Q50,105 80,95 T150,90 Q200,90 220,60 L250,30 L290,40 V120 H10 Z" fill="rgba(230,240,255,0.5)" />
+                        
+                        <text x="10" y="135" text-anchor="start">起点: K15+236</text>
+                        <text x="290" y="135" text-anchor="end">终点: K41+105</text>
+                    </svg>
+                    <div class="t-label" style="left:10px; bottom:45px;">平原岗地</div>
+                    <div class="t-label" style="right:10px; top:20px;">长山 (陡峻)</div>
+                </div>
+                <div style="font-size:0.85rem; color:#666; margin-top:10px; line-height:1.4;">
+                    <strong>• 平原段：</strong>地势平缓，水塘沟渠发达。<br>
+                    <strong>• 山区段：</strong>长山隧道段山势陡峻，自然坡度10°~25°。
+                </div>
+            </div>
+
+            <div class="l-card" style="flex:1;">
+                <div class="card-title">
+                    <span class="num-badge">2</span> 地层岩性柱状图
+                </div>
+                <div class="geo-layer-box">
+                    <div class="geo-layer gl-1">
+                        <span class="layer-name">表层</span>
+                        <span class="layer-desc">种植土/素填土</span>
+                    </div>
+                    <div class="geo-layer gl-2">
+                        <span class="layer-name">第四系</span>
+                        <span class="layer-desc">膨胀土/粘土 (弱~中)</span>
+                    </div>
+                    <div class="geo-layer gl-3">
+                        <span class="layer-name">沟谷低洼</span>
+                        <span class="layer-desc">软土/淤泥质土</span>
+                    </div>
+                    <div class="geo-layer gl-4">
+                        <span class="layer-name">下伏基岩</span>
+                        <span class="layer-desc">泥岩/砂岩/灰岩 (风化差异大)</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="right-panel">
+            
+            <div class="card-title" style="margin-bottom:0;">
+                <span class="num-badge">3</span> 不良地质与特殊性岩土 (关键控制点)
+            </div>
+            
+            <div class="risk-grid">
+                
+                <div class="risk-card rc-expand">
+                    <div class="rc-header">
+                        <div class="rc-icon" style="background:#ed8936;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 22h20L12 2zm0 14v-2m0 6h.01"/></svg>
+                        </div>
+                        <div class="rc-title">膨胀土 (分布极广)</div>
+                    </div>
+                    <div class="rc-body">
+                        <div class="risk-desc">
+                            <span class="risk-label">特性与风险</span>
+                            遇水膨胀软化，失水收缩开裂。雨季承载力急降，易滑坡。Fs=40%~65%。
+                        </div>
+                        <div class="solution-box">
+                            <span class="sol-label">施组对策</span>
+                            石灰改良、非膨胀土包边、防水土工布。遵循“快速施工、及时封闭、做好排水”。
+                        </div>
+                    </div>
+                </div>
+
+                <div class="risk-card rc-soft">
+                    <div class="rc-header">
+                        <div class="rc-icon" style="background:#4299e1;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+                        </div>
+                        <div class="rc-title">软弱土及水塘</div>
+                    </div>
+                    <div class="rc-body">
+                        <div class="risk-desc">
+                            <span class="risk-label">特性与风险</span>
+                            分布于沟谷、河塘底部及清溪河沿岸。高压缩性，承载力低。
+                        </div>
+                        <div class="solution-box">
+                            <span class="sol-label">施组对策</span>
+                            清淤换填、抛石挤淤。鱼塘段提前抽水，预留足够沉降观测期。
+                        </div>
+                    </div>
+                </div>
+
+                <div class="risk-card rc-karst">
+                    <div class="rc-header">
+                        <div class="rc-icon" style="background:#667eea;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/></svg>
+                        </div>
+                        <div class="rc-title">岩溶 (局部发育)</div>
+                    </div>
+                    <div class="rc-body">
+                        <div class="risk-desc">
+                            <span class="risk-label">特性与风险</span>
+                            K16~K19及K23段灰岩区。桩基易漏浆、塌孔、卡钻、地面塌陷。
+                        </div>
+                        <div class="solution-box">
+                            <span class="sol-label">施组对策</span>
+                            储备堵漏材料(片石/粘土)，建议冲击钻成孔，加强“逐桩超前地质钻探”。
+                        </div>
+                    </div>
+                </div>
+
+                <div class="risk-card rc-fall">
+                    <div class="rc-header">
+                        <div class="rc-icon" style="background:#e53e3e;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l1.912 5.813a2 2 0 001.272 1.272L21 12l-5.813 1.912a2 2 0 00-1.272 1.272L12 21l-1.912-5.813a2 2 0 00-1.272-1.272L3 12l5.813-1.912a2 2 0 001.272-1.272L12 3z"/></svg>
+                        </div>
+                        <div class="rc-title">危岩体 (隧道口)</div>
+                    </div>
+                    <div class="rc-body">
+                        <div class="risk-desc">
+                            <span class="risk-label">特性与风险</span>
+                            隧道进出口覆盖层薄，岩体破碎。雨季进口段坡积层易坍塌。
+                        </div>
+                        <div class="solution-box">
+                            <span class="sol-label">施组对策</span>
+                            坚持“早进洞、晚出洞”。优先施工截水沟，管棚超前支护。
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="bottom-bar">
+                <div class="b-item">
+                    <span class="b-icon">💧</span>
+                    <span>水文地质：</span>
+                    <span>长江流域 / 岩溶水丰富 / 混凝土微腐蚀</span>
+                </div>
+                <div style="width:1px; height:20px; background:#ddd;"></div>
+                <div class="b-item">
+                    <span class="b-icon">📉</span>
+                    <span>地震动参数：</span>
+                    <span>PGA <span class="b-val">0.05g</span></span>
+                    <span style="margin-left:15px;">特征周期 <span class="b-val">0.35s</span></span>
+                    <span style="margin-left:15px;">设防烈度 <span class="b-val">VI度</span> (按VII度构造)</span>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <a href="p04.html" class="nav-btn prev-btn">上一页</a>
+    <a href="p06.html" class="nav-btn">下一页</a>
+
+</body>
+</html>

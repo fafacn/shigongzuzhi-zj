@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>G4222 长山隧道施工安全与质量管理体系 - p34</title>
+    <style>
+        :root {
+            /* 专业工程配色 - 深蓝灰商务风 */
+            --bg-body: #0f172a;       /* 深邃背景 */
+            --bg-sidebar: #1e293b;    /* 侧边栏背景 */
+            --bg-card: #1e293b;       /* 卡片背景 */
+            --bg-card-header: #334155;/* 卡片标题栏 */
+            
+            --primary-color: #3b82f6; /* 工程蓝 */
+            --accent-color: #f59e0b;  /* 重点橙 */
+            --success-color: #10b981; /* 合格绿 */
+            --danger-color: #ef4444;  /* 警告红 */
+            
+            --text-main: #f8fafc;     /* 主文字 */
+            --text-muted: #94a3b8;    /* 次级文字 */
+            --text-highlight: #e2e8f0; /* 高亮文字 */
+            
+            --border-line: 1px solid rgba(148, 163, 184, 0.1);
+            --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.15);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Helvetica Neue', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            display: flex;
+        }
+
+        /* --- 侧边导航栏 --- */
+        .sidebar {
+            width: 260px;
+            background-color: var(--bg-sidebar);
+            border-right: var(--border-line);
+            display: flex;
+            flex-direction: column;
+            padding: 24px 0;
+            z-index: 10;
+            flex-shrink: 0;
+        }
+
+        .brand {
+            padding: 0 24px 24px;
+            border-bottom: var(--border-line);
+            margin-bottom: 10px;
+        }
+
+        .brand h1 {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text-main);
+            letter-spacing: 0.5px;
+            line-height: 1.4;
+            margin-top: 5px;
+        }
+
+        .brand span {
+            font-size: 12px;
+            color: var(--primary-color);
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .nav-menu {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            padding: 10px 12px;
+            overflow-y: auto;
+        }
+
+        .nav-item {
+            padding: 14px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: var(--text-muted);
+            font-size: 14px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-left: 3px solid transparent;
+        }
+
+        .nav-item:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+            color: var(--text-main);
+        }
+
+        .nav-item.active {
+            background-color: rgba(59, 130, 246, 0.15);
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+        }
+
+        /* --- 主内容区 --- */
+        .main-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: radial-gradient(circle at top right, rgba(59, 130, 246, 0.08), transparent 50%);
+            position: relative;
+        }
+
+        .top-header {
+            height: 70px;
+            padding: 0 40px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: var(--border-line);
+            background: rgba(15, 23, 42, 0.5);
+            backdrop-filter: blur(5px);
+        }
+
+        .page-title {
+            font-size: 22px;
+            font-weight: 600;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .page-title::before {
+            content: '';
+            width: 6px;
+            height: 24px;
+            background: var(--primary-color);
+            border-radius: 2px;
+        }
+
+        .ref-info {
+            font-size: 12px;
+            color: var(--text-muted);
+            background: rgba(255,255,255,0.05);
+            padding: 4px 10px;
+            border-radius: 4px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .content-area {
+            flex: 1;
+            padding: 30px 40px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* --- 页面切换动画 --- */
+        .slide {
+            position: absolute;
+            top: 30px;
+            left: 40px;
+            right: 40px;
+            bottom: 30px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(15px);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .slide.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        /* --- 卡片布局系统 --- */
+        .grid-layout {
+            display: grid;
+            gap: 20px;
+            height: 100%;
+        }
+
+        .grid-2col { grid-template-columns: 1fr 1fr; }
+        .grid-3col { grid-template-columns: 1fr 1fr 1fr; }
+        .grid-2-1 { grid-template-columns: 2fr 1fr; }
+        .grid-1-2 { grid-template-columns: 1fr 2fr; }
+        .col-span-2 { grid-column: span 2; }
+        .col-span-3 { grid-column: span 3; }
+
+        .card {
+            background-color: var(--bg-card);
+            border: var(--border-line);
+            border-radius: 8px;
+            box-shadow: var(--card-shadow);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .card-header {
+            background-color: var(--bg-card-header);
+            padding: 12px 20px;
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-highlight);
+            border-bottom: var(--border-line);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-body {
+            padding: 20px;
+            flex: 1;
+            overflow-y: auto; /* 关键：允许卡片内部滚动，确保详实内容不溢出 */
+            color: var(--text-muted);
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        /* --- 详细内容排版 --- */
+        .detail-list {
+            list-style: none;
+        }
+        .detail-list li {
+            position: relative;
+            padding-left: 20px;
+            margin-bottom: 12px;
+            color: var(--text-muted);
+        }
+        .detail-list li::before {
+            content: '▪';
+            position: absolute;
+            left: 0;
+            color: var(--primary-color);
+            font-size: 18px;
+            line-height: 18px;
+            top: 2px;
+        }
+        .detail-list strong {
+            color: var(--text-highlight);
+            font-weight: 600;
+        }
+
+        /* 数据指标仪表盘 */
+        .kpi-dashboard {
+            display: flex;
+            justify-content: space-between;
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+        }
+        .kpi-box {
+            text-align: center;
+            flex: 1;
+            border-right: 1px solid rgba(255,255,255,0.05);
+        }
+        .kpi-box:last-child { border-right: none; }
+        .kpi-label { font-size: 12px; color: var(--text-muted); margin-bottom: 5px; }
+        .kpi-value { font-size: 24px; font-weight: 700; color: var(--text-main); font-family: 'DIN', sans-serif; }
+        .kpi-unit { font-size: 12px; color: var(--text-muted); margin-left: 2px; }
+
+        /* 标签 Badge */
+        .badge {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 12px;
+            margin: 0 2px;
+            border: 1px solid transparent;
+        }
+        .badge-red { background: rgba(239, 68, 68, 0.15); color: #fca5a5; border-color: rgba(239, 68, 68, 0.3); }
+        .badge-blue { background: rgba(59, 130, 246, 0.15); color: #93c5fd; border-color: rgba(59, 130, 246, 0.3); }
+        .badge-orange { background: rgba(245, 158, 11, 0.15); color: #fcd34d; border-color: rgba(245, 158, 11, 0.3); }
+
+        /* 引用/规范框 */
+        .norm-block {
+            background: rgba(255,255,255,0.03);
+            border-left: 3px solid var(--text-muted);
+            padding: 10px 15px;
+            margin: 10px 0;
+            font-size: 13px;
+            font-style: italic;
+        }
+
+        /* 水印 */
+        .watermark {
+            position: fixed;
+            bottom: 15px;
+            right: 25px;
+            color: rgba(255, 255, 255, 0.1);
+            font-size: 13px;
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        /* 滚动条美化 */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #475569; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+
+        /* --- 新增：悬浮导航按钮样式 (适配本页风格) --- */
+        .nav-btn-float {
+            position: fixed; bottom: 30px; padding: 12px 30px;
+            background: var(--primary-color);
+            color: #fff;
+            border-radius: 30px; text-decoration: none; font-weight: bold;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s; z-index: 9999; font-size: 1rem;
+            border: 1px solid var(--primary-color);
+        }
+        .nav-btn-float:hover {
+            background: var(--accent-color);
+            border-color: var(--accent-color);
+            box-shadow: 0 5px 20px rgba(245, 158, 11, 0.4);
+            transform: scale(1.05);
+        }
+        .prev-btn {
+            right: 150px;
+            background: rgba(30, 41, 59, 0.8);
+            color: var(--text-muted);
+            border: 1px solid var(--text-muted);
+            backdrop-filter: blur(5px);
+        }
+        .prev-btn:hover {
+            color: #fff;
+            background: var(--accent-color);
+            border-color: var(--accent-color);
+        }
+        .next-btn { right: 30px; }
+
+    </style>
+</head>
+<body>
+
+    <aside class="sidebar">
+        <div class="brand">
+            <span>G4222 PROJECT</span>
+            <h1>长山隧道工程</h1>
+        </div>
+        <nav class="nav-menu">
+            <div class="nav-item active" onclick="switchTab(0)">
+                <span>总体概况与原则</span>
+            </div>
+            <div class="nav-item" onclick="switchTab(1)">
+                <span>安全保证措施</span>
+            </div>
+            <div class="nav-item" onclick="switchTab(2)">
+                <span>质量保证体系</span>
+            </div>
+            <div class="nav-item" onclick="switchTab(3)">
+                <span>环水保措施</span>
+            </div>
+            <div class="nav-item" onclick="switchTab(4)">
+                <span>应急预案与总结</span>
+            </div>
+        </nav>
+    </aside>
+
+    <main class="main-container">
+        <header class="top-header">
+            <div class="page-title" id="pageTitle">安全质量与应急保障 - 总体概况</div>
+            <div class="ref-info">依据：施工图设计文件 & 《公路隧道施工技术规范》 JTG/T 3660—2020</div>
+        </header>
+
+        <div class="content-area">
+
+            <div class="slide active grid-layout grid-2-1" id="slide0">
+                <div class="card col-span-2">
+                    <div class="card-header">核心原则与目标</div>
+                    <div class="card-body" style="display: flex; flex-direction: column; justify-content: center;">
+                        <h2 style="font-size: 24px; color: var(--primary-color); text-align: center; margin-bottom: 20px;">
+                            “安全是底线，质量是生命，环保是责任”
+                        </h2>
+                        <div class="norm-block">
+                            针对长山隧道进口段 <strong>V级围岩易坍塌</strong>、<strong>CRD工法工序转换复杂</strong>、<strong>周边环境敏感</strong>（鸡笼山国家森林公园、风力发电机）的特点，构建全覆盖的保障体系。
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">风险与特征</div>
+                    <div class="card-body">
+                        <ul class="detail-list">
+                            <li><strong>地质特征：</strong> 进口段V级浅埋、偏压、潜在富水。</li>
+                            <li><strong>关键风险：</strong> 洞口大变形、CRD拆撑风险。</li>
+                            <li><strong>环境敏感：</strong> 右线K41+010段临近风力发电机。</li>
+                            <li><strong>生态红线：</strong> 穿越鸡笼山国家森林公园。</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="card col-span-3">
+                    <div class="card-header">依据文件</div>
+                    <div class="card-body">
+                        <ul class="detail-list" style="display: grid; grid-template-columns: 1fr 1fr;">
+                            <li>G4222和县至襄阳高速公路长山隧道施工图设计文件</li>
+                            <li>设计说明第7节“隧道施工安全设计”</li>
+                            <li>设计说明第12节“环境保护”</li>
+                            <li>《公路隧道施工技术规范》（JTG/T 3660—2020）</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="slide grid-layout" style="grid-template-rows: auto 1fr;" id="slide1">
+                <div class="card">
+                    <div class="card-header" style="color: var(--accent-color);">硬性指标与规范红线</div>
+                    <div class="card-body" style="padding: 10px;">
+                        <div class="kpi-dashboard" style="margin-bottom: 0;">
+                            <div class="kpi-box">
+                                <div class="kpi-label">爆破震速 (设计说明4.3)</div>
+                                <div class="kpi-value" style="color: var(--accent-color);">&lt; 4.2<span class="kpi-unit">cm/s</span></div>
+                            </div>
+                            <div class="kpi-box">
+                                <div class="kpi-label">逃生通道管径</div>
+                                <div class="kpi-value">&ge; 900<span class="kpi-unit">mm</span></div>
+                            </div>
+                            <div class="kpi-box">
+                                <div class="kpi-label">安全步距 (仰拱)</div>
+                                <div class="kpi-value">30~40<span class="kpi-unit">m</span></div>
+                            </div>
+                            <div class="kpi-box">
+                                <div class="kpi-label">V级二衬距离</div>
+                                <div class="kpi-value">&le; 50<span class="kpi-unit">m</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div class="card">
+                        <div class="card-header">施工控制措施 (进洞与工法)</div>
+                        <div class="card-body">
+                            <ul class="detail-list">
+                                <li><strong>进洞安全：</strong> 严格执行“管超前、严注浆、短开挖、强支护”。采用 <span class="badge badge-blue">φ108大管棚</span> (40m长) 先行护顶。</li>
+                                <li><strong>CRD管控：</strong> 严格“分部开挖、及时封闭”。严禁私自扩大进尺，每循环控制在 <span class="badge badge-red">0.5~1.0m</span>。</li>
+                                <li><strong>拆撑原则：</strong> 中隔壁拆除必须在监控量测数据稳定后进行，一次拆除长度 <span class="badge badge-red">≤10m</span>，拆除后立即施作仰拱和二衬。</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">爆破与人员安全管控</div>
+                        <div class="card-body">
+                            <ul class="detail-list">
+                                <li><strong>风电保护：</strong> 采用电子雷管逐孔起爆。每次爆破必测风机基座震速，接近预警值 <span class="badge badge-orange">3.5cm/s</span> 立即调整参数或改机械开挖。</li>
+                                <li><strong>人员安全：</strong> 实行门禁考勤，佩戴定位芯片。</li>
+                                <li><strong>逃生管道：</strong> 随掌子面掘进延伸，距离掌子面不得大于 <span class="badge badge-red">20m</span>。管壁厚度不小于10mm。</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="slide grid-layout grid-3col" id="slide2">
+                <div class="card">
+                    <div class="card-header">材料与设计参数</div>
+                    <div class="card-body">
+                        <ul class="detail-list">
+                            <li><strong>耐久性：</strong> 结构基准期100年，可更换构件30年。</li>
+                            <li><strong>初期支护：</strong> 喷射混凝土强度等级 C25。</li>
+                            <li><strong>二次衬砌：</strong> V级围岩采用 C35 钢筋混凝土，抗渗等级 P8。</li>
+                            <li><strong>特殊材料：</strong> 隧道电缆沟盖板采用 <strong style="color:var(--primary-color)">RPC (活性粉末混凝土)</strong>，严格控制蒸养。</li>
+                            <li><strong>规范核心：</strong> 喷射混凝土1d抗压强度不应低于 <span class="badge badge-blue">8MPa</span>。</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">初期支护与实体质量</div>
+                    <div class="card-body">
+                        <ul class="detail-list">
+                            <li><strong>钢架安装：</strong> 垂直度误差±2°，中线偏差±50mm。</li>
+                            <li><strong>密实度：</strong> 钢架与围岩之间必须用喷射混凝土填实，<span class="badge badge-red">严禁填塞片石</span>。</li>
+                            <li><strong>锁脚锚杆：</strong> V级围岩每榀钢架设锁脚锚杆（<span class="badge badge-blue">φ42mm小导管</span>），必须与钢架焊接牢固并注浆饱满，确保不发生大沉降。</li>
+                            <li><strong>二衬外观：</strong> 采用液压整体式衬砌台车，附着式振捣器。</li>
+                            <li><strong>拱顶回填：</strong> 二衬拱顶必须预埋注浆管，进行脱空回填注浆。</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header" style="color: var(--accent-color);">防排水质量 (一票否决项)</div>
+                    <div class="card-body">
+                        <ul class="detail-list">
+                            <li><strong>焊缝检测：</strong> 防水板双焊缝必须进行 <span class="badge badge-orange">100%充气检查</span>。</li>
+                            <li><strong>检测标准：</strong> 压力 0.25MPa，保持 15min，压力下降 <span class="badge badge-blue">&lt;10%</span>。</li>
+                            <li><strong>止水带：</strong> 中埋式止水带必须使用钢筋卡具固定，确保居中。</li>
+                            <li><strong>振捣禁令：</strong> 混凝土浇筑时加强振捣，但 <span class="badge badge-red">严禁振动棒触碰止水带</span>。</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="slide grid-layout grid-2-1" id="slide3">
+                <div class="card col-span-2">
+                    <div class="card-header" style="color: var(--success-color);">生态保护与水土保持</div>
+                    <div class="card-body">
+                        <div class="norm-block">
+                            隧道位于 <strong>鸡笼山国家森林公园</strong> 范围内，设计要求“少占地、少破坏植被”。严禁在保护区内乱砍滥伐，施工便道严格控制红线宽度。
+                        </div>
+                        <ul class="detail-list" style="margin-top: 20px;">
+                            <li><strong>边坡防护：</strong> 洞口边仰坡刷坡后立即挂网喷锚防护，并按设计要求进行“生态防护”（植草绿化），减少裸露时间。</li>
+                            <li><strong>弃渣管理：</strong> 弃渣必须运至设计指定的专用弃渣场。</li>
+                            <li><strong>堆放原则：</strong> 分层碾压堆放，先挡后弃，严禁随意倾倒覆盖林地。</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">三废处理与降噪</div>
+                    <div class="card-body">
+                        <ul class="detail-list">
+                            <li><strong>污水处理：</strong> 洞口设置 <span class="badge badge-blue">三级沉淀池</span>。</li>
+                            <li><strong>排放标准：</strong> 施工废水、围岩渗水经沉淀、隔油处理，达到《污水综合排放标准》后方可排放。</li>
+                            <li><strong>防尘：</strong> 采用湿式凿岩，爆破后必须喷雾洒水降尘。</li>
+                            <li><strong>降噪：</strong> 通风机安装消音器，减少对周边环境及野生动物的干扰。</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="slide grid-layout" style="grid-template-columns: 1fr 1fr; grid-template-rows: auto 1fr;" id="slide4">
+                <div class="card">
+                    <div class="card-header" style="color: var(--danger-color);">塌方冒顶专项处置预案</div>
+                    <div class="card-body">
+                        <ul class="detail-list">
+                            <li><strong>立即撤人：</strong> 发现拱顶掉块不断、钢架扭曲有异响，第一时间撤离掌子面人员。</li>
+                            <li><strong>封闭塌腔：</strong> 采用喷射混凝土封闭塌体表面，防止进一步风化脱落。</li>
+                            <li><strong>加固处理：</strong> 采用超前小导管注浆固结塌渣，架设临时钢架支撑，必要时回填混凝土反压。</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">应急体系与物资储备</div>
+                    <div class="card-body">
+                        <ul class="detail-list">
+                            <li><strong>物资储备：</strong> 现场常备应急钢管、方木、沙袋。备用排水能力不小于工作水泵的 <span class="badge badge-blue">70%</span>。</li>
+                            <li><strong>应急演练：</strong> 每季度至少组织一次隧道坍塌逃生演练。</li>
+                            <li><strong>通信保障：</strong> 洞内铺设应急电话专线，配置无线对讲系统，确保24小时联络畅通。</li>
+                            <li><strong>组织机构：</strong> 成立以项目经理为组长的应急救援领导小组。</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="card col-span-2" style="background: linear-gradient(to right, #1e293b, #111827);">
+                    <div class="card-header">核心总结</div>
+                    <div class="card-body" style="display: flex; justify-content: space-around; align-items: center; padding: 30px;">
+                        <div style="text-align: center;">
+                            <div style="color: var(--danger-color); font-weight: 700; font-size: 18px; margin-bottom: 8px;">控风险 · 守红线</div>
+                            <div style="font-size: 14px; color: var(--text-muted);">死盯“风电震动”和“CRD拆撑”</div>
+                        </div>
+                        <div style="width: 1px; height: 50px; background: rgba(255,255,255,0.1);"></div>
+                        <div style="text-align: center;">
+                            <div style="color: var(--primary-color); font-weight: 700; font-size: 18px; margin-bottom: 8px;">抓质量 · 强薄弱</div>
+                            <div style="font-size: 14px; color: var(--text-muted);">狠抓“防水板焊缝”和“锁脚锚杆”</div>
+                        </div>
+                        <div style="width: 1px; height: 50px; background: rgba(255,255,255,0.1);"></div>
+                        <div style="text-align: center;">
+                            <div style="color: var(--success-color); font-weight: 700; font-size: 18px; margin-bottom: 8px;">重环保 · 护生态</div>
+                            <div style="font-size: 14px; color: var(--text-muted);">严守“森林公园生态红线”</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <div class="watermark">制作：张建</div>
+
+    <a href="p33.html" class="nav-btn-float prev-btn">上一页</a>
+    <a href="p35.html" class="nav-btn-float next-btn">下一页</a>
+
+    <script>
+        // 页面标题数组
+        const titles = [
+            "安全质量与应急保障 - 总体概况",
+            "安全保证措施 (规范与实操)",
+            "质量保证体系 (材料与工艺)",
+            "环水保措施 (生态保护)",
+            "应急预案与救援体系"
+        ];
+
+        function switchTab(index) {
+            // 更新导航栏状态
+            document.querySelectorAll('.nav-item').forEach((item, idx) => {
+                if (idx === index) item.classList.add('active');
+                else item.classList.remove('active');
+            });
+
+            // 更新顶部标题
+            document.getElementById('pageTitle').innerText = titles[index];
+
+            // 切换内容页面
+            document.querySelectorAll('.slide').forEach((slide, idx) => {
+                if (idx === index) slide.classList.add('active');
+                else slide.classList.remove('active');
+            });
+        }
+    </script>
+</body>
+</html>

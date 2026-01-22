@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>施工总平面布置图</title>
+    <style>
+        /* --- 1. 全局设置 --- */
+        :root {
+            --crcc-blue: #003366;
+            --crcc-red: #E60012;
+            --shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: "Microsoft YaHei", sans-serif;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            background-color: #f0f2f5;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* --- 2. 图片容器 --- */
+        .map-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .full-map {
+            width: 100%;
+            height: 100%;
+            object-fit: contain; 
+            filter: drop-shadow(0 0 20px rgba(0,0,0,0.1));
+            animation: zoomInImage 1s ease-out;
+        }
+
+        /* --- 3. 悬浮标题 (修改：屏幕正中居中) --- */
+        .floating-title {
+            position: absolute;
+            top: 30px;
+            left: 50%; /* 水平居中起点 */
+            /* 居中修正 + 初始动画状态由 keyframes 控制 */
+            transform: translateX(-50%); 
+            
+            background: rgba(255, 255, 255, 0.75); /* 透明度 75% */
+            backdrop-filter: blur(10px);
+            padding: 15px 40px;
+            border-radius: 50px;
+            box-shadow: var(--shadow);
+            border-bottom: 4px solid var(--crcc-red); /* 底部红条更稳重 */
+            
+            display: flex;
+            flex-direction: column;
+            align-items: center; 
+            z-index: 10;
+            
+            /* 使用适配居中的新动画 */
+            animation: slideDownCenter 0.8s ease-out;
+        }
+
+        .ft-main {
+            font-size: 2rem; /* 稍微放大一点 */
+            font-weight: 800;
+            color: var(--crcc-blue);
+            letter-spacing: 4px;
+            margin: 0;
+        }
+
+        /* --- 4. 导航按钮 --- */
+        .nav-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            padding: 12px 30px;
+            background: var(--crcc-blue);
+            color: white;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: bold;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            transition: all 0.3s;
+            z-index: 100;
+            border: 2px solid white;
+        }
+        
+        /* 悬停效果 */
+        .nav-btn:hover { 
+            background: var(--crcc-red); 
+            border-color: var(--crcc-red);
+            color: white;
+            transform: translateY(-2px); 
+        }
+        
+        .prev-btn {
+            right: 150px;
+            background: white;
+            color: var(--crcc-blue);
+            border: 2px solid var(--crcc-blue);
+        }
+        /* 上一页悬停变红 */
+        .prev-btn:hover {
+            background: var(--crcc-red);
+            color: white;
+            border-color: var(--crcc-red);
+        }
+
+        /* --- 动画定义 --- */
+        
+        /* 居中下落动画 */
+        @keyframes slideDownCenter {
+            from { 
+                transform: translate(-50%, -50px); /* 保持水平居中，垂直上移 */
+                opacity: 0; 
+            }
+            to { 
+                transform: translate(-50%, 0); /* 保持水平居中，垂直归位 */
+                opacity: 1; 
+            }
+        }
+
+        @keyframes zoomInImage {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- 悬浮标题 (居中) -->
+    <div class="floating-title">
+        <div class="ft-main">施工总平面布置图</div>
+    </div>
+
+    <!-- 全屏图片 -->
+    <div class="map-container">
+        <!-- 确保 images 文件夹下有 layout.png -->
+        <img src="images/layout.png" alt="施工总平面布置图" class="full-map">
+    </div>
+
+    <!-- 导航 -->
+    <a href="p09.html" class="nav-btn prev-btn">上一页</a>
+    <a href="p11.html" class="nav-btn">下一页</a>
+
+</body>
+</html>

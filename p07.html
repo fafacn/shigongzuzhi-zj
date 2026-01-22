@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>工程特点及重难点分析</title>
+    <style>
+        /* --- 1. 核心配色 --- */
+        :root {
+            --crcc-blue: #003366;
+            --crcc-red: #E60012;
+            --risk-high: #e53e3e;   /* 高风险 - 红 */
+            --risk-mid: #dd6b20;    /* 难点 - 橙 */
+            --risk-complex: #3182ce; /* 复杂 - 蓝 */
+            --risk-mgmt: #38a169;   /* 管理 - 绿 */
+            --text-main: #1a202c;
+            --text-light: #718096;
+            --bg-grad: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            background: var(--bg-grad);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: var(--text-main);
+        }
+
+        /* --- 2. 主布局 --- */
+        .container {
+            width: 96vw;
+            height: 94vh;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            padding: 20px;
+            background: rgba(255,255,255,0.6);
+            backdrop-filter: blur(15px);
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+            border: 1px solid rgba(255,255,255,0.6);
+        }
+
+        /* 标题区 */
+        .header-section {
+            flex: 0 0 auto;
+            border-bottom: 2px solid rgba(0, 51, 102, 0.1);
+            padding-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        h2 { font-size: 2rem; color: var(--crcc-blue); display: flex; align-items: center; gap: 15px; }
+        h2::before { content:''; width: 8px; height: 35px; background: var(--crcc-red); display: block; }
+        .subtitle { font-size: 1rem; color: var(--text-light); margin-top: 8px; }
+
+        /* --- 3. 网格卡片区 --- */
+        .grid-wrapper {
+            flex: 1;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr); /* 4列 */
+            grid-template-rows: repeat(2, 1fr);    /* 2行 */
+            gap: 15px;
+            overflow: hidden;
+        }
+
+        /* 通用卡片样式 */
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px; /* 增加内边距 */
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.3s, box-shadow 0.3s;
+            position: relative;
+            overflow: hidden;
+            border-top: 5px solid #ccc; /* 加粗顶边 */
+        }
+        .card:hover { transform: translateY(-3px); box-shadow: 0 10px 25px rgba(0,0,0,0.1); z-index: 10; }
+
+        /* 内容滚动区域 */
+        .card-content {
+            flex: 1;
+            overflow-y: auto;
+            padding-right: 5px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start; /* 顶部对齐 */
+        }
+        .card-content::-webkit-scrollbar { width: 4px; }
+        .card-content::-webkit-scrollbar-thumb { background: #cbd5e0; border-radius: 2px; }
+        .card-content::-webkit-scrollbar-track { background: transparent; }
+
+        /* 卡片头部 */
+        .card-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px dashed #eee;
+        }
+        .icon-box {
+            width: 42px; height: 42px; border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0; color: white;
+        }
+        .title-box { display: flex; flex-direction: column; justify-content: center; height: 42px;}
+        .c-num { font-size: 0.8rem; color: #999; font-weight: bold; text-transform: uppercase; }
+        /* 修改点1：标题字号略微增大 */
+        .c-title { font-size: 1.1rem; font-weight: bold; color: #333; line-height: 1.2; }
+
+        /* 内容文本 */
+        /* 修改点2：正文字号增大，行高增加，解决空旷问题 */
+        .bullet-point { 
+            margin-bottom: 12px; 
+            font-size: 0.95rem; /* 原0.85rem */
+            color: #4a5568; 
+            line-height: 1.6;   /* 原1.5 */
+            text-align: justify;
+        }
+        .bp-title { font-weight: bold; display: block; margin-bottom: 4px; color: #2d3748; }
+        .hl { font-weight: bold; padding: 0 4px; border-radius: 2px; }
+
+        /* --- 颜色主题 --- */
+        /* 1. 路基土石方 (橙) */
+        .theme-earth { border-top-color: var(--risk-mid); }
+        .theme-earth .icon-box { background: var(--risk-mid); }
+        .theme-earth .bp-title { color: var(--risk-mid); }
+        .theme-earth .hl { color: var(--risk-mid); background: #fffaf0; }
+
+        /* 2. 路基结构物 (蓝) */
+        .theme-struct { border-top-color: var(--risk-complex); }
+        .theme-struct .icon-box { background: var(--risk-complex); }
+        .theme-struct .bp-title { color: var(--risk-complex); }
+        .theme-struct .hl { color: var(--risk-complex); background: #ebf8ff; }
+
+        /* 3. 预制构件 (绿) */
+        .theme-prefab { border-top-color: var(--risk-mgmt); }
+        .theme-prefab .icon-box { background: var(--risk-mgmt); }
+        .theme-prefab .bp-title { color: var(--risk-mgmt); }
+        .theme-prefab .hl { color: var(--risk-mgmt); background: #f0fff4; }
+
+        /* 4. 桥梁工程 (红) */
+        .theme-bridge { border-top-color: var(--risk-high); }
+        .theme-bridge .icon-box { background: var(--risk-high); }
+        .theme-bridge .bp-title { color: var(--risk-high); }
+        .theme-bridge .hl { color: var(--risk-high); background: #fff5f5; }
+
+        /* --- 导航按钮 --- */
+        .nav-btn {
+            position: fixed; bottom: 30px; right: 30px;
+            padding: 12px 30px; background: var(--crcc-blue); color: white;
+            border-radius: 30px; text-decoration: none; font-weight: bold;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2); transition: 0.3s; z-index: 100;
+        }
+        .nav-btn:hover { background: var(--crcc-red); }
+        .prev-btn { right: 150px; background: white; color: var(--crcc-blue); border: 1px solid var(--crcc-blue); }
+
+        /* 入场动画 */
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .card { animation: fadeInUp 0.6s ease backwards; }
+        
+        .card:nth-child(1) { animation-delay: 0.1s; }
+        .card:nth-child(2) { animation-delay: 0.2s; }
+        .card:nth-child(3) { animation-delay: 0.3s; }
+        .card:nth-child(4) { animation-delay: 0.4s; }
+        .card:nth-child(5) { animation-delay: 0.5s; }
+        .card:nth-child(6) { animation-delay: 0.6s; }
+        .card:nth-child(7) { animation-delay: 0.7s; }
+        .card:nth-child(8) { animation-delay: 0.8s; }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- 标题 -->
+        <div class="header-section">
+            <h2>G4222和含高速二分部工程特点及重难点分析</h2>
+            <div class="subtitle">8大关键控制要素分析</div>
+        </div>
+
+        <!-- 卡片网格 -->
+        <div class="grid-wrapper">
+            
+            <!-- 1. 路基土石方 (橙) -->
+            <div class="card theme-earth">
+                <div class="card-header">
+                    <div class="icon-box">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M5 21l7-14 7 14M9 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                    </div>
+                    <div class="title-box">
+                        <span class="c-num">No.1</span>
+                        <span class="c-title">路基土石方工程</span>
+                    </div>
+                </div>
+                <div class="card-content">
+                    <div class="bullet-point">
+                        <span class="bp-title">规模宏大:</span>
+                        挖方226.4万方，填方<span class="hl">329万方</span>。梁场段填方受鱼塘制约，服务区涉及50万方爆破。
+                    </div>
+                    <div class="bullet-point">
+                        <span class="bp-title">核心难点:</span>
+                        <span class="hl">膨胀土改良</span>，总量达233.6万方，需3%~6%石灰改良。
+                    </div>
+                    <div class="bullet-point">
+                        <span class="bp-title">最大天敌:</span>
+                        有效施工仅约<span class="hl">210天</span>。梅雨及台风期需解决翻晒、粉碎难题。
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. 路基结构物 (蓝) -->
+            <div class="card theme-struct">
+                <div class="card-header">
+                    <div class="icon-box">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M12 7V3m-4 4V3m8 4V3"/></svg>
+                    </div>
+                    <div class="title-box">
+                        <span class="c-num">No.2</span>
+                        <span class="c-title">路基结构物</span>
+                    </div>
+                </div>
+                <div class="card-content">
+                    <div class="bullet-point">
+                        <span class="bp-title">分布密集:</span>
+                        全线185道涵洞，平均每<span class="hl">170米</span>一道。
+                    </div>
+                    <div class="bullet-point">
+                        <span class="bp-title">碎片化:</span>
+                        路基被肢解成百余个短小段落，无法连续流水作业。
+                    </div>
+                    <div class="bullet-point">
+                        <span class="bp-title">策略:</span>
+                        必须采取“涵洞先行、分段填筑、最后拉通”的跳跃式模式。
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. 预制构件 (绿) -->
+            <div class="card theme-prefab">
+                <div class="card-header">
+                    <div class="icon-box">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+                    </div>
+                    <div class="title-box">
+                        <span class="c-num">No.3</span>
+                        <span class="c-title">预制构件工程</span>
+                    </div>
+                </div>
+                <div class="card-content">
+                    <div class="bullet-point">
+                        <span class="bp-title">种类繁杂:</span>
+                        圆管涵4800米、箱涵1730米、挡板624块、附属构件数以万计。
+                    </div>
+                    <div class="bullet-point">
+                        <span class="bp-title">管理难点:</span>
+                        型号杂、模具多。需平衡<span class="hl">“生产-存放-安装”</span>供需，防止拖累进度。
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. 桥梁工程 (红) -->
+            <div class="card theme-bridge">
+                <div class="card-header">
+                    <div class="icon-box">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20h16M3 10h18M5 10v10M19 10v10M9 6l3 4 3-4"/></svg>
+                    </div>
+                    <div class="title-box">
+                        <span class="c-num">No.4</span>
+                        <span class="c-title">桥梁工程</span>
+                    </div>
+                </div>
+                <div class="card-content">
+                    <div class="bullet-point">
+                        <span class="bp-title">岩溶发育:</span>
+                        K16~K19及K23段灰岩区，<span class="hl">桩基风险不可控</span>（漏浆/塌孔/地面塌陷）。
+                    </div>
+                    <div class="bullet-point">
+                        <span class="bp-title">管理跨度:</span>
+                        27座桥梁散布全线，混凝土运距长，便道维护压力大。
+                    </div>
+                </div>
+            </div>
+
+            <!-- 5. 互通 (蓝) -->
+            <div class="card theme-struct">
+                <div class="card-header">
+                    <div class="icon-box">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 8a4 4 0 1 1 8 0c0 4-8 12-8 12s-8-8-8-12a4 4 0 0 1 8 0z"/><circle cx="12" cy="8" r="3"/></svg>
+                    </div>
+                    <div class="title-box">
+                        <span class="c-num">No.5</span>
+                        <span class="c-title">含山北互通</span>
+                    </div>
+                </div>
+                <div class="card-content">
+                    <div class="bullet-point">
+                        <span class="bp-title">结构复杂:</span>
+                        主线特大桥与匝道交织，下部结构多径级，存在高墩施工。
+                    </div>
+                    <div class="bullet-point">
+                        <span class="bp-title">高危作业:</span>
+                        工序转换频繁，<span class="hl">高空作业密集</span>，是桥梁工程控制性节点。
+                    </div>
+                </div>
+            </div>
+
+            <!-- 6. 长山隧道 (红) -->
+            <div class="card theme-bridge">
+                <div class="card-header">
+                    <div class="icon-box">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 20v-8a9 9 0 0 1 18 0v8M3 20h18"/></svg>
+                    </div>
+                    <div class="title-box">
+                        <span class="c-num">No.6</span>
+                        <span class="c-title">长山隧道</span>
+                    </div>
+                </div>
+                <div class="card-content">
+                    <div class="bullet-point">
+                        <span class="bp-title">地质恶劣:</span>
+                        IV/V级围岩超90%，进口滑坡体，易塌方突水。
+                    </div>
+                    <div class="bullet-point">
+                        <span class="bp-title">环境敏感:</span>
+                        近距离运营<span class="hl">风力发电机</span>，爆破震速受限(4.2cm/s)，制约工效。
+                    </div>
+                    <div class="bullet-point">
+                        <span class="bp-title">反坡排水:</span>
+                        全隧反坡，防淹压力大。
+                    </div>
+                </div>
+            </div>
+
+            <!-- 7. 箱梁预制 (绿) -->
+            <div class="card theme-prefab">
+                <div class="card-header">
+                    <div class="icon-box">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 17h4V5H10zM3 17h18M16 17l2 4M6 17l-2 4"/></svg>
+                    </div>
+                    <div class="title-box">
+                        <span class="c-num">No.7</span>
+                        <span class="c-title">箱梁预制与架设</span>
+                    </div>
+                </div>
+                <div class="card-content">
+                    <div class="bullet-point">
+                        <span class="bp-title">运距超长:</span>
+                        梁场位置偏，最大运距达<span class="hl">14公里</span>。
+                    </div>
+                    <div class="bullet-point">
+                        <span class="bp-title">通道保通:</span>
+                        运梁车需穿过大量路基涵洞及已架桥梁。通道畅通是架梁进度的生命线。
+                    </div>
+                </div>
+            </div>
+
+            <!-- 8. 服务区 (橙) - 修改点：补充了详细内容 -->
+            <div class="card theme-earth">
+                <div class="card-header">
+                    <div class="icon-box">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                    </div>
+                    <div class="title-box">
+                        <span class="c-num">No.8</span>
+                        <span class="c-title">褒禅山服务区</span>
+                    </div>
+                </div>
+                <div class="card-content">
+                    <!-- 新增点 -->
+                    <div class="bullet-point">
+                        <span class="bp-title">规模与范围:</span>
+                        <span class="hl">K28+630~K30+030</span>，占地面积大，设计挖方近<span class="hl">50万方</span>。
+                    </div>
+                    <div class="bullet-point">
+                        <span class="bp-title">石方爆破:</span>
+                        主要为<span class="hl">次坚石/坚石</span>，需进行深孔爆破，审批繁琐。
+                    </div>
+                    <div class="bullet-point">
+                        <span class="bp-title">平衡调度:</span>
+                        爆破石料需筛选利用，场内土石方倒运调度复杂。
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- 导航 -->
+    <a href="p06.html" class="nav-btn prev-btn">上一页</a>
+    <a href="p08.html" class="nav-btn">下一页</a>
+
+</body>
+</html>

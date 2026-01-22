@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>含山北互通特大桥总体施工方案 - p20</title>
+    <style>
+        /* --- 1. 核心配色 (延续 p19) --- */
+        :root {
+            --crcc-blue: #003366;
+            --crcc-red: #E60012;
+            --tech-teal: #319795;
+            --plan-orange: #dd6b20;
+            --bg-grad: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            --glass-bg: rgba(255,255,255,0.95);
+            --text-main: #1a202c;
+            --border-color: #e2e8f0;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+            height: 100vh; width: 100vw; overflow: hidden;
+            background: var(--bg-grad);
+            display: flex; justify-content: center; align-items: center;
+            color: var(--text-main);
+        }
+
+        .container {
+            width: 98vw; height: 96vh;
+            display: flex; flex-direction: column;
+            padding: 25px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            box-shadow: 0 15px 50px rgba(0,0,0,0.15);
+            border: 1px solid rgba(255,255,255,0.6);
+        }
+
+        /* --- 标题区 --- */
+        .header-section {
+            flex: 0 0 auto;
+            border-bottom: 2px solid rgba(0, 51, 102, 0.1);
+            padding-bottom: 15px; margin-bottom: 20px;
+            display: flex; justify-content: space-between; align-items: flex-end;
+        }
+        h2 { font-size: 2.0rem; color: var(--crcc-blue); display: flex; align-items: center; gap: 15px; margin: 0; }
+        h2::before { content:''; width: 8px; height: 32px; background: var(--crcc-red); display: block; }
+        .subtitle { font-size: 1rem; color: #718096; font-weight: 500;}
+
+        /* --- 选项卡导航 --- */
+        .tabs-nav { display: flex; gap: 10px; margin-bottom: 20px; padding-bottom: 5px; }
+        
+        .tab-btn {
+            flex: 1; padding: 12px 10px; background: #eef2f6; border: none; border-radius: 12px;
+            cursor: pointer; font-weight: bold; color: #64748b;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.03);
+        }
+        .badge {
+            width: 24px; height: 24px; background: var(--crcc-red); color: white; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.85rem; font-weight: 800; box-shadow: 0 2px 4px rgba(230, 0, 18, 0.3);
+            transition: transform 0.3s;
+        }
+        .tab-btn.active {
+            background: var(--crcc-blue); color: white; transform: translateY(-4px);
+            box-shadow: 0 8px 20px rgba(0, 51, 102, 0.3);
+        }
+        .tab-btn.active .badge { background: white; color: var(--crcc-blue); transform: scale(1.1); }
+        .tab-btn:hover:not(.active) { background: #e2e8f0; transform: translateY(-2px); }
+
+        /* --- 内容区域 --- */
+        .content-area { flex: 1; overflow: hidden; position: relative; padding: 5px; }
+        .tab-pane {
+            display: none; height: 100%; overflow-y: auto; scrollbar-width: none;
+        }
+        .tab-pane::-webkit-scrollbar { display: none; }
+        .tab-pane.active { display: flex; flex-direction: column; gap: 20px; }
+
+        /* 动画 */
+        .animate-item {
+            opacity: 0; transform: translateY(20px);
+            animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        .animate-item:nth-child(1) { animation-delay: 0.05s; }
+        .animate-item:nth-child(2) { animation-delay: 0.15s; }
+        .animate-item:nth-child(3) { animation-delay: 0.25s; }
+        .animate-item:nth-child(4) { animation-delay: 0.35s; }
+        @keyframes slideUp { to { opacity: 1; transform: translateY(0); } }
+
+        /* --- 模块样式 --- */
+        .section-box {
+            background: white; border-radius: 12px; padding: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03); border: 1px solid #f0f0f0;
+            transition: transform 0.3s;
+        }
+        .section-box:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(0,0,0,0.06); }
+        .section-title { 
+            font-size: 1.15rem; font-weight: 800; color: var(--crcc-blue); 
+            margin-bottom: 15px; padding-bottom: 8px; border-bottom: 2px dashed #e2e8f0;
+            display: flex; align-items: center;
+        }
+        .section-title::before {
+            content: ''; display: inline-block; width: 6px; height: 18px; 
+            background: var(--crcc-blue); margin-right: 10px; border-radius: 3px;
+        }
+        
+        /* 布局网格 */
+        .grid-2-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; height: 100%; }
+        .grid-2-1-col { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; height: 100%; }
+
+        /* 表格 */
+        .custom-table { width: 100%; border-collapse: separate; border-spacing: 0; border-radius: 8px; overflow: hidden; border: 1px solid #e2e8f0; }
+        .custom-table th { background: #eff6ff; color: var(--crcc-blue); padding: 10px; font-weight: bold; border-bottom: 2px solid #e2e8f0; position: sticky; top: 0;}
+        .custom-table td { padding: 8px; border-bottom: 1px solid #f0f0f0; text-align: center; color: #4a5568; font-size: 0.95rem; }
+        .custom-table tr:nth-child(even) { background: #fcfcfc; }
+
+        /* 列表与流程 */
+        ul.detail-list { list-style: none; }
+        ul.detail-list li { margin-bottom: 8px; position: relative; padding-left: 15px; line-height: 1.6; }
+        ul.detail-list li::before { content: "▪"; color: var(--crcc-blue); position: absolute; left: 0; font-weight: bold; }
+        
+        .process-flow { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
+        .p-step { 
+            background: #fff; border: 1px solid var(--plan-orange); color: var(--plan-orange); 
+            padding: 5px 12px; border-radius: 15px; font-weight: bold; font-size: 0.85rem;
+        }
+        .p-arrow { color: #cbd5e0; }
+
+        /* 进度条容器 */
+        .progress-container { margin-top: 5px; background: #edf2f7; border-radius: 4px; height: 8px; width: 100%; overflow: hidden; }
+        .progress-bar { height: 100%; border-radius: 4px; transition: width 1s; }
+
+        /* 导航按钮 */
+        .nav-btn {
+            position: fixed; bottom: 30px; padding: 12px 30px;
+            background: var(--crcc-blue); color: white;
+            border-radius: 30px; text-decoration: none; font-weight: bold;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2); transition: 0.3s; z-index: 200; font-size: 1rem;
+        }
+        .nav-btn:hover { background: var(--crcc-red); transform: scale(1.05); }
+        .prev-btn { right: 150px; background: white; color: var(--crcc-blue); border: 1px solid var(--crcc-blue); }
+        .next-btn { right: 30px; }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header-section">
+        <div>
+            <h2>含山北互通特大桥总体施工方案</h2>
+            <div class="subtitle">上跨S213 · 抱箍法盖梁 · 现浇箱梁 · 资源精细化配置</div>
+        </div>
+    </div>
+
+    <!-- 选项卡导航 -->
+    <div class="tabs-nav">
+        <button class="tab-btn active" onclick="openTab(event, 'tab1')"><span class="badge">1</span> 工程概况与部署</button>
+        <button class="tab-btn" onclick="openTab(event, 'tab2')"><span class="badge">2</span> 主线盖梁施工(重点)</button>
+        <button class="tab-btn" onclick="openTab(event, 'tab3')"><span class="badge">3</span> C匝道现浇箱梁</button>
+        <button class="tab-btn" onclick="openTab(event, 'tab4')"><span class="badge">4</span> 资源配置(详表)</button>
+        <button class="tab-btn" onclick="openTab(event, 'tab5')"><span class="badge">5</span> 质安与架梁</button>
+    </div>
+
+    <div class="content-area">
+        
+        <!-- Tab 1: 概况与部署 -->
+        <div id="tab1" class="tab-pane active">
+            <!-- 顶部数据卡 -->
+            <div class="section-box animate-item" style="display:flex; justify-content:space-around; text-align:center; padding:15px;">
+                <div>
+                    <div style="font-size:0.9rem; color:#718096;">中心桩号</div>
+                    <div style="font-size:1.2rem; font-weight:bold; color:var(--crcc-blue);">K26+065.5</div>
+                </div>
+                <div>
+                    <div style="font-size:0.9rem; color:#718096;">桥长</div>
+                    <div style="font-size:1.2rem; font-weight:bold; color:var(--crcc-blue);">1.1km</div>
+                </div>
+                <div>
+                    <div style="font-size:0.9rem; color:#718096;">跨径组合</div>
+                    <div style="font-size:1rem; font-weight:bold;">21×25m + 3×35m + 19×25m</div>
+                </div>
+                <div>
+                    <div style="font-size:0.9rem; color:#718096;">制约关系</div>
+                    <div style="font-size:1rem; font-weight:bold; color:var(--crcc-red);">架桥机组装后"第一战"</div>
+                </div>
+            </div>
+
+            <!-- 左右分栏：现状与策略 -->
+            <div class="grid-2-col animate-item">
+                <div class="section-box">
+                    <div class="section-title">施工进度现状 (瓶颈分析)</div>
+                    <ul class="detail-list">
+                        <li><strong>桩基：</strong>剩余67根 (完成79%)，处于收尾阶段。</li>
+                        <li><strong>立柱：</strong>剩余150根 (完成43.2%)，攻坚阶段。</li>
+                        <li><strong>盖梁：</strong><strong style="color:var(--crcc-red);">仅完成3个 (占比3.4%)</strong>，剩余86个。
+                            <div class="progress-container"><div class="progress-bar" style="width:3.4%; background:var(--crcc-red);"></div></div>
+                            <span style="font-size:0.8rem; color:var(--crcc-red);">* 绝对瓶颈工序</span>
+                        </li>
+                    </ul>
+                </div>
+                <div class="section-box">
+                    <div class="section-title">总体部署策略</div>
+                    <div style="background:#ebf8ff; padding:10px; border-radius:8px; margin-bottom:10px; border-left:4px solid var(--crcc-blue);">
+                        <strong>主线优先：</strong>集中模板、支架、班组资源，抢工主线桥下部结构，确保架桥机工作面。
+                    </div>
+                    <div style="background:#fff5f5; padding:10px; border-radius:8px; border-left:4px solid var(--plan-orange);">
+                        <strong>匝道让路：</strong>C匝道现浇梁工期长，需与主线并行施工，<strong style="color:var(--crcc-red)">严禁占用架梁主通道</strong>。
+                    </div>
+                    <ul class="detail-list" style="margin-top:10px;">
+                        <li><strong>盖梁投入：</strong>增加至 4-5个班组，平行流水。</li>
+                        <li><strong>底座配置：</strong>至少6-8套，抱箍支架配套足额投入。</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 2: 主线盖梁施工 -->
+        <div id="tab2" class="tab-pane">
+            <div class="section-box animate-item">
+                <div class="section-title">施工方案：抱箍法 + 型钢平台</div>
+                <p>鉴于墩柱较高且不设落地支架，采用 <strong style="color:var(--tech-teal);">“抱箍法”</strong> 施工。</p>
+            </div>
+
+            <div class="grid-2-col animate-item">
+                <div class="section-box">
+                    <div class="section-title">抱箍支架系统设计</div>
+                    <table class="custom-table">
+                        <tr>
+                            <td style="font-weight:bold;">支撑体系</td>
+                            <td>特制钢抱箍固定在圆柱墩上，利用摩擦力支撑。</td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight:bold;">连接螺栓</td>
+                            <td>每道抱箍设 <strong>36个 M30高强螺栓</strong> (8.8级)。<br>设计预拉力280kN，扭矩1092 N·m。</td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight:bold;">承重主梁</td>
+                            <td>采用 <strong>双拼 I63c 工字钢</strong> (长12m)。</td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight:bold;">分配梁</td>
+                            <td>采用 <strong>I18a 工字钢</strong>。</td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight:bold;">卸落装置</td>
+                            <td>主梁与分配梁之间设置 <strong>200t B型卸落块</strong>。</td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="section-box">
+                    <div class="section-title">工艺流程</div>
+                    <div class="process-flow" style="flex-direction: column; align-items: flex-start;">
+                        <div><span class="p-step">1. 抱箍安装</span> <span style="font-size:0.85rem; color:#666;">(关键：高强螺栓紧固扭矩，逐个用扭矩扳手校核)</span></div>
+                        <div style="margin-left:20px;">⬇</div>
+                        <div><span class="p-step">2. 平台搭设</span> <span style="font-size:0.85rem; color:#666;">(吊装I63c主梁 → 安装卸落块 → 铺设I18a分配梁)</span></div>
+                        <div style="margin-left:20px;">⬇</div>
+                        <div><span class="p-step">3. 钢筋与预埋</span> <span style="font-size:0.85rem; color:#666;">(整体吊装或现场绑扎，注意防撞护栏预埋件)</span></div>
+                        <div style="margin-left:20px;">⬇</div>
+                        <div><span class="p-step">4. 混凝土浇筑</span> <span style="font-size:0.85rem; color:#666;">(C40/C50，从跨中向两端对称进行)</span></div>
+                        <div style="margin-left:20px;">⬇</div>
+                        <div><span class="p-step">5. 养护与拆模</span> <span style="font-size:0.85rem; color:#666;">(松动卸落块卸落模板)</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 3: C匝道现浇箱梁 -->
+        <div id="tab3" class="tab-pane">
+            <div class="grid-2-col animate-item">
+                <div class="section-box">
+                    <div class="section-title">工程概况与难点</div>
+                    <ul class="detail-list">
+                        <li><strong>结构：</strong>C匝道桥包含 <strong>8跨×20m</strong> 现浇预应力混凝土连续箱梁。共分2联 (每联4×20m)，全长160m。</li>
+                        <li><strong>难点：</strong>位于曲线段，且需跨越地面道路，施工便道受限。</li>
+                        <li><strong>地基处理：</strong>清除表土 -> 回填50cm石灰土/碎石土分层压实 -> 浇筑15cm厚C20混凝土硬化层。</li>
+                    </ul>
+                </div>
+                <div class="section-box">
+                    <div class="section-title">盘扣式满堂支架方案</div>
+                    <ul class="detail-list">
+                        <li><strong>支架类型：</strong>WDJ碗扣式或盘扣式钢管脚手架。</li>
+                        <li><strong>立杆间距：</strong>
+                            <br>梁底腹板加密区：60cm×90cm
+                            <br>底板区：90cm×90cm
+                            <br>翼板区：90cm×120cm
+                        </li>
+                        <li><strong>支架预压 (关键)：</strong>在铺设底模后，采用沙袋或水袋进行 <strong style="color:var(--crcc-red)">1.1倍荷载预压</strong>。消除非弹性变形，测出弹性变形值。</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="section-box animate-item">
+                <div class="section-title">现浇施工流程</div>
+                <div class="process-flow">
+                    <span class="p-step">地基处理及支架搭设</span><span class="p-arrow">➔</span>
+                    <span class="p-step">底模/侧模安装</span><span class="p-arrow">➔</span>
+                    <span class="p-step">堆载预压</span><span class="p-arrow">➔</span>
+                    <span class="p-step">第一次浇筑(底板+腹板)</span><span class="p-arrow">➔</span>
+                    <span class="p-step">内模安装</span><span class="p-arrow">➔</span>
+                    <span class="p-step">第二次浇筑(顶板+翼板)</span><span class="p-arrow">➔</span>
+                    <span class="p-step">张拉压浆</span><span class="p-arrow">➔</span>
+                    <span class="p-step">落架</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 4: 资源配置 (含详细列表) -->
+        <div id="tab4" class="tab-pane">
+            <div class="grid-2-1-col animate-item">
+                <!-- 左侧：主要资源计划 (已修正) -->
+                <div class="section-box">
+                    <div class="section-title">主要资源配置计划</div>
+                    <table class="custom-table">
+                        <tr>
+                            <th>项目</th>
+                            <th>资源名称</th>
+                            <th>数量</th>
+                            <th>用途</th>
+                        </tr>
+                        <tr>
+                            <td rowspan="4">C匝道现浇</td>
+                            <td>盘扣支架</td>
+                            <td>200吨</td>
+                            <td>满堂支架搭设</td>
+                        </tr>
+                        <tr>
+                            <td>汽车泵</td>
+                            <td>1台</td>
+                            <td>现浇梁混凝土浇筑</td>
+                        </tr>
+                        <tr>
+                            <td>吊车 35t</td>
+                            <td>3台</td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td>旋挖钻</td>
+                            <td>2台</td>
+                            <td>360和20各1台</td>
+                        </tr>
+                        <tr>
+                            <td>人员</td>
+                            <td>钢筋/模板/混凝土工</td>
+                            <td>60人</td>
+                            <td></td>
+                        </tr>
+                    </table>
+                </div>
+
+                <!-- 右侧：模板及设备详细配置 (图片2内容) -->
+                <div class="section-box" style="display:flex; flex-direction: column;">
+                    <div class="section-title" style="color:var(--plan-orange);">模板及设备详细配置表</div>
+                    <div style="flex:1; overflow-y:auto; border:1px solid #e2e8f0; border-radius:8px;">
+                        <table class="custom-table" style="border:none;">
+                            <thead>
+                                <tr style="position:sticky; top:0; z-index:10;">
+                                    <th>类型</th>
+                                    <th>已进场</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>1.3柱模</td><td>44米</td></tr>
+                                <tr><td>1.5柱模</td><td>48米</td></tr>
+                                <tr><td>1.8柱模</td><td>75米</td></tr>
+                                <tr><td>1.5米桩径底 (1.3m桩径) 系梁</td><td>2套</td></tr>
+                                <tr><td>1.8米桩径底系梁 (1.5m桩径)</td><td>1套</td></tr>
+                                <tr><td>2米桩径底系梁 (1.8m桩径)</td><td>1套</td></tr>
+                                <tr><td>1.3米桩径中系梁</td><td>1套</td></tr>
+                                <tr><td>1.5米桩径中系梁</td><td>1套</td></tr>
+                                <tr><td>1.8米桩径中系梁</td><td>1套</td></tr>
+                                <tr><td>1.3米桩径盖梁</td><td>2套</td></tr>
+                                <tr><td>1.5米桩径盖梁</td><td>1套</td></tr>
+                                <tr><td>1.8米桩径盖梁</td><td>(待补)</td></tr>
+                                <tr><td>1.3米桩径抱箍</td><td>7套</td></tr>
+                                <tr><td>1.5米桩径抱箍</td><td>2套</td></tr>
+                                <tr><td>装配式车行通道</td><td>2</td></tr>
+                                <tr><td>1.3m柱径柱模安全作业平台</td><td>2</td></tr>
+                                <tr><td>1.5m柱径柱模安全作业平台</td><td>2</td></tr>
+                                <tr><td>梯笼</td><td>72 (m)</td></tr>
+                                <tr><td>盖梁安全作业平台</td><td>3</td></tr>
+                                <tr><td>63C工字钢 (6.2米)</td><td>28根</td></tr>
+                                <tr><td>63C工字钢 (12米)</td><td>37根</td></tr>
+                                <tr><td>63C工字钢夹板</td><td>26块</td></tr>
+                                <tr><td>18工字钢 (4.5米)</td><td>149根</td></tr>
+                                <tr><td>卸落块</td><td>42个</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 5: 质安与架设 -->
+        <div id="tab5" class="tab-pane">
+            <div class="section-box animate-item" style="border-left:5px solid var(--crcc-blue);">
+                <div class="section-title">预制箱梁架设配合措施</div>
+                <ul class="detail-list">
+                    <li><strong>垫石复测：</strong>盖梁完成后，必须立即对支座垫石的高程、平整度进行复测，误差超标必须处理，确保架桥机支腿平稳。</li>
+                    <li><strong>临时支座安装：</strong>在架桥机到达前，提前安装好硫磺砂浆临时支座（针对先简支后连续结构）。</li>
+                    <li><strong>高墩作业安全：</strong>互通区部分墩柱较高，架桥机过孔及喂梁时，严禁盖梁下方及周边区域进行交叉作业。</li>
+                </ul>
+            </div>
+            
+            <div class="section-box animate-item" style="border-left:5px solid var(--crcc-red);">
+                <div class="section-title">质量与安全保证</div>
+                <ul class="detail-list">
+                    <li><strong>抱箍抗滑移试验：</strong>首个抱箍安装后，必须进行现场加载试验，验证摩擦系数及螺栓紧固力是否满足200吨承载要求。</li>
+                    <li><strong>高空防坠：</strong>盖梁施工平台必须设置标准防护栏杆和安全网，作业人员必须系挂安全带。</li>
+                    <li><strong>支架监测：</strong>C匝道现浇施工期间，设专人监测支架沉降，发现异常立即停止浇筑。</li>
+                </ul>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<a href="p19.html" class="nav-btn prev-btn">上一页</a>
+<a href="p21.html" class="nav-btn next-btn">下一页</a>
+
+<script>
+    function openTab(evt, tabName) {
+        var i, tabcontent, tablinks;
+        tabcontent = document.getElementsByClassName("tab-pane");
+        for (i = 0; i < tabcontent.length; i++) {
+            tabcontent[i].classList.remove("active");
+        }
+        tablinks = document.getElementsByClassName("tab-btn");
+        for (i = 0; i < tablinks.length; i++) {
+            tablinks[i].classList.remove("active");
+        }
+        document.getElementById(tabName).classList.add("active");
+        evt.currentTarget.classList.add("active");
+    }
+</script>
+
+</body>
+</html>

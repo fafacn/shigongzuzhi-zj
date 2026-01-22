@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>大临工程建设</title>
+    <style>
+        /* --- 1. 核心配色 --- */
+        :root {
+            --crcc-blue: #003366;
+            --crcc-light: #e6f0ff;
+            --crcc-red: #E60012;
+            --active-bg: #fff;
+            --active-border: #E60012;
+            --text-main: #1a202c;
+            --text-sub: #718096;
+            --bg-grad: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            background: var(--bg-grad);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: var(--text-main);
+        }
+
+        /* --- 2. 主容器 --- */
+        .container {
+            width: 96vw;
+            height: 94vh;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            padding: 25px;
+            background: rgba(255,255,255,0.85); /* 稍微不透明一点 */
+            backdrop-filter: blur(15px);
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+            border: 1px solid rgba(255,255,255,0.6);
+        }
+
+        /* 标题区 */
+        .header-section {
+            flex: 0 0 auto;
+            border-bottom: 2px solid rgba(0, 51, 102, 0.1);
+            padding-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        h2 { font-size: 2rem; color: var(--crcc-blue); display: flex; align-items: center; gap: 15px; }
+        h2::before { content:''; width: 8px; height: 35px; background: var(--crcc-red); display: block; }
+        .subtitle { font-size: 1rem; color: var(--text-sub); margin-top: 8px; }
+
+        /* --- 3. 内容布局 (左右分栏) --- */
+        .content-wrapper {
+            flex: 1;
+            display: flex;
+            gap: 20px;
+            overflow: hidden;
+        }
+
+        /* 左侧：导航菜单 */
+        .nav-panel {
+            flex: 0 0 250px;
+            background: #f1f5f9;
+            border-radius: 12px;
+            padding: 10px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .nav-panel::-webkit-scrollbar { width: 4px; }
+        .nav-panel::-webkit-scrollbar-thumb { background: #ccc; border-radius: 2px; }
+
+        .nav-item {
+            padding: 12px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            color: #555;
+            transition: all 0.3s;
+            display: flex; align-items: center; gap: 10px;
+            border-left: 4px solid transparent;
+        }
+        .nav-item:hover { background: #e2e8f0; }
+        .nav-item.active {
+            background: white;
+            color: var(--crcc-blue);
+            font-weight: bold;
+            border-left-color: var(--crcc-red);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .nav-icon { width: 20px; text-align: center; }
+
+        /* 右侧：详情内容区 */
+        .detail-panel {
+            flex: 1;
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.02);
+            overflow-y: auto;
+            position: relative;
+        }
+        .detail-panel::-webkit-scrollbar { width: 6px; }
+        .detail-panel::-webkit-scrollbar-thumb { background: #cbd5e0; border-radius: 3px; }
+
+        /* 内容动画 */
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+        .tab-content.active { display: block; }
+
+        /* 详情样式 */
+        .dt-title { font-size: 1.5rem; font-weight: bold; color: var(--crcc-blue); margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid #eee; }
+        
+        .info-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 25px;
+        }
+        .info-card {
+            background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0;
+        }
+        .ic-label { font-size: 0.85rem; color: #718096; margin-bottom: 5px; }
+        .ic-val { font-size: 1.1rem; font-weight: bold; color: #2d3748; }
+        .ic-highlight { color: var(--crcc-red); }
+
+        .dt-desc { font-size: 1rem; line-height: 1.8; color: #4a5568; text-align: justify; margin-bottom: 20px; }
+        .dt-desc p { margin-bottom: 10px; }
+
+        /* 表格样式 */
+        .custom-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; margin-top: 15px; }
+        .custom-table th { background: var(--crcc-blue); color: white; padding: 10px; text-align: left; }
+        .custom-table td { padding: 10px; border-bottom: 1px solid #eee; color: #333; }
+        .custom-table tr:nth-child(even) { background: #f7fafc; }
+        .custom-table tr:hover { background: #edf2f7; }
+
+        /* 导航按钮 */
+        .nav-btn {
+            position: fixed; bottom: 30px; right: 30px;
+            padding: 12px 30px; background: var(--crcc-blue); color: white;
+            border-radius: 30px; text-decoration: none; font-weight: bold;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2); transition: 0.3s; z-index: 100;
+        }
+        .nav-btn:hover { background: var(--crcc-red); }
+        .prev-btn { right: 150px; background: white; color: var(--crcc-blue); border: 1px solid var(--crcc-blue); }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="header-section">
+            <h2>大临工程建设方案</h2>
+            <div class="subtitle">标准化 • 规范化 • 智能化</div>
+        </div>
+
+        <div class="content-wrapper">
+            <!-- 左侧导航 -->
+            <div class="nav-panel">
+                <div class="nav-item active" onclick="showTab(0, this)"><span class="nav-icon">🏠</span> 1. 项目部驻地</div>
+                <div class="nav-item" onclick="showTab(1, this)"><span class="nav-icon">🧪</span> 2. 工地试验室</div>
+                <div class="nav-item" onclick="showTab(2, this)"><span class="nav-icon">🏗️</span> 3. 混凝土拌和站</div>
+                <div class="nav-item" onclick="showTab(3, this)"><span class="nav-icon">🧱</span> 4. 小型预制构件场</div>
+                <div class="nav-item" onclick="showTab(4, this)"><span class="nav-icon">🔧</span> 5. 钢筋加工场</div>
+                <div class="nav-item" onclick="showTab(5, this)"><span class="nav-icon">🌉</span> 6. 预制梁场</div>
+                <div class="nav-item" onclick="showTab(6, this)"><span class="nav-icon">🛣️</span> 7. 水稳/沥青站</div>
+                <div class="nav-item" onclick="showTab(7, this)"><span class="nav-icon">🚜</span> 8. 取/弃土场</div>
+                <div class="nav-item" onclick="showTab(8, this)"><span class="nav-icon">🌫️</span> 9. 石灰消解大棚</div>
+                <div class="nav-item" onclick="showTab(9, this)"><span class="nav-icon">🚇</span> 10. 湿喷拌合站</div>
+            </div>
+
+            <!-- 右侧详情 -->
+            <div class="detail-panel">
+                
+                <!-- 1. 驻地 -->
+                <div class="tab-content active">
+                    <div class="dt-title">1. 项目部驻地</div>
+                    <div class="info-grid">
+                        <div class="info-card"><div class="ic-label">位置</div><div class="ic-val">K24+331 右侧710m</div></div>
+                        <div class="info-card"><div class="ic-label">占地面积</div><div class="ic-val">6500 ㎡</div></div>
+                        <div class="info-card"><div class="ic-label">建设方式</div><div class="ic-val">租用民房 + 板房</div></div>
+                    </div>
+                    <div class="dt-desc">
+                        <p>位于含山县邵关黄村，临近国省干线，交通便利。功能区划分合理，方便靠前指挥及与各参建单位联系。</p>
+                    </div>
+                </div>
+
+                <!-- 2. 试验室 -->
+                <div class="tab-content">
+                    <div class="dt-title">2. 工地试验室</div>
+                    <div class="info-grid">
+                        <div class="info-card"><div class="ic-label">位置</div><div class="ic-val">项目部驻地院内</div></div>
+                        <div class="info-card"><div class="ic-label">占地面积</div><div class="ic-val">1006.67 ㎡</div></div>
+                        <div class="info-card"><div class="ic-label">建筑面积</div><div class="ic-val">398.82 ㎡</div></div>
+                    </div>
+                    <div class="dt-desc">
+                        <p>单独建造两栋彩钢板房。设置水泥室、土工室、力学室、留样室、集料室、化学室等全套功能科室，符合标准化要求。</p>
+                    </div>
+                </div>
+
+                <!-- 3. 拌和站 -->
+                <div class="tab-content">
+                    <div class="dt-title">3. 混凝土拌和站</div>
+                    <div class="info-grid">
+                        <div class="info-card"><div class="ic-label">位置</div><div class="ic-val">含山北互通 (K26+100)</div></div>
+                        <div class="info-card"><div class="ic-label">配置</div><div class="ic-val">2台 HZS120</div></div>
+                        <div class="info-card"><div class="ic-label">占地</div><div class="ic-val">15 亩</div></div>
+                        <div class="info-card"><div class="ic-label">供应量</div><div class="ic-val ic-highlight">27万方</div></div>
+                    </div>
+                    <div class="dt-desc">
+                        <p><strong>全封闭管理：</strong>设置轻型钢结构顶棚，料仓顶棚高12米。设8个料仓、4个待检仓、4个合格仓。</p>
+                        <p><strong>智能化：</strong>设数字化调度中心，全覆盖监控，进出口设洗车台及PM2.5监测。</p>
+                        <p><strong>产能：</strong>日均450m³，高峰期720m³。</p>
+                    </div>
+                </div>
+
+                <!-- 4. 小型预制场 -->
+                <div class="tab-content">
+                    <div class="dt-title">4. 小型预制构件场</div>
+                    <div class="info-grid">
+                        <div class="info-card"><div class="ic-label">位置</div><div class="ic-val">拌和站旁 (三场合建)</div></div>
+                        <div class="info-card"><div class="ic-label">占地</div><div class="ic-val">11 亩</div></div>
+                        <div class="info-card"><div class="ic-label">产能</div><div class="ic-val">80-100m³/天</div></div>
+                    </div>
+                    <div class="dt-desc">
+                        <p>配置钢筋大棚 (50×30×9m) 及露天浇筑区。配备3台龙门吊 (2台10T, 1台50T)。</p>
+                        <p>主要生产混凝土管、通道、箱涵拼装构件，采用机械化流水线作业。</p>
+                    </div>
+                </div>
+
+                <!-- 5. 钢筋加工场 -->
+                <div class="tab-content">
+                    <div class="dt-title">5. 钢筋及钢结构加工场</div>
+                    <div class="info-grid">
+                        <div class="info-card"><div class="ic-label">位置</div><div class="ic-val">拌和站旁 (三场合建)</div></div>
+                        <div class="info-card"><div class="ic-label">加工总量</div><div class="ic-val">1.84万吨</div></div>
+                        <div class="info-card"><div class="ic-label">大棚</div><div class="ic-val">7.7 亩 (封闭式)</div></div>
+                    </div>
+                    <div class="dt-desc">
+                        <p><strong>设备配置：</strong>数控弯曲机、数控滚焊机、等离子切割机等全套自动化设备。</p>
+                        <p><strong>起重设备：</strong>钢筋场配4台桁吊，钢构场配2台桁车。</p>
+                    </div>
+                </div>
+
+                <!-- 6. 梁场 -->
+                <div class="tab-content">
+                    <div class="dt-title">6. 预制梁场</div>
+                    <div class="info-grid">
+                        <div class="info-card"><div class="ic-label">位置</div><div class="ic-val">K26+700 主线路基上</div></div>
+                        <div class="info-card"><div class="ic-label">预制总量</div><div class="ic-val ic-highlight">1205 片</div></div>
+                        <div class="info-card"><div class="ic-label">台座</div><div class="ic-val">制梁25个 / 存梁420片</div></div>
+                    </div>
+                    <div class="dt-desc">
+                        <p><strong>制梁能力：</strong>13mT梁 (522片)、25m箱梁 (585片)、35m箱梁 (98片)。月产能约100片。</p>
+                        <p><strong>龙门吊：</strong>80t-34m (2台)，10t-34m (5台)。</p>
+                    </div>
+                </div>
+
+                <!-- 7. 路面拌合站 -->
+                <div class="tab-content">
+                    <div class="dt-title">7. 水稳/沥青拌合站</div>
+                    <div class="dt-desc">
+                        <table class="custom-table">
+                            <tr><th>类型</th><th>位置</th><th>供应范围</th></tr>
+                            <tr><td>水稳站 1</td><td>K13+800 (鸡笼山)</td><td>K0+000 ~ K15+236</td></tr>
+                            <tr><td>水稳站 2</td><td>K30+000 (服务区)</td><td>K15+236 ~ K40+526</td></tr>
+                            <tr><td>沥青站</td><td>K30+000 (服务区)</td><td>全线沥青混合料</td></tr>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 8. 取弃土场 -->
+                <div class="tab-content">
+                    <div class="dt-title">8. 取/弃土场 (5处)</div>
+                    <div class="dt-desc">
+                        <table class="custom-table">
+                            <tr><th>编号</th><th>位置</th><th>类型</th><th>容量(万m³)</th></tr>
+                            <tr><td>1</td><td>K17+500</td><td>取土</td><td>35.0</td></tr>
+                            <tr><td>2 (7#)</td><td>K26+400</td><td>取/弃</td><td>16.9 / 10</td></tr>
+                            <tr><td>3</td><td>K32+000</td><td>取/弃</td><td>14.0 / 12</td></tr>
+                            <tr><td>4</td><td>K32+580</td><td>取/弃</td><td>12.0 / 9.3</td></tr>
+                            <tr><td>5</td><td>K40+600</td><td>弃土</td><td>6.1</td></tr>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 9. 石灰消解棚 -->
+                <div class="tab-content">
+                    <div class="dt-title">9. 石灰消解大棚 (改良土关键)</div>
+                    <div class="info-grid">
+                        <div class="info-card"><div class="ic-label">数量</div><div class="ic-val">3 处</div></div>
+                        <div class="info-card"><div class="ic-label">服务改良土</div><div class="ic-val">232 万m³</div></div>
+                        <div class="info-card"><div class="ic-label">要求</div><div class="ic-val">全封闭/防雨</div></div>
+                    </div>
+                    <div class="dt-desc">
+                        <table class="custom-table">
+                            <tr><th>编号</th><th>位置</th><th>服务段落</th></tr>
+                            <tr><td>1号</td><td>K17+800</td><td>K15+236 ~ K21+000</td></tr>
+                            <tr><td>2号</td><td>K25+500</td><td>K21+000 ~ K36+000</td></tr>
+                            <tr><td>3号</td><td>K38+800</td><td>K36+000 ~ K40+520</td></tr>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 10. 湿喷站 -->
+                <div class="tab-content">
+                    <div class="dt-title">10. 隧道湿喷拌合站</div>
+                    <div class="info-grid">
+                        <div class="info-card"><div class="ic-label">位置</div><div class="ic-val">K40+300 (洞口)</div></div>
+                        <div class="info-card"><div class="ic-label">能力</div><div class="ic-val">70 m³/h</div></div>
+                    </div>
+                    <div class="dt-desc">
+                        <p>专为长山隧道喷射混凝土施工设置，确保初支质量。</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+    <!-- 导航 -->
+    <a href="p12.html" class="nav-btn prev-btn">上一页</a>
+    <a href="p14.html" class="nav-btn">下一页</a>
+
+    <script>
+        function showTab(index, element) {
+            // 移除所有激活状态
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+
+            // 激活当前
+            element.classList.add('active');
+            document.querySelectorAll('.tab-content')[index].classList.add('active');
+        }
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>长山隧道双线可视化分析 V21.1 (最终修正版) - p28</title>
+    <style>
+        /* --- 1. 基础样式 --- */
+        :root {
+            --bg-color: #0b1121;
+            --panel-bg: #151e32;
+            --highlight-blue: #00eaff;
+            
+            /* 左右线主题色 */
+            --theme-right: #818cf8;    
+            --theme-left: #facc15;     
+
+            /* 围岩颜色 (图纸风格：灰度/暗色系) */
+            --rock-v: #475569;    
+            --rock-iv: #64748b;   
+            --rock-iii: #94a3b8;  
+            --rock-vi: #334155;
+
+            /* 衬砌颜色 (图纸风格) */
+            --c-v-shallow: #ef4444;   /* 红 */
+            --c-v-stone: #f97316;     /* 橙 */
+            --c-iv-shallow: #eab308;  /* 黄 */
+            --c-deep: #10b981;        /* 绿 */
+            --c-open: #a855f7;        /* 紫 */
+            
+            --ground-stroke: #cbd5e1;
+            --ground-fill: rgba(203, 213, 225, 0.08); 
+            --text-main: #ffffff;
+            --text-sub: #94a3b8;
+        }
+
+        body {
+            margin: 0; padding: 0;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            height: 100vh;
+            display: flex; flex-direction: column;
+            overflow: hidden; user-select: none;
+            position: relative; /* 为绝对定位的署名提供基准 */
+        }
+
+        /* --- 头部 --- */
+        header {
+            height: 70px; padding: 0 30px;
+            background: rgba(21, 30, 50, 0.95);
+            border-bottom: 2px solid var(--highlight-blue);
+            display: flex; justify-content: space-between; align-items: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5); z-index: 100;
+        }
+
+        h1 { margin: 0; font-size: 28px; font-weight: 800; letter-spacing: 1.5px; background: linear-gradient(90deg, #fff, #38bdf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        
+        /* 徽章样式 (还原截图风格) */
+        .badge-container { display: flex; gap: 20px; }
+        .badge { 
+            padding: 8px 16px; border-radius: 6px; 
+            background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1);
+            min-width: 180px; display: flex; flex-direction: column; justify-content: center;
+        }
+        .badge-right { border-left: 5px solid var(--theme-right); }
+        .badge-left { border-left: 5px solid var(--theme-left); }
+        
+        .badge-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+        .badge-title { font-size: 16px; font-weight: bold; color: #fff; }
+        .badge-len { font-size: 18px; font-weight: 800; color: #38bdf8; } /* 高亮长度 */
+        .badge-info { font-size: 12px; color: var(--text-sub); text-align: right; }
+
+        /* --- 主布局 --- */
+        .container {
+            flex: 1; display: flex; padding: 20px; gap: 20px;
+            height: calc(100% - 70px); box-sizing: border-box;
+        }
+
+        .chart-wrapper {
+            flex: 3; background: var(--panel-bg); border-radius: 16px; border: 1px solid rgba(255,255,255,0.08);
+            position: relative; display: flex; flex-direction: column; overflow: hidden;
+        }
+
+        .legend-bar {
+            padding: 15px 30px; background: rgba(0,0,0,0.2); border-bottom: 1px solid rgba(255,255,255,0.05);
+            display: flex; gap: 40px; flex-wrap: wrap; flex-shrink: 0;
+        }
+        .legend-group-title { font-size: 12px; color: var(--highlight-blue); font-weight: bold; margin-bottom: 5px; display: block; }
+        .legend-items { display: flex; gap: 15px; }
+        .legend-item { display: flex; align-items: center; font-size: 13px; color: #e2e8f0; }
+        .dot { width: 14px; height: 14px; border-radius: 3px; margin-right: 6px; box-shadow: 0 0 5px rgba(0,0,0,0.5); }
+
+        .svg-container { flex: 1; position: relative; cursor: crosshair; width: 100%; height: 100%; }
+        svg { width: 100%; height: 100%; display: block; }
+
+        /* --- SVG 样式 --- */
+        .ground-layer { pointer-events: none; }
+        .ground-line { fill: none; stroke: var(--ground-stroke); stroke-width: 2.5; }
+        .ground-area { fill: var(--ground-fill); stroke: none; }
+
+        .bar-rect { 
+            stroke: rgba(0,0,0,0.5); stroke-width: 1px; cursor: pointer;
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.2s; 
+        }
+        
+        .rock-rect { transform-origin: center bottom; }
+        .rock-rect.active {
+            transform: translateY(-15px) scale(1.05);
+            filter: drop-shadow(0 10px 20px rgba(0,0,0,0.8)) brightness(1.2);
+            stroke: white; stroke-width: 2px; z-index: 100;
+        }
+
+        .tunnel-rect { transform-origin: center top; }
+        .tunnel-rect.active {
+            transform: translateY(15px) scale(1.05);
+            filter: drop-shadow(0 10px 20px rgba(0,0,0,0.8)) brightness(1.2);
+            stroke: white; stroke-width: 2px; z-index: 100;
+        }
+
+        .bar-text { fill: white; font-weight: 900; pointer-events: none; text-anchor: middle; text-shadow: 0 1px 3px black; font-size: 14px; }
+        .bar-subtext { fill: rgba(255,255,255,0.95); font-size: 11px; pointer-events: none; text-anchor: middle; text-shadow: 0 1px 3px black; font-weight: bold; }
+
+        .axis-line { stroke: #64748b; stroke-width: 2; }
+        .axis-text { fill: #e2e8f0; font-size: 13px; font-weight: bold; font-family: Consolas, monospace; }
+        .axis-label { fill: #94a3b8; font-size: 13px; font-weight: bold; text-anchor: end; }
+        .grid-line { stroke: #334155; stroke-width: 1; stroke-dasharray: 6 4; opacity: 0.3; }
+
+        /* 游标 */
+        .cursor-line { stroke: var(--highlight-blue); stroke-width: 2; pointer-events: none; filter: drop-shadow(0 0 5px var(--highlight-blue)); }
+        .cursor-dot { fill: var(--bg-color); stroke: var(--highlight-blue); stroke-width: 3px; r: 6; pointer-events: none; }
+        
+        #cursorTooltip {
+            position: absolute;
+            background: rgba(15, 23, 42, 0.95);
+            border: 2px solid var(--highlight-blue);
+            padding: 12px 16px; 
+            border-radius: 8px;
+            color: white;
+            font-size: 13px;
+            pointer-events: none;
+            display: none;
+            z-index: 2000;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+            /* 增加宽度以容纳距离数据 */
+            width: 300px; 
+            transition: left 0.1s ease-out, top 0.1s ease-out; 
+            text-align: center; 
+        }
+        
+        /* Flexbox 布局：居中并拉开间距 */
+        .ct-row { 
+            display: flex; 
+            justify-content: center; /* 整体居中 */
+            align-items: center;     /* 垂直对齐 */
+            gap: 15px;               /* 调整间距以适应三列数据 */
+            margin-bottom: 6px; 
+        }
+        .ct-row:last-child { margin-bottom: 0; }
+
+        .ct-label-right { color: var(--theme-right); font-weight: bold; font-size: 16px; }
+        .ct-label-left { color: var(--theme-left); font-weight: bold; font-size: 16px; }
+        /* 新增距离数据样式 */
+        .ct-label-dist { color: #94a3b8; font-size: 14px; font-weight: bold; }
+        .ct-label-depth { color: #e2e8f0; font-size: 14px; font-weight: normal; opacity: 0.9; }
+
+        /* --- 信息区 --- */
+        .info-panel { flex: 1; max-width: 380px; display: flex; flex-direction: column; gap: 15px; }
+        .card { background: var(--panel-bg); border-radius: 12px; padding: 18px; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+        .card h3 { margin: 0 0 12px 0; font-size: 16px; color: var(--text-main); border-left: 4px solid var(--highlight-blue); padding-left: 10px; }
+        .row { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 14px; border-bottom: 1px dashed rgba(255,255,255,0.1); padding-bottom: 5px; }
+        .label { color: var(--text-sub); }
+        .val { font-weight: 700; color: white; font-size: 15px; }
+        .hl-red { color: #f87171; } .hl-green { color: #4ade80; }
+        
+        #detailCard { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-height: 200px; }
+        #detailContent { overflow-y: auto; flex: 1; padding-right: 5px; }
+        #detailContent::-webkit-scrollbar { width: 6px; }
+        #detailContent::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 3px; }
+        
+        .geo-box { background: rgba(0,0,0,0.3); padding: 12px; border-radius: 6px; margin-top: 10px; border: 1px solid rgba(255,255,255,0.05); }
+        .geo-title { color: var(--highlight-blue); font-size: 14px; font-weight: bold; margin-bottom: 6px; }
+        .geo-desc { color: #cbd5e1; font-size: 13px; line-height: 1.6; text-align: justify; }
+
+        /* --- 署名水印样式 --- */
+        .author-mark {
+            position: absolute;
+            bottom: 15px;
+            left: 20px;
+            color: rgba(255, 255, 255, 0.4); /* 不显眼也不太淡 */
+            font-size: 13px;
+            font-weight: 500;
+            z-index: 1000;
+            pointer-events: none; /* 防止遮挡点击 */
+            letter-spacing: 0.5px;
+        }
+
+        /* --- 新增：悬浮导航按钮样式 --- */
+        .nav-btn {
+            position: fixed; bottom: 30px; padding: 12px 30px;
+            background: #003366; /* CRCC Blue */
+            color: white;
+            border-radius: 30px; text-decoration: none; font-weight: bold;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5); /* 深色阴影适配暗色主题 */
+            transition: 0.3s; z-index: 9999; font-size: 1rem;
+            font-family: "Microsoft YaHei", sans-serif;
+        }
+        .nav-btn:hover { background: #E60012; transform: scale(1.05); }
+        .prev-btn { right: 150px; background: rgba(255,255,255,0.9); color: #003366; border: 1px solid #003366; }
+        .prev-btn:hover { color: white; border-color: #E60012; background: #E60012; }
+        .next-btn { right: 30px; }
+
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>长山隧道双线可视化分析</h1>
+    <div class="badge-container">
+        <div class="badge badge-right">
+            <div class="badge-header">
+                <span class="badge-title">右线 (K)</span>
+                <span class="badge-len">579.352m</span>
+            </div>
+            <span class="badge-info">K40+526 ~ K41+105</span>
+        </div>
+        <div class="badge badge-left">
+            <div class="badge-header">
+                <span class="badge-title">左线 (ZK)</span>
+                <span class="badge-len">615.879m</span>
+            </div>
+            <span class="badge-info">ZK40+532 ~ ZK41+147</span>
+        </div>
+    </div>
+</header>
+
+<div class="container">
+    <div class="chart-wrapper" id="chartWrapper">
+        <div class="legend-bar">
+            <div>
+                <span class="legend-group-title">围岩级别 (上层)</span>
+                <div class="legend-items">
+                    <div class="legend-item"><div class="dot" style="background:var(--rock-iii);"></div>III级</div>
+                    <div class="legend-item"><div class="dot" style="background:var(--rock-iv);"></div>IV级</div>
+                    <div class="legend-item"><div class="dot" style="background:var(--rock-v);"></div>V级</div>
+                </div>
+            </div>
+            <div>
+                <span class="legend-group-title">衬砌类型 (下层)</span>
+                <div class="legend-items">
+                    <div class="legend-item"><div class="dot" style="background:var(--c-v-shallow);"></div>V级浅埋</div>
+                    <div class="legend-item"><div class="dot" style="background:var(--c-v-stone);"></div>V级石质</div>
+                    <div class="legend-item"><div class="dot" style="background:var(--c-iv-shallow);"></div>IV级加强</div>
+                    <div class="legend-item"><div class="dot" style="background:var(--c-deep);"></div>深埋</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="svg-container" id="svgContainer">
+            </div>
+        
+        <div id="cursorTooltip">
+            </div>
+    </div>
+
+    <div class="info-panel" id="infoPanel"> <div class="card" id="detailCard" style="border-left: 5px solid var(--highlight-blue);">
+            <h3>当前选中段落</h3>
+            <div id="detailContent">
+                <div style="text-align:center; color:#64748b; padding:40px 0; font-size:14px;">
+                    点击 <b style="color:var(--highlight-blue)">围岩</b> 或 <b style="color:var(--highlight-blue)">衬砌</b> 条形块<br>查看详细信息
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h3>右线浅埋判定 (K40+526起)</h3>
+            <div class="row"><span class="label">物理浅埋 (<32m)</span><span class="val hl-green">约 184 m</span></div>
+            <div class="row"><span class="label">设计浅埋 (工法)</span><span class="val hl-red">449.35 m</span></div>
+            <div class="row"><span class="label">占比</span><span class="val">77.6%</span></div>
+        </div>
+        <div class="card">
+            <h3>左线浅埋判定 (ZK40+532起)</h3>
+            <div class="row"><span class="label">物理浅埋 (<32m)</span><span class="val hl-green">约 178 m</span></div>
+            <div class="row"><span class="label">设计浅埋 (工法)</span><span class="val hl-red">487.88 m</span></div>
+            <div class="row"><span class="label">占比</span><span class="val">79.2%</span></div>
+        </div>
+    </div>
+</div>
+
+<div class="author-mark">制作：张建</div>
+
+<a href="p27.html" class="nav-btn prev-btn">上一页</a>
+<a href="p29.html" class="nav-btn next-btn">下一页</a>
+
+<script>
+    const GLOBAL_START = 40526;
+    const ROCK_COLORS = { 'III': 'var(--rock-iii)', 'IV': 'var(--rock-iv)', 'V': 'var(--rock-v)' };
+
+    // 右线数据
+    const rightData = {
+        name: "右线 (K)",
+        startK: 40526,
+        baseY: 260, 
+        totalLen: 579.352,
+        rocks: [
+            { type: "V", len: 184.0, desc: "洞口浅埋段", eval: "隧道穿越地层主要为残坡积层及强、中风化泥质砂岩、石英细砂岩，洞口处残坡积层较厚，强风化岩性极软，岩体破碎~极破碎，中风化岩性较软，岩体破碎。视电阻率<330Ω.m,Rc=19.40MPa，Kv=0.20，[BQ]=118。地下水为基岩裂隙水，受大气降水补给。隧道浅埋(埋深小于32m)，成洞条件差，稳定性差。" },
+            { type: "IV", len: 225.0, desc: "洞身过渡段", eval: "隧道穿越中风化石英细砂岩，岩性较软，岩石较破碎。视电阻率为330~510Ω.m, Rc=22.0MPa, Kv=0.49, [BQ]=259。地下水为基岩裂隙水。隧道顶板埋深37~126m，稳定性较差。" },
+            { type: "III", len: 60.0, desc: "洞身深埋段", eval: "隧道穿越中风化石英细砂岩，岩性较坚硬~坚硬，岩体较破碎~较完整。视电阻率为510~600Ω.m, Rc=59.4MPa, Kv=0.45, [BQ]=361。地下水为基岩裂隙水。隧道顶板埋深126~158m，稳定性一般。" },
+            { type: "IV", len: 40.0, desc: "深埋段", eval: "隧道穿越中风化石英细砂岩，岩性较坚硬~坚硬，岩体破碎。视电阻率为600~720Ω.m, Rc=59.4MPa, Kv=0.30, [BQ]=286。地下水为基岩裂隙水。隧道顶板埋深135~170m，稳定性较差。" },
+            { type: "V", len: 70.352, desc: "市界破碎带", eval: "隧道穿越中风化石英细砂岩，岩性较坚硬，夹较多泥岩、页岩、构造角砾岩等软弱夹层。节理裂隙很发育，岩体破碎。Rc=59.4MPa, Kv=0.22, BQ=304, [BQ]=194。地下水充沛。隧道受层间破碎带影响，稳定性差。" }
+        ],
+        linings: [
+            { type: "Fma", len: 6.0, color: "var(--c-open)", shallow: true, desc: "明挖法" },
+            { type: "X5p", len: 41.0, color: "var(--c-v-shallow)", shallow: true, desc: "膨胀土，CD/CRD法" },
+            { type: "X5q", len: 49.0, color: "var(--c-v-shallow)", shallow: true, desc: "土质围岩，CD/CRD法" },
+            { type: "X5a", len: 62.0, color: "var(--c-v-stone)", shallow: true, desc: "石质破碎，台阶/CD法" },
+            { type: "F5a", len: 22.0, color: "var(--c-v-stone)", shallow: true, desc: "浅埋加强，台阶法" },
+            { type: "F5b", len: 14.0, color: "var(--c-deep)", shallow: false, desc: "深埋V级，台阶法" },
+            { type: "F4a", len: 225.0, color: "var(--c-iv-shallow)", shallow: true, desc: "IV级浅埋加强，三台阶" },
+            { type: "F3", len: 40.0, color: "var(--c-deep)", shallow: false, desc: "III级，上下台阶" },
+            { type: "F4b", len: 40.0, color: "var(--c-deep)", shallow: false, desc: "IV级深埋，三台阶" },
+            { type: "F5b", len: 30.0, color: "var(--c-deep)", shallow: false, desc: "深埋V级，台阶法" },
+            { type: "F5a", len: 50.352, color: "var(--c-v-stone)", shallow: true, desc: "市界段，加强支护" }
+        ]
+    };
+
+    // 左线数据
+    const leftData = {
+        name: "左线 (ZK)",
+        startK: 40532, 
+        baseY: 680, 
+        totalLen: 615.879,
+        // 左线地质描述完全按照图纸修改
+        rocks: [
+            { type: "V", len: 178.0, desc: "洞口浅埋段", eval: "隧道穿越地层主要为残坡积层及强、中风化泥质砂岩、石英细砂岩。洞口处残坡积层较厚，强风化岩性极软，岩体破碎~极破碎，中风化岩性较软，岩体破碎。视电阻率<330Ω.m, Rc=19.40MPa, Kv=0.20, [BQ]=118。地下水为基岩裂隙水，受大气降水补给。隧道浅埋(埋深小于32m)，成洞条件差，稳定性差。" },
+            { type: "IV", len: 230.0, desc: "洞身过渡段", eval: "隧道穿越中风化石英细砂岩，岩性较软，岩石较破碎。视电阻率为330~510Ω.m, Rc=22.0MPa, Kv=0.49, [BQ]=259。地下水为基岩裂隙水。隧道顶板埋深32~117m，稳定性较差。" },
+            { type: "III", len: 60.0, desc: "洞身完整段", eval: "隧道穿越中风化石英细砂岩，岩性坚硬~坚硬，岩体较破碎~较完整。视电阻率为510~600Ω.m, Rc=59.4MPa, Kv=0.45, [BQ]=361。地下水为基岩裂隙水。隧道顶板埋深117~139m，稳定性一般。" },
+            { type: "IV", len: 40.0, desc: "深埋段", eval: "隧道穿越中风化石英细砂岩，岩性较坚硬~坚硬，岩体破碎。视电阻率为600~720Ω.m, Rc=59.4MPa, Kv=0.30, [BQ]=286。地下水为基岩裂隙水。隧道顶板埋深39~151m，稳定性较差。" },
+            { type: "V", len: 107.879, desc: "市界破碎带", eval: "隧道围岩主要为中风化石英细砂岩，中风化层岩性较坚硬，夹较多泥岩、页岩、构造角砾岩等软弱夹层，岩性极软~软，节理裂隙很发育~发育，岩体破碎，视电阻率多为650~750Ω.m，Rc=59.4MPa, Kv=0.22, BQ=304, [BQ]=194。地下水为基岩裂隙水，雨季水量充沛，枯水期水量贫乏。隧道顶板埋深一般151~177m，洞顶受层间破碎带影响，稳定性差。" }
+        ],
+        linings: [
+            { type: "Fma", len: 6.0, color: "var(--c-open)", shallow: true, desc: "明挖法" },
+            { type: "X5p", len: 40.0, color: "var(--c-v-shallow)", shallow: true, desc: "膨胀土，CD/CRD法" },
+            { type: "X5q", len: 75.0, color: "var(--c-v-shallow)", shallow: true, desc: "土质围岩，CD/CRD法" },
+            { type: "X5a", len: 36.0, color: "var(--c-v-stone)", shallow: true, desc: "石质破碎，台阶/CD法" },
+            { type: "F5a", len: 21.0, color: "var(--c-v-stone)", shallow: true, desc: "浅埋加强，台阶法" },
+            { type: "F5b", len: 10.0, color: "var(--c-deep)", shallow: false, desc: "深埋V级，台阶法" },
+            { type: "F4a", len: 230.0, color: "var(--c-iv-shallow)", shallow: true, desc: "IV级浅埋加强，三台阶" },
+            { type: "F3", len: 40.0, color: "var(--c-deep)", shallow: false, desc: "III级，上下台阶" },
+            { type: "F4b", len: 40.0, color: "var(--c-deep)", shallow: false, desc: "IV级深埋，三台阶" },
+            { type: "F5b", len: 32.0, color: "var(--c-deep)", shallow: false, desc: "深埋V级，台阶法" },
+            { type: "F5a", len: 50.352, color: "var(--c-v-stone)", shallow: true, desc: "市界段，加强支护" }
+        ]
+    };
+
+    const terrainProfile = [
+        { d: 0, depth: 3 }, { d: 50, depth: 12 }, { d: 184, depth: 32 }, 
+        { d: 300, depth: 68 }, { d: 450, depth: 115 }, { d: 574, depth: 176 }, { d: 650, depth: 185 }
+    ];
+
+    // --- 2. 绘图配置 ---
+    const W = 1600; 
+    const H = 900; 
+    const PAD_L = 100;
+    const PAD_R = 150; 
+    const CHART_W = W - PAD_L - PAD_R;
+    const MAX_DIST = 630; 
+    const SCALE_X = CHART_W / MAX_DIST;
+    const SCALE_Y = 1.0; 
+    
+    const TUNNEL_H = 55; 
+    const ROCK_H = 45;   
+    const BAR_GAP = 6;   
+
+    const DRAW_END_X = PAD_L + (leftData.startK - GLOBAL_START + leftData.totalLen) * SCALE_X;
+
+    function init() {
+        const container = document.getElementById('svgContainer');
+        const ns = "http://www.w3.org/2000/svg";
+        const svg = document.createElementNS(ns, "svg");
+        svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+        svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
+
+        svg.addEventListener('click', (e) => {
+            if(e.target.tagName === 'svg' || e.target.classList.contains('ground-area')) {
+                resetActive();
+            }
+        });
+
+        drawGrid(svg, ns);
+        drawSection(svg, ns, rightData, "K");
+        drawSection(svg, ns, leftData, "ZK");
+        setupCursor(svg, ns); 
+
+        container.appendChild(svg);
+    }
+
+    function drawGrid(svg, ns) {
+        for (let i = 0; i <= MAX_DIST; i+=50) {
+            const x = PAD_L + i * SCALE_X;
+            const grid = document.createElementNS(ns, "line");
+            grid.setAttribute("x1", x); grid.setAttribute("x2", x);
+            grid.setAttribute("y1", 50); grid.setAttribute("y2", H - 50);
+            grid.setAttribute("class", "grid-line");
+            svg.appendChild(grid);
+        }
+    }
+
+    function drawSection(svg, ns, data, prefix) {
+        const startX = PAD_L + (data.startK - GLOBAL_START) * SCALE_X;
+        
+        // 标题
+        const titleY = data.baseY - ROCK_H - 120;
+        const title = document.createElementNS(ns, "text");
+        title.setAttribute("x", PAD_L - 10); title.setAttribute("y", titleY);
+        title.setAttribute("fill", "#ffffff"); title.setAttribute("font-size", "26"); title.setAttribute("font-weight", "bold");
+        title.textContent = data.name;
+        svg.appendChild(title);
+
+        let pathD = "";
+        for (let d = 0; d <= data.totalLen + 20; d += 10) {
+            const x = startX + d * SCALE_X;
+            const depth = getDepthByDist(d);
+            const y = data.baseY - ROCK_H - 25 - depth * SCALE_Y; 
+            if (d===0) pathD += `M ${x} ${y}`;
+            else pathD += ` L ${x} ${y}`;
+        }
+        const fillD = pathD + ` L ${startX + (data.totalLen+20)*SCALE_X} ${data.baseY} L ${startX} ${data.baseY} Z`;
+        
+        const gLayer = document.createElementNS(ns, "g");
+        gLayer.setAttribute("class", "ground-layer");
+        
+        const groundArea = document.createElementNS(ns, "path");
+        groundArea.setAttribute("d", fillD); groundArea.setAttribute("class", "ground-area");
+        gLayer.appendChild(groundArea);
+
+        const groundLine = document.createElementNS(ns, "path");
+        groundLine.setAttribute("d", pathD); groundLine.setAttribute("class", "ground-line");
+        gLayer.appendChild(groundLine);
+        svg.appendChild(gLayer);
+
+        let curX = startX;
+        const rockY = data.baseY - ROCK_H - BAR_GAP;
+        const gRock = document.createElementNS(ns, "g");
+        
+        data.rocks.forEach((r, idx) => {
+            const w = r.len * SCALE_X;
+            const rect = document.createElementNS(ns, "rect");
+            rect.setAttribute("x", curX); rect.setAttribute("y", rockY);
+            rect.setAttribute("width", w); rect.setAttribute("height", ROCK_H);
+            rect.setAttribute("fill", ROCK_COLORS[r.type]);
+            rect.setAttribute("class", "bar-rect rock-rect");
+            
+            rect.dataset.info = JSON.stringify({
+                cat: "围岩级别", type: r.type + "级", len: r.len, desc: r.desc, eval: r.eval, color: ROCK_COLORS[r.type]
+            });
+            rect.onclick = (e) => handleClick(e, rect);
+            gRock.appendChild(rect);
+
+            if (w > 20) {
+                const txt = document.createElementNS(ns, "text");
+                txt.setAttribute("x", curX + w/2); txt.setAttribute("y", rockY + ROCK_H/2 + 5);
+                txt.setAttribute("class", "bar-text");
+                txt.textContent = r.type;
+                gRock.appendChild(txt);
+                
+                if (w > 40) {
+                    const lenTxt = document.createElementNS(ns, "text");
+                    lenTxt.setAttribute("x", curX + w/2); lenTxt.setAttribute("y", rockY + ROCK_H/2 + 18);
+                    lenTxt.setAttribute("class", "bar-subtext");
+                    lenTxt.textContent = Math.round(r.len);
+                    gRock.appendChild(lenTxt);
+                }
+            }
+            curX += w;
+        });
+        svg.appendChild(gRock);
+
+        curX = startX;
+        const tunY = data.baseY;
+        const gTun = document.createElementNS(ns, "g");
+        
+        data.linings.forEach((l, idx) => {
+            const w = l.len * SCALE_X;
+            const rect = document.createElementNS(ns, "rect");
+            rect.setAttribute("x", curX); rect.setAttribute("y", tunY);
+            rect.setAttribute("width", w); rect.setAttribute("height", TUNNEL_H);
+            rect.setAttribute("fill", l.color);
+            rect.setAttribute("class", "bar-rect tunnel-rect");
+            
+            rect.dataset.info = JSON.stringify({
+                cat: "衬砌类型", type: l.type, len: l.len, desc: l.desc, color: l.color, shallow: l.shallow
+            });
+            rect.onclick = (e) => handleClick(e, rect);
+            gTun.appendChild(rect);
+
+            if (w > 10) { 
+                const txt = document.createElementNS(ns, "text");
+                txt.setAttribute("x", curX + w/2); txt.setAttribute("y", tunY + TUNNEL_H/2 - 5);
+                txt.setAttribute("class", "bar-text");
+                if(w < 35) txt.setAttribute("font-size", "12px"); 
+                txt.textContent = l.type;
+                gTun.appendChild(txt);
+                
+                const lenTxt = document.createElementNS(ns, "text");
+                lenTxt.setAttribute("x", curX + w/2); lenTxt.setAttribute("y", tunY + TUNNEL_H/2 + 15);
+                lenTxt.setAttribute("class", "bar-subtext");
+                if(w < 35) lenTxt.setAttribute("font-size", "10px");
+                lenTxt.textContent = Math.round(l.len);
+                gTun.appendChild(lenTxt);
+            }
+            curX += w;
+        });
+        svg.appendChild(gTun);
+
+        const axisY = tunY + TUNNEL_H + 15;
+        const axisLine = document.createElementNS(ns, "line");
+        axisLine.setAttribute("x1", startX); axisLine.setAttribute("x2", startX + data.totalLen * SCALE_X);
+        axisLine.setAttribute("y1", axisY); axisLine.setAttribute("y2", axisY);
+        axisLine.setAttribute("class", "axis-line");
+        svg.appendChild(axisLine);
+
+        // --- 修改点1：更新洞口显示为完整里程 ---
+        const startLabel = document.createElementNS(ns, "text");
+        startLabel.setAttribute("x", startX); startLabel.setAttribute("y", axisY + 25);
+        startLabel.setAttribute("class", "axis-text");
+        // 计算完整里程格式
+        const startKm = Math.floor(data.startK / 1000);
+        const startM = data.startK % 1000;
+        startLabel.textContent = `洞口 ${prefix}${startKm}+${startM}`;
+        svg.appendChild(startLabel);
+
+        const firstMarkK = Math.ceil(data.startK / 100) * 100;
+        for (let k = firstMarkK; k <= data.startK + data.totalLen; k += 100) {
+            const dist = k - data.startK;
+            const x = startX + dist * SCALE_X;
+            const tick = document.createElementNS(ns, "line");
+            tick.setAttribute("x1", x); tick.setAttribute("x2", x);
+            tick.setAttribute("y1", axisY); tick.setAttribute("y2", axisY + 8);
+            tick.setAttribute("stroke", "#64748b");
+            tick.setAttribute("stroke-width", "2");
+            svg.appendChild(tick);
+            const txt = document.createElementNS(ns, "text");
+            txt.setAttribute("x", x); txt.setAttribute("y", axisY + 25);
+            txt.setAttribute("class", "axis-text");
+            txt.textContent = `${prefix}${Math.floor(k/1000)}+${(k%1000).toString().padStart(3,'0')}`;
+            svg.appendChild(txt);
+        }
+
+        [0, 50, 100, 150].forEach(d => {
+            const y = data.baseY - ROCK_H - 25 - d * SCALE_Y;
+            const txt = document.createElementNS(ns, "text");
+            txt.setAttribute("x", startX - 10); txt.setAttribute("y", y + 5);
+            txt.setAttribute("class", "axis-label");
+            txt.textContent = d + "m";
+            svg.appendChild(txt);
+            const tick = document.createElementNS(ns, "line");
+            tick.setAttribute("x1", startX - 5); tick.setAttribute("x2", startX);
+            tick.setAttribute("y1", y); tick.setAttribute("y2", y);
+            tick.setAttribute("stroke", "#64748b");
+            svg.appendChild(tick);
+        });
+    }
+
+    function getDepthByDist(d) {
+        for (let i = 0; i < terrainProfile.length - 1; i++) {
+            const p1 = terrainProfile[i];
+            const p2 = terrainProfile[i+1];
+            if (d >= p1.d && d <= p2.d) {
+                const ratio = (d - p1.d) / (p2.d - p1.d);
+                return p1.depth + (p2.depth - p1.depth) * ratio;
+            }
+        }
+        return 185;
+    }
+
+    function setupCursor(svg, ns) {
+        const cursorG = document.createElementNS(ns, "g");
+        cursorG.style.opacity = 0;
+        
+        const line = document.createElementNS(ns, "line");
+        line.setAttribute("y1", 30); 
+        line.setAttribute("y2", H - 10);
+        line.setAttribute("class", "cursor-line");
+        cursorG.appendChild(line);
+
+        const dotR = document.createElementNS(ns, "circle");
+        dotR.setAttribute("class", "cursor-dot");
+        cursorG.appendChild(dotR);
+
+        const dotL = document.createElementNS(ns, "circle");
+        dotL.setAttribute("class", "cursor-dot");
+        cursorG.appendChild(dotL);
+
+        svg.appendChild(cursorG);
+        
+        const tooltip = document.getElementById('cursorTooltip');
+        const chartWrapper = document.getElementById('chartWrapper');
+        const infoPanel = document.querySelector('.info-panel');
+        
+        // 定义常量
+        const CURSOR_GAP = 30;       // 游标与文字框的最小间距
+        const TOOLTIP_WIDTH = 300;   // 文字框的 CSS 宽度 (更新为 300px)
+
+        window.addEventListener('mousemove', (e) => {
+            const rect = svg.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            
+            if (e.clientY < rect.top || e.clientY > rect.bottom) {
+                cursorG.style.opacity = 0; tooltip.style.display = 'none'; return;
+            }
+
+            let targetX = mouseX;
+            let isVisible = true;
+
+            if (mouseX < PAD_L - 10) isVisible = false;
+            
+            if (mouseX > DRAW_END_X) {
+                targetX = DRAW_END_X;
+            } else if (mouseX < PAD_L) {
+                targetX = PAD_L;
+            }
+
+            if (!isVisible) {
+                cursorG.style.opacity = 0; tooltip.style.display = 'none'; return;
+            }
+            cursorG.style.opacity = 1;
+
+            line.setAttribute("x1", targetX); line.setAttribute("x2", targetX);
+
+            const globalDist = (targetX - PAD_L) / SCALE_X;
+
+            // --- 修改：增加距离洞口长度的数据 ---
+            let rK = "右: (范围外)";
+            let rDepth = "";
+            let rDistStr = ""; // 新增右线距离字符串
+            
+            let lK = "左: (范围外)";
+            let lDepth = "";
+            let lDistStr = ""; // 新增左线距离字符串
+
+            // 右线逻辑
+            const distR = globalDist; 
+            if (distR >= 0 && distR <= rightData.totalLen + 0.5) {
+                const safeDistR = Math.min(distR, rightData.totalLen);
+                const depthR = getDepthByDist(safeDistR);
+                const yR = rightData.baseY - ROCK_H - 25 - depthR * SCALE_Y;
+                dotR.setAttribute("cx", targetX); dotR.setAttribute("cy", yR);
+                dotR.style.display = "block";
+                
+                const kVal = rightData.startK + safeDistR;
+                rK = `K${Math.floor(kVal/1000)}+${Math.floor(kVal%1000).toString().padStart(3,'0')}`;
+                rDepth = `深${Math.round(depthR)}m`;
+                rDistStr = Math.round(safeDistR) + "m"; // 计算距离
+            } else {
+                dotR.style.display = "none";
+            }
+
+            // 左线逻辑
+            const offsetL = leftData.startK - GLOBAL_START;
+            const distL = globalDist - offsetL;
+            if (distL >= -0.5 && distL <= leftData.totalLen + 0.5) { 
+                const safeDistL = Math.min(Math.max(0, distL), leftData.totalLen);
+                const depthL = getDepthByDist(safeDistL);
+                const yL = leftData.baseY - ROCK_H - 25 - depthL * SCALE_Y;
+                dotL.setAttribute("cx", targetX); dotL.setAttribute("cy", yL);
+                dotL.style.display = "block";
+                
+                const kVal = leftData.startK + safeDistL;
+                lK = `ZK${Math.floor(kVal/1000)}+${Math.floor(kVal%1000).toString().padStart(3,'0')}`;
+                lDepth = `深${Math.round(depthL)}m`;
+                lDistStr = Math.round(safeDistL) + "m"; // 计算距离
+            } else {
+                dotL.style.display = "none";
+            }
+
+            // --- 修改：在 HTML 结构中插入距离数据 ---
+            tooltip.style.display = 'block';
+            tooltip.innerHTML = `
+                <div class="ct-row">
+                    <span class="ct-label-right">${rK}</span>
+                    ${rDistStr ? `<span class="ct-label-dist">${rDistStr}</span>` : ''}
+                    ${rDepth ? `<span class="ct-label-depth">${rDepth}</span>` : ''}
+                </div>
+                <div class="ct-row">
+                    <span class="ct-label-left">${lK}</span>
+                    ${lDistStr ? `<span class="ct-label-dist">${lDistStr}</span>` : ''}
+                    ${lDepth ? `<span class="ct-label-depth">${lDepth}</span>` : ''}
+                </div>
+            `;
+            
+            // --- 翻转和限制逻辑 ---
+            const infoRect = infoPanel.getBoundingClientRect();
+            const chartWrapperRect = chartWrapper.getBoundingClientRect();
+            
+            const chartCenterX = chartWrapperRect.left + (chartWrapperRect.width / 2);
+            let tooltipLeft;
+
+            if (e.clientX > chartCenterX) {
+                tooltipLeft = e.clientX - TOOLTIP_WIDTH - CURSOR_GAP;
+            } else {
+                tooltipLeft = e.clientX + CURSOR_GAP;
+            }
+            
+            const rightBoundary = infoRect.left - CURSOR_GAP;
+            if (tooltipLeft + TOOLTIP_WIDTH > rightBoundary) {
+                tooltipLeft = rightBoundary - TOOLTIP_WIDTH;
+            }
+
+            const leftBoundary = chartWrapperRect.left + 10;
+            if (tooltipLeft < leftBoundary) {
+                tooltipLeft = leftBoundary;
+            }
+
+            tooltip.style.left = tooltipLeft + 'px';
+            
+            let tipY = e.clientY + 20;
+            if (tipY + 100 > window.innerHeight) tipY = e.clientY - 100;
+            tooltip.style.top = tipY + 'px';
+        });
+        
+        window.addEventListener('resize', () => {
+        });
+    }
+
+    function handleClick(e, rect) {
+        e.stopPropagation();
+        resetActive();
+        rect.classList.add('active');
+        const data = JSON.parse(rect.dataset.info);
+        updateDetail(data);
+    }
+
+    function resetActive() {
+        document.querySelectorAll('.bar-rect').forEach(el => el.classList.remove('active'));
+        document.getElementById('detailCard').style.borderLeft = '5px solid var(--highlight-blue)';
+        document.getElementById('detailContent').innerHTML = `<div style="text-align:center; color:#64748b; padding:40px 0; font-size:14px;">点击 <b style="color:var(--highlight-blue)">围岩</b> 或 <b style="color:var(--highlight-blue)">衬砌</b> 条形块<br>查看详细信息</div>`;
+    }
+
+    function updateDetail(d) {
+        const content = document.getElementById('detailContent');
+        const card = document.getElementById('detailCard');
+        card.style.borderLeft = `5px solid ${d.color}`;
+        
+        let html = `<div style="text-align:left;">`;
+        html += `<h4 style="color:${d.color}; font-size:22px; margin:0 0 12px 0; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:8px;">${d.cat}：${d.type}</h4>`;
+        html += `<div class="row"><span class="label">长度</span><span class="val">${parseFloat(d.len).toFixed(2)} m</span></div>`;
+        html += `<div class="row"><span class="label">简述</span><span class="val" style="font-size:15px; font-weight:normal;">${d.desc}</span></div>`;
+        
+        if (d.cat === "围岩级别" && d.eval) {
+            html += `<div class="geo-box"><div class="geo-title">工程地质条件及评价</div><div class="geo-desc">${d.eval}</div></div>`;
+        }
+        
+        if (d.cat === "衬砌类型") {
+            const isShallow = d.shallow ? `<span class="val hl-red">是 (设计定义)</span>` : `<span class="val hl-green">否 (深埋)</span>`;
+            html += `<div class="row"><span class="label">属于浅埋?</span>${isShallow}</div>`;
+            html += `<div class="geo-box"><div class="geo-title">施工工法建议</div><div class="geo-desc">${getConstructionMethod(d.type)}</div></div>`;
+        }
+        
+        html += `</div>`;
+        content.innerHTML = html;
+    }
+
+    function getConstructionMethod(type) {
+        const methods = {
+            'X5p': 'CD/CRD法施工，预留20cm变形量。加强防排水，快挖快封。',
+            'X5q': 'CD/CRD法施工，预留15cm变形量。加强超前小导管注浆。',
+            'X5a': '台阶法或CD法。根据围岩情况及时调整支护参数。',
+            'F4a': '三台阶法施工。虽为IV级围岩，但需按浅埋加强支护，严格控制进尺。',
+            'Fma': '明挖法施工。注意做好边仰坡防护及截排水。',
+            'F5a': '台阶法或CD法。出洞口地质较差，需加强支护。'
+        };
+        return methods[type] || '按新奥法标准工序施工，加强监控量测。';
+    }
+
+    window.onload = init;
+</script>
+</body>
+</html>

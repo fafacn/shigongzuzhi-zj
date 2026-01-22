@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>预制梁架设总体施工方案 - p18</title>
+    <style>
+        /* --- 1. 核心配色 --- */
+        :root {
+            --crcc-blue: #003366;
+            --crcc-red: #E60012;
+            --phase1-color: #e53e3e; /* 红：第一阶段 */
+            --phase2-color: #3182ce; /* 蓝：第二阶段 */
+            --beam-yard-bg: #f6ad55; /* 梁场黄 */
+            --text-main: #1a202c;
+            --bg-grad: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+            height: 100vh; width: 100vw; overflow: hidden;
+            background: var(--bg-grad);
+            display: flex; justify-content: center; align-items: center;
+            color: var(--text-main);
+        }
+
+        .container {
+            width: 98vw; height: 96vh;
+            display: flex; flex-direction: column;
+            padding: 20px;
+            background: rgba(255,255,255,0.9);
+            backdrop-filter: blur(15px);
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+
+        /* --- 标题区 --- */
+        .header-section {
+            flex: 0 0 auto;
+            border-bottom: 2px solid rgba(0, 51, 102, 0.1);
+            padding-bottom: 10px; margin-bottom: 10px;
+            display: flex; justify-content: space-between; align-items: flex-end;
+        }
+        h2 { font-size: 1.8rem; color: var(--crcc-blue); display: flex; align-items: center; gap: 10px; margin: 0; }
+        h2::before { content:''; width: 6px; height: 28px; background: var(--crcc-red); display: block; }
+        .legend-box { display: flex; gap: 15px; font-size: 0.85rem; }
+        .l-item { display: flex; align-items: center; gap: 5px; }
+        .l-dot { width: 10px; height: 10px; border-radius: 50%; }
+
+        /* --- 核心布局 --- */
+        .main-content {
+            flex: 1; display: flex; flex-direction: column; gap: 15px; overflow: hidden;
+        }
+
+        /* 1. 全景长卷 (上部) */
+        .panorama-scroll-view {
+            flex: 2; /* 占据较大空间 */
+            background: #fff;
+            border: 1px solid #cbd5e0;
+            border-radius: 10px;
+            overflow-x: auto;
+            overflow-y: hidden;
+            position: relative;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.05);
+        }
+        
+        .panorama-scroll-view::-webkit-scrollbar { height: 10px; }
+        .panorama-scroll-view::-webkit-scrollbar-thumb { background: #cbd5e0; border-radius: 5px; }
+        .panorama-scroll-view::-webkit-scrollbar-track { background: #f7fafc; }
+
+        #detailMapSvg { height: 100%; }
+
+        /* 2. 策略控制台 (下部) */
+        .strategy-dashboard {
+            flex: 1; min-height: 220px;
+            display: grid; grid-template-columns: 1fr 1fr 300px; gap: 15px;
+        }
+
+        .dash-card {
+            background: rgba(255,255,255,0.6); border: 1px solid #fff;
+            border-radius: 8px; padding: 15px;
+            display: flex; flex-direction: column;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+        }
+
+        .dc-title { 
+            font-weight: bold; color: var(--crcc-blue); margin-bottom: 10px; 
+            border-bottom: 1px dashed #cbd5e0; padding-bottom: 5px;
+            display: flex; justify-content: space-between;
+        }
+        .dc-content { font-size: 0.9rem; color: #4a5568; line-height: 1.6; overflow-y: auto; flex: 1; }
+        
+        .hl-red { color: #c53030; font-weight: bold; }
+        .hl-blue { color: #2b6cb0; font-weight: bold; }
+        .tag { padding: 1px 5px; border-radius: 3px; font-size: 0.8rem; background: #edf2f7; color: #4a5568; border: 1px solid #cbd5e0; margin-right: 5px;}
+
+        /* Tooltip */
+        .svg-tooltip {
+            position: absolute; display: none;
+            background: rgba(0, 0, 0, 0.85); color: white;
+            padding: 8px 12px; border-radius: 4px; font-size: 12px;
+            pointer-events: none; white-space: nowrap; z-index: 1000;
+        }
+
+        /* 导航按钮 */
+        .nav-btn {
+            position: fixed; bottom: 30px; padding: 10px 25px;
+            background: var(--crcc-blue); color: white;
+            border-radius: 30px; text-decoration: none; font-weight: bold;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2); transition: 0.3s; z-index: 200; font-size: 0.9rem;
+        }
+        .nav-btn:hover { background: var(--crcc-red); }
+        .prev-btn { right: 150px; background: white; color: var(--crcc-blue); border: 1px solid var(--crcc-blue); }
+        .next-btn { right: 30px; }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header-section">
+        <h2>全线桥涵分布及架梁顺序推演 (K15+236 ~ K41+105)</h2>
+        <div class="legend-box">
+            <div class="l-item"><div class="l-dot" style="background:var(--beam-yard-bg)"></div>梁场核心区</div>
+            <div class="l-item"><div class="l-dot" style="background:var(--phase1-color)"></div>第一阶段(攻坚)</div>
+            <div class="l-item"><div class="l-dot" style="background:var(--phase2-color)"></div>第二阶段(持久)</div>
+            <div class="l-item">⭕️圆管涵 📦箱涵 🌉天桥</div>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <!-- 上部：全景长卷 -->
+        <div class="panorama-scroll-view">
+            <svg id="detailMapSvg"></svg>
+            <div id="tooltip" class="svg-tooltip"></div>
+            <div style="position:absolute; bottom:10px; right:20px; background:rgba(0,0,0,0.1); padding:5px 10px; border-radius:20px; font-size:12px; color:#666; pointer-events:none;">
+                按住 Shift + 滚轮 或 拖动下方滚动条查看全线 ⮕
+            </div>
+        </div>
+
+        <!-- 下部：策略控制台 -->
+        <div class="strategy-dashboard">
+            <!-- 第一阶段 -->
+            <div class="dash-card" style="border-top: 3px solid var(--phase1-color);">
+                <div class="dc-title">
+                    <span>🚩 第一阶段：小里程攻坚 (K26→K15)</span>
+                    <span style="color:var(--phase1-color)">826片梁 (68%)</span>
+                </div>
+                <div class="dc-content">
+                    <p><strong>1. 首架即决战：</strong><br>梁场出口即为<span class="hl-red">K26+065上跨S213特大桥</span>（全线唯一特大桥）。架桥机需在此完成拼装、首架及25/35/40m变跨作业。</p>
+                    <p style="margin-top:8px;"><strong>2. 密集架设：</strong><br>K16-K18段集中分布3座中桥（均为3x13m），由于跨径小，建议采用<span class="hl-red">100t汽车吊</span>配合架设，提高效率。</p>
+                </div>
+            </div>
+
+            <!-- 第二阶段 -->
+            <div class="dash-card" style="border-top: 3px solid var(--phase2-color);">
+                <div class="dc-title">
+                    <span>🚚 第二阶段：大里程长驱 (K27→K41)</span>
+                    <span style="color:var(--phase2-color)">258片梁 (32%)</span>
+                </div>
+                <div class="dc-content">
+                    <p><strong>1. 超长运距挑战：</strong><br>K31+652至K38+533之间无主线桥，路基段长达<span class="hl-blue">7公里</span>。需穿越52道涵洞及6座天桥，运梁通道维护是关键。</p>
+                    <p style="margin-top:8px;"><strong>2. 关键节点修正：</strong><br><span class="hl-blue">K31+652清溪二级干渠中桥</span>及<span class="hl-blue">K38+533巨兴二级支渠中桥</span>均为3x13m结构。难度降低，可采用吊车先行架设，打通运梁通道。</p>
+                </div>
+            </div>
+
+            <!-- 保障措施 -->
+            <div class="dash-card" style="background:#f7fafc;">
+                <div class="dc-title">🛡️ 运梁通道与设备</div>
+                <div class="dc-content">
+                    <div style="display:flex; gap:10px; margin-bottom:8px;">
+                        <span class="tag">架桥机</span> JQJ-180t (变跨型)
+                    </div>
+                    <div style="display:flex; gap:10px; margin-bottom:8px;">
+                        <span class="tag">运梁车</span> 2台 180t (保长运距)
+                    </div>
+                    <hr style="border:0; border-top:1px dashed #ddd; margin:8px 0;">
+                    <p><strong>运梁便道：</strong>针对K31-K38长路基段，涵顶填土<1m处铺设钢板；路基表面铺碎石盲沟防止雨后软弹。</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<a href="p17.html" class="nav-btn prev-btn">上一页</a>
+<a href="p19.html" class="nav-btn next-btn">下一页</a>
+
+<script>
+    // --- 数据源 ---
+    const CONFIG = {
+        minK: 15000,
+        maxK: 41200,
+        svgWidth: 2600,
+        svgHeight: 320,
+        centerY: 180,
+        yardStart: 26700,
+        yardEnd: 27900
+    };
+
+    // beams 可以是字符串，也可以是数组（用于多行显示）
+    const DATA = [
+        { type: 'node', k: 15236, label: "起点 K15+236", icon: 'start' },
+        { type: 'road', len: 1542, info: {pipe:9, box:4, bridge:2} },
+        { type: 'bridge', k: 16778, name: "上跨Y01G中桥", desc: "3x13m PC矮T梁", beams: "66片 13mT" },
+        { type: 'road', len: 1074, info: {pipe:7, box:3, bridge:0} },
+        { type: 'bridge', k: 17852, name: "上跨Y003中桥", desc: "3x13m PC矮T梁", beams: "66片 13mT" },
+        { type: 'bridge', k: 18188, name: "K18+188中桥", desc: "3x13m PC矮T梁", beams: "66片 13mT" },
+        { type: 'road', len: 2555, info: {pipe:14, box:8, bridge:2} },
+        { type: 'bridge', k: 20743, name: "上跨Y045中桥", desc: "3x13m PC矮T梁", beams: "66片 13mT" },
+        { type: 'road', len: 1982, info: {pipe:6, box:4, bridge:2} },
+        { type: 'bridge', k: 22725, name: "K22+725小桥", desc: "2x13m PC矮T梁", beams: "44片 13mT" },
+        { type: 'road', len: 1559, info: {pipe:3, box:4, bridge:1} },
+        { type: 'bridge', k: 24284, name: "上跨老S213中桥", desc: "3x25m PC小箱梁", beams: "30片 25m箱" },
+        { type: 'road', len: 1781, info: {pipe:3, box:5, bridge:0} },
+        
+        // 特大桥数据多行细化
+        { type: 'bridge', k: 26065, name: "上跨S213特大桥", desc: "变跨复杂结构", beams: ["448片 25m箱", "40片 35m箱", "10片 40m箱"], isMajor: true },
+        
+        { type: 'yard', kStart: 26700, kEnd: 27900, info: {pipe:8, box:2, bridge:2}, label: "梁场 K26+700~K27+900" },
+        
+        { type: 'bridge', k: 27971, name: "K27+971中桥", desc: "3x13m PC矮T梁", beams: "66片 13mT" },
+        { type: 'road', len: 3047, info: {pipe:18, box:6, bridge:0} },
+        { type: 'bridge', k: 31018, name: "九连支渠大桥", desc: "6x25m PC小箱梁", beams: "60片 25m箱", isMajor: true },
+        { type: 'bridge', k: 31652, name: "清溪二级干渠中桥", desc: "3x13m PC矮T梁", beams: "66片 13mT" },
+        { type: 'road', len: 6881, info: {pipe:36, box:18, bridge:6}, isLong: true },
+        { type: 'bridge', k: 38533, name: "巨兴二级支渠中桥", desc: "3x13m PC矮T梁", beams: "66片 13mT" },
+        { type: 'road', len: 1993, info: {pipe:7, box:6, bridge:1} },
+        { type: 'node', k: 40526, label: "隧道进口 K40+526", icon: 'tunnel' }
+    ];
+
+    function renderMap() {
+        const svg = document.getElementById('detailMapSvg');
+        const tooltip = document.getElementById('tooltip');
+        svg.setAttribute('width', CONFIG.svgWidth);
+        svg.setAttribute('viewBox', `0 0 ${CONFIG.svgWidth} ${CONFIG.svgHeight}`);
+
+        const getX = (k) => 50 + (k - CONFIG.minK) / (CONFIG.maxK - CONFIG.minK) * (CONFIG.svgWidth - 100);
+
+        let html = '';
+
+        // --- 1. 背景主轴 ---
+        html += `<line x1="20" y1="${CONFIG.centerY}" x2="${CONFIG.svgWidth-20}" y2="${CONFIG.centerY}" stroke="#e2e8f0" stroke-width="4" stroke-linecap="round" />`;
+
+        // --- 2. 动态流光路径 ---
+        const yardLX = getX(CONFIG.yardStart);
+        const startX = getX(CONFIG.minK);
+        const yardRX = getX(CONFIG.yardEnd);
+        const endX = getX(CONFIG.maxK);
+
+        html += `
+            <defs>
+                <marker id="arrowRed" markerWidth="10" markerHeight="10" refX="0" refY="3" orient="auto">
+                    <path d="M0,3 L9,6 L9,0 z" fill="var(--phase1-color)" />
+                </marker>
+                <marker id="arrowBlue" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                    <path d="M0,0 L0,6 L9,3 z" fill="var(--phase2-color)" />
+                </marker>
+                <pattern id="diagonalHatch" width="10" height="10" patternTransform="rotate(45 0 0)" patternUnits="userSpaceOnUse">
+                    <line x1="0" y1="0" x2="0" y2="10" style="stroke:#f6ad55; stroke-width:1" />
+                </pattern>
+            </defs>
+
+            <!-- 左向流光 (红色) - 向左流动 -->
+            <line x1="${yardLX}" y1="${CONFIG.centerY}" x2="${startX}" y2="${CONFIG.centerY}" 
+                stroke="var(--phase1-color)" stroke-width="4" stroke-opacity="0.3" />
+            <line x1="${yardLX}" y1="${CONFIG.centerY}" x2="${startX}" y2="${CONFIG.centerY}" 
+                stroke="var(--phase1-color)" stroke-width="4" stroke-dasharray="20,10">
+                <animate attributeName="stroke-dashoffset" from="30" to="0" dur="0.5s" repeatCount="indefinite" />
+            </line>
+
+            <!-- 右向流光 (蓝色) - 向右流动 -->
+            <line x1="${yardRX}" y1="${CONFIG.centerY}" x2="${endX}" y2="${CONFIG.centerY}" 
+                stroke="var(--phase2-color)" stroke-width="4" stroke-opacity="0.3" />
+            <line x1="${yardRX}" y1="${CONFIG.centerY}" x2="${endX}" y2="${CONFIG.centerY}" 
+                stroke="var(--phase2-color)" stroke-width="4" stroke-dasharray="20,10">
+                <animate attributeName="stroke-dashoffset" from="30" to="0" dur="0.5s" repeatCount="indefinite" />
+            </line>
+        `;
+
+        // --- 3. 刻度 ---
+        for(let k = 15; k <= 41; k++) {
+            const x = getX(k * 1000);
+            html += `<line x1="${x}" y1="${CONFIG.centerY-5}" x2="${x}" y2="${CONFIG.centerY+5}" stroke="#cbd5e0" stroke-width="2" />`;
+            html += `<text x="${x}" y="${CONFIG.centerY+25}" font-size="12" fill="#a0aec0" text-anchor="middle">K${k}</text>`;
+        }
+
+        // --- 4. 梁场 (数据修正) ---
+        html += `
+            <rect x="${yardLX}" y="${CONFIG.centerY-40}" width="${yardRX-yardLX}" height="80" fill="rgba(246, 173, 85, 0.2)" />
+            <rect x="${yardLX}" y="${CONFIG.centerY-40}" width="${yardRX-yardLX}" height="80" fill="url(#diagonalHatch)" />
+            <line x1="${yardLX}" y1="${CONFIG.centerY-40}" x2="${yardLX}" y2="${CONFIG.centerY+40}" stroke="#ed8936" stroke-width="2" stroke-dasharray="4,2"/>
+            <line x1="${yardRX}" y1="${CONFIG.centerY-40}" x2="${yardRX}" y2="${CONFIG.centerY+40}" stroke="#ed8936" stroke-width="2" stroke-dasharray="4,2"/>
+            <text x="${(yardLX+yardRX)/2}" y="${CONFIG.centerY-50}" font-size="14" fill="#ed8936" font-weight="bold" text-anchor="middle">梁场 K26+700~900</text>
+            
+            <!-- 梁场内部数据 -->
+            <g transform="translate(${(yardLX+yardRX)/2}, ${CONFIG.centerY+60})" text-anchor="middle" font-family="Consolas">
+                <text y="0" font-size="14" fill="#ed8936" font-weight="bold">⭕️ 8</text>
+                <text y="20" font-size="14" fill="#ed8936" font-weight="bold">📦 2</text>
+                <text y="40" font-size="14" fill="#ed8936" font-weight="bold">🌉 2</text>
+            </g>
+        `;
+
+        // --- 5. 绘制节点与路基 ---
+        let currentX = getX(15236);
+        let lastBridgeTextX = -999; // 用于记录上一个桥梁配梁文字的X位置，防止重叠
+
+        DATA.forEach((item, index) => {
+            if (item.type === 'node') {
+                const x = getX(item.k);
+                const color = '#2d3748';
+                if(item.icon === 'start') {
+                    html += `<circle cx="${x}" cy="${CONFIG.centerY}" r="6" fill="${color}" />`;
+                    html += `<text x="${x}" y="${CONFIG.centerY-20}" font-size="12" font-weight="bold" fill="${color}" text-anchor="middle">${item.label}</text>`;
+                } else {
+                    html += `<rect x="${x-2}" y="${CONFIG.centerY-10}" width="4" height="20" fill="${color}" />`;
+                    html += `<text x="${x}" y="${CONFIG.centerY-20}" font-size="12" font-weight="bold" fill="${color}" text-anchor="middle">${item.label}</text>`;
+                }
+                currentX = x;
+            } 
+            else if (item.type === 'bridge') {
+                const x = getX(item.k);
+                const isP1 = item.k < CONFIG.yardStart;
+                const color = isP1 ? 'var(--phase1-color)' : 'var(--phase2-color)';
+                const iconSize = item.isMajor ? 12 : 8;
+                
+                // --- 智能防重叠逻辑 ---
+                let beamTextY = CONFIG.centerY + 60; // 默认高度
+                // 如果当前桥梁与上一个桥梁配梁文字距离小于80像素，则向下错位
+                if (Math.abs(x - lastBridgeTextX) < 80) {
+                    beamTextY += 25; // 错位高度
+                }
+                lastBridgeTextX = x; // 更新位置记录
+                
+                html += `
+                    <g class="hover-elem" data-tip="${item.name}<br>${item.desc}">
+                        <line x1="${x}" y1="${CONFIG.centerY}" x2="${x}" y2="${CONFIG.centerY-40}" stroke="${color}" stroke-width="1" stroke-dasharray="2,2" />
+                        <rect x="${x-iconSize}" y="${CONFIG.centerY-iconSize}" width="${iconSize*2}" height="${iconSize*2}" transform="rotate(45, ${x}, ${CONFIG.centerY})" fill="${item.isMajor?'#fff':color}" stroke="${color}" stroke-width="3" />
+                        
+                        <!-- 桥梁名称 (上方) -->
+                        <text x="${x}" y="${CONFIG.centerY-45}" font-size="${item.isMajor?13:11}" font-weight="${item.isMajor?'bold':'normal'}" fill="${color}" text-anchor="middle" transform="rotate(-15, ${x}, ${CONFIG.centerY-45})">${item.name}</text>
+                        
+                        <!-- 重点标识 (下方避让) -->
+                        ${item.isMajor ? `<text x="${x}" y="${CONFIG.centerY+37}" font-size="10" fill="${color}" text-anchor="middle" font-weight="bold">★重点</text>` : ''}
+                    </g>
+                `;
+
+                // --- 配梁数据绘制 (支持多行) ---
+                if (Array.isArray(item.beams)) {
+                    // 多行数据 (如特大桥)
+                    item.beams.forEach((line, i) => {
+                        html += `<text x="${x}" y="${beamTextY + (i * 14)}" font-size="11" fill="${color}" text-anchor="middle" font-weight="bold" font-family="Arial">${line}</text>`;
+                    });
+                } else {
+                    // 单行数据
+                    html += `<text x="${x}" y="${beamTextY}" font-size="11" fill="${color}" text-anchor="middle" font-weight="bold" font-family="Arial">${item.beams}</text>`;
+                }
+
+                currentX = x;
+            }
+            else if (item.type === 'road') {
+                const lenPx = (item.len / (CONFIG.maxK - CONFIG.minK)) * (CONFIG.svgWidth - 100);
+                const centerX = currentX + lenPx / 2;
+                const isP1 = centerX < getX(CONFIG.yardStart);
+                const color = isP1 ? '#e53e3e' : '#3182ce';
+                
+                html += `
+                    <g class="hover-elem" data-tip="路基长: ${item.len}m">
+                        <g transform="translate(${centerX}, ${CONFIG.centerY+20})" text-anchor="middle" font-family="Consolas">
+                            <text y="0" font-size="14" fill="${color}" font-weight="bold">⭕️ ${item.info.pipe}</text>
+                            <text y="20" font-size="14" fill="${color}" font-weight="bold">📦 ${item.info.box}</text>
+                            <text y="40" font-size="14" fill="${color}" font-weight="bold">🌉 ${item.info.bridge}</text>
+                        </g>
+                        ${item.isLong ? `<text x="${centerX}" y="${CONFIG.centerY+75}" font-size="12" fill="#d69e2e" font-weight="bold" text-anchor="middle">⚠️ 超长运距</text>` : ''}
+                    </g>
+                `;
+                
+                if(item.isLong) {
+                    html += `<rect x="${currentX}" y="${CONFIG.centerY+3}" width="${lenPx}" height="4" fill="#fbd38d" opacity="0.6" />`;
+                }
+                currentX += lenPx;
+            }
+        });
+
+        // --- 6. 顶部统计数据 ---
+        const p1X = getX(20000);
+        html += `
+            <g transform="translate(${p1X}, 40)">
+                <text y="0" font-size="18" font-weight="bold" fill="var(--phase1-color)" text-anchor="middle">◀ 第一阶段 (共826片)</text>
+                <text y="20" font-size="12" fill="var(--phase1-color)" text-anchor="middle">13m:308 | 25m:478 | 35m:40</text>
+                <line x1="-150" y1="30" x2="150" y2="30" stroke="var(--phase1-color)" stroke-width="3" marker-start="url(#arrowRed)" />
+            </g>
+        `;
+        
+        const p2X = getX(34000);
+        html += `
+            <g transform="translate(${p2X}, 40)">
+                <text y="0" font-size="18" font-weight="bold" fill="var(--phase2-color)" text-anchor="middle">第二阶段 (共258片) ▶</text>
+                <text y="20" font-size="12" fill="var(--phase2-color)" text-anchor="middle">13m:198 | 25m:60</text>
+                <line x1="-150" y1="30" x2="150" y2="30" stroke="var(--phase2-color)" stroke-width="3" marker-end="url(#arrowBlue)" />
+            </g>
+        `;
+
+        svg.innerHTML = html;
+
+        document.querySelectorAll('.hover-elem').forEach(el => {
+            el.addEventListener('mousemove', (e) => {
+                const tip = e.currentTarget.getAttribute('data-tip');
+                tooltip.style.display = 'block';
+                tooltip.innerHTML = tip;
+                tooltip.style.left = (e.clientX + 15) + 'px';
+                tooltip.style.top = (e.clientY + 15) + 'px';
+            });
+            el.addEventListener('mouseleave', () => {
+                tooltip.style.display = 'none';
+            });
+        });
+        
+        setTimeout(() => {
+            const container = document.querySelector('.panorama-scroll-view');
+            container.scrollLeft = getX(CONFIG.yardStart) - container.clientWidth / 2;
+        }, 100);
+    }
+
+    window.onload = renderMap;
+    window.onresize = renderMap;
+
+</script>
+</body>
+</html>

@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>长山隧道纵断面 - p27</title>
+    <style>
+        :root {
+            --mas-main: #059669;    /* 马鞍山山体：翠绿色 */
+            --mas-tunnel: #1e40af;  /* 马鞍山隧道：深蓝色 */
+            --hf-gray: #e2e8f0;     /* 合肥段：淡灰色 */
+            --vpi-color: #dc2626;   /* 变坡点颜色 */
+            --text-color: #1e293b;
+        }
+
+        body, html {
+            margin: 0; padding: 0;
+            width: 100vw; height: 100vh;
+            overflow: hidden;
+            background-color: #f1f5f9;
+            font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+            position: relative; /* 为水印定位基准 */
+        }
+
+        .layout {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+
+        header {
+            text-align: center;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--mas-main);
+        }
+
+        h1 { margin: 0; font-size: 24px; color: var(--mas-tunnel); }
+
+        .view-pane {
+            flex: 1;
+            background: #ffffff;
+            margin-top: 10px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            position: relative;
+            border: 1px solid #cbd5e1;
+        }
+
+        .pane-title {
+            position: absolute;
+            top: 15px; left: 20px;
+            font-size: 13px; font-weight: bold;
+            background: rgba(255,255,255,0.95);
+            padding: 5px 15px;
+            border-radius: 20px;
+            border: 1px solid #e2e8f0;
+            color: var(--mas-tunnel);
+            z-index: 10;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        svg { width: 100%; height: 100%; display: block; }
+
+        .tooltip {
+            position: absolute;
+            padding: 10px;
+            background: rgba(15, 23, 42, 0.95);
+            color: #fff;
+            border-radius: 6px;
+            font-size: 12px;
+            pointer-events: none;
+            display: none;
+            z-index: 100;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3);
+        }
+
+        /* 署名水印样式 */
+        .author-mark {
+            position: absolute;
+            bottom: 15px;
+            right: 20px;
+            color: rgba(0, 0, 0, 0.3); /* 浅色背景下使用深色半透明文字 */
+            font-size: 13px;
+            font-weight: 500;
+            z-index: 1000;
+            pointer-events: none; /* 防止遮挡点击 */
+            letter-spacing: 0.5px;
+        }
+
+        /* --- 新增：悬浮导航按钮样式 (保持系列统一风格) --- */
+        .nav-btn {
+            position: fixed; bottom: 30px; padding: 12px 30px;
+            background: #003366; /* CRCC Blue */
+            color: white;
+            border-radius: 30px; text-decoration: none; font-weight: bold;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2); transition: 0.3s; z-index: 2000; font-size: 1rem;
+            font-family: "Microsoft YaHei", sans-serif;
+        }
+        .nav-btn:hover { background: #E60012; /* CRCC Red */ transform: scale(1.05); }
+        .prev-btn { right: 150px; background: white; color: #003366; border: 1px solid #003366; }
+        .prev-btn:hover { color: white; border-color: #E60012; background: #E60012; }
+        .next-btn { right: 30px; }
+    </style>
+</head>
+<body>
+
+<div class="layout">
+    <header><h1>长山隧道纵断面</h1></header>
+
+    <div class="view-pane">
+        <div class="pane-title" id="title-right">右线：K40+526 ～ K42+116.432 (总长 1590.432m | 马鞍山段 579.352m / 合肥段 1011.080m)</div>
+        <div id="tip-right" class="tooltip"></div>
+        <svg id="svg-right"></svg>
+    </div>
+
+    <div class="view-pane">
+        <div class="pane-title" id="title-left">左线：Z2K40+532 ～ Z2K42+147.879 (总长 1615.879m | 马鞍山段 615.879m / 合肥段 1000.000m)</div>
+        <div id="tip-left" class="tooltip"></div>
+        <svg id="svg-left"></svg>
+    </div>
+</div>
+
+<div class="author-mark">制作：张建</div>
+
+<a href="p26.html" class="nav-btn prev-btn">上一页</a>
+<a href="p28.html" class="nav-btn next-btn">下一页</a>
+
+<script>
+    const CONFIG = {
+        range: [40400, 42200],
+        elev: [40, 300],
+        vpi: { m: 40495, e: 82.64 }, // 变坡点数据
+        padding: { top: 80, bottom: 65, left: 80, right: 80 }
+    };
+
+    const DATA = {
+        right: {
+            prefix: "K",
+            entrance: 40526,
+            boundary: 41105.352,
+            exit: 42116.432,
+            ground: [[40400,90], [40500,98], [40600,120], [40800,180], [41105,261], [41500,220], [41800,150], [42116,95]],
+            passages: [
+                { m: 40847, label: "1#人行横洞", type: 'ped' },
+                { m: 41171.54, label: "2#人行横洞", type: 'other' },
+                { m: 41327.61, label: "1#车行横洞", type: 'other' },
+                { m: 41361.00, label: "1#紧急停车带", type: 'other' },
+                { m: 41492.30, label: "3#人行横洞", type: 'other' }
+            ]
+        },
+        left: {
+            prefix: "Z2K",
+            entrance: 40532,
+            boundary: 41147.879,
+            exit: 42147.879,
+            ground: [[40400,90], [40500,95], [40700,130], [40900,190], [41147,261], [41600,210], [41900,140], [42147,92]],
+            passages: [
+                { m: 40851, label: "1#人行横洞", type: 'ped' },
+                { m: 41171.54, label: "2#人行横洞", type: 'other' },
+                { m: 41327.61, label: "1#车行横洞", type: 'other' },
+                { m: 41361.00, label: "1#紧急停车带", type: 'other' },
+                { m: 41492.30, label: "3#人行横洞", type: 'other' }
+            ]
+        }
+    };
+
+    function render(side) {
+        const info = DATA[side];
+        const svg = document.getElementById(`svg-${side}`);
+        const w = svg.clientWidth;
+        const h = svg.clientHeight;
+
+        const getX = (m) => CONFIG.padding.left + (m - CONFIG.range[0]) / (CONFIG.range[1] - CONFIG.range[0]) * (w - CONFIG.padding.left - CONFIG.padding.right);
+        const getY = (e) => (h - CONFIG.padding.bottom) - (e - CONFIG.elev[0]) / (CONFIG.elev[1] - CONFIG.elev[0]) * (h - CONFIG.padding.top - CONFIG.padding.bottom);
+
+        const getDesignElev = (m) => {
+            if (m <= CONFIG.vpi.m) {
+                return CONFIG.vpi.e - (CONFIG.vpi.m - m) * 0.025;
+            } else {
+                return CONFIG.vpi.e - (m - CONFIG.vpi.m) * 0.0095;
+            }
+        };
+
+        let html = `
+            <defs>
+                <clipPath id="clip-mas-${side}"><rect x="0" y="0" width="${getX(info.boundary)}" height="${h}" /></clipPath>
+                <clipPath id="clip-hf-${side}"><rect x="${getX(info.boundary)}" y="0" width="${w}" height="${h}" /></clipPath>
+                <linearGradient id="grad-mas" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#10b981" stop-opacity="0.6"/><stop offset="100%" stop-color="#10b981" stop-opacity="0"/></linearGradient>
+            </defs>
+        `;
+
+        // 山体绘制
+        let groundD = `M ${getX(info.ground[0][0])} ${getY(CONFIG.elev[0])}`;
+        info.ground.forEach(p => groundD += ` L ${getX(p[0])} ${getY(p[1])}`);
+        groundD += ` L ${getX(info.ground[info.ground.length-1][0])} ${getY(CONFIG.elev[0])} Z`;
+        html += `<path d="${groundD}" fill="url(#grad-mas)" clip-path="url(#clip-mas-${side})" />`;
+        html += `<path d="${groundD}" fill="#f1f5f9" stroke="#cbd5e1" stroke-dasharray="2,2" clip-path="url(#clip-hf-${side})" />`;
+
+        // 隧道绘制
+        let tunnelPoints = [];
+        for(let m = CONFIG.range[0]; m <= CONFIG.range[1]; m+=10) {
+            tunnelPoints.push(`${getX(m)},${getY(getDesignElev(m))}`);
+        }
+        let tunnelPath = `M ${tunnelPoints.join(' L ')}`;
+        html += `<path d="${tunnelPath}" fill="none" stroke="${varToHex('--mas-tunnel')}" stroke-width="12" stroke-linecap="round" clip-path="url(#clip-mas-${side})" />`;
+        html += `<path d="${tunnelPath}" fill="none" stroke="#cbd5e1" stroke-width="12" stroke-linecap="round" clip-path="url(#clip-hf-${side})" opacity="0.5" />`;
+
+        // 坡度标注 (修改箭头方向为向左)
+        const midIn = getX((CONFIG.range[0] + CONFIG.vpi.m)/2);
+        const midOut = getX((CONFIG.vpi.m + info.boundary)/2);
+        html += `
+            <text x="${midIn}" y="${getY(getDesignElev(CONFIG.vpi.m))-40}" font-size="12" fill="#059669" text-anchor="middle" font-weight="bold">← i = +2.5%</text>
+            <text x="${midOut}" y="${getY(getDesignElev(CONFIG.vpi.m))-40}" font-size="12" fill="#dc2626" text-anchor="middle" font-weight="bold">i = -0.95% →</text>
+        `;
+
+        // 关键节点标注
+        const nodes = [
+            {m: CONFIG.vpi.m, label: "变坡点", color: "#dc2626", size: 14, pos: 'bottom'},
+            {m: info.entrance, label: "隧道进口", color: varToHex('--mas-tunnel'), size: 16, pos: 'top'},
+            {m: info.boundary, label: "市界(马/合分界)", color: "#b91c1c", size: 16, pos: 'top'},
+            {m: info.exit, label: "隧道出口", color: "#64748b", size: 14, pos: 'top'}
+        ];
+
+        nodes.forEach(n => {
+            const nx = getX(n.m);
+            const ny = getY(getDesignElev(n.m));
+            html += `<line x1="${nx}" y1="${CONFIG.padding.top}" x2="${nx}" y2="${h-CONFIG.padding.bottom}" stroke="${n.color}" stroke-width="1" stroke-dasharray="4,2" />`;
+            html += `<circle cx="${nx}" cy="${ny}" r="4" fill="white" stroke="${n.color}" stroke-width="2" />`;
+            
+            if(n.pos === 'top') {
+                html += `
+                <g transform="translate(${nx}, ${CONFIG.padding.top-10})">
+                    <text font-size="${n.size}" font-weight="bold" fill="${n.color}" text-anchor="middle">${n.label}</text>
+                    <text y="18" font-size="11" fill="${n.color}" text-anchor="middle">${info.prefix}${formatM(n.m)}</text>
+                </g>`;
+            } else {
+                html += `
+                <g transform="translate(${nx}, ${h-CONFIG.padding.bottom+35})">
+                    <text font-size="12" font-weight="bold" fill="${n.color}" text-anchor="middle">${n.label}</text>
+                    <text y="15" font-size="11" fill="${n.color}" text-anchor="middle">${info.prefix}${formatM(n.m)}</text>
+                </g>`;
+            }
+        });
+
+        // 横洞标注 (增加1号人行横洞桩号标注)
+        info.passages.forEach(p => {
+            const px = getX(p.m);
+            const py = getY(getDesignElev(p.m));
+            const color = p.type === 'ped' ? '#ef4444' : '#3b82f6';
+            html += `
+                <circle cx="${px}" cy="${py}" r="${p.type === 'ped' ? 6 : 5}" fill="${color}" stroke="white" stroke-width="1.5" />
+                <text x="${px}" y="${py+25}" font-size="10" fill="${color}" font-weight="bold" text-anchor="middle" transform="rotate(-30, ${px}, ${py+25})">${p.label}</text>
+            `;
+            
+            // 如果是1号人行横洞，额外增加桩号标注
+            if(p.label === "1#人行横洞") {
+                html += `
+                    <text x="${px}" y="${py+42}" font-size="9" fill="${color}" font-weight="bold" text-anchor="middle" transform="rotate(-30, ${px}, ${py+42})">${info.prefix}${formatM(p.m)}</text>
+                `;
+            }
+        });
+
+        // 高程及常规刻度轴
+        for(let e = 50; e <= 300; e+=50) {
+            html += `<text x="${CONFIG.padding.left-10}" y="${getY(e)+4}" font-size="10" fill="#94a3b8" text-anchor="end">${e}m</text>`;
+        }
+        for(let m = CONFIG.range[0]; m <= CONFIG.range[1]; m+=200) {
+            const tx = getX(m);
+            html += `<line x1="${tx}" y1="${h-CONFIG.padding.bottom}" x2="${tx}" y2="${h-paddingOffset(h)}" stroke="#cbd5e0" />
+                     <text x="${tx}" y="${h-CONFIG.padding.bottom+18}" font-size="10" fill="#a0aec0" text-anchor="middle">K${Math.floor(m/1000)}+${(m%1000).toFixed(0).padStart(3,'0')}</text>`;
+        }
+
+        svg.innerHTML = html;
+
+        function paddingOffset(h) { return CONFIG.padding.bottom - 5; }
+
+        // Tooltip交互
+        const tip = document.getElementById(`tip-${side}`);
+        svg.onmousemove = (e) => {
+            const r = svg.getBoundingClientRect();
+            const x = e.clientX - r.left;
+            const m = CONFIG.range[0] + (x - CONFIG.padding.left) / (w - CONFIG.padding.left - CONFIG.padding.right) * (CONFIG.range[1] - CONFIG.range[0]);
+            if(m >= CONFIG.range[0] && m <= CONFIG.range[1]) {
+                tip.style.display = 'block';
+                tip.style.left = (x + 20) + 'px';
+                tip.style.top = (e.clientY - r.top + 20) + 'px';
+                const isMas = m <= info.boundary;
+                tip.innerHTML = `
+                    <div style="font-size:14px; font-weight:bold; color:#10b981">${isMas?'马鞍山段(本标段)':'合肥段'}</div>
+                    里程: ${info.prefix}${formatM(m)}<br>
+                    设计高程: ${getDesignElev(m).toFixed(3)}m<br>
+                    地面高程: ${getGroundElev(m, info.ground).toFixed(1)}m<br>
+                    <span style="color:#fbbf24">埋深: ${(getGroundElev(m, info.ground) - getDesignElev(m)).toFixed(1)}m</span>
+                `;
+            }
+        };
+        svg.onmouseleave = () => tip.style.display = 'none';
+    }
+
+    function getGroundElev(m, points) {
+        for(let i=0; i<points.length-1; i++) {
+            if(m >= points[i][0] && m <= points[i+1][0]) {
+                const ratio = (m - points[i][0]) / (points[i+1][0] - points[i][0]);
+                return points[i][1] + ratio * (points[i+1][1] - points[i][1]);
+            }
+        }
+        return points[points.length-1][1];
+    }
+
+    function formatM(m) {
+        const km = Math.floor(m / 1000);
+        const rest = (m % 1000).toFixed(3).padStart(7, '0');
+        return `${km}+${rest}`;
+    }
+
+    function varToHex(v) {
+        return getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+    }
+
+    window.onload = () => { render('right'); render('left'); };
+    window.onresize = () => { render('right'); render('left'); };
+</script>
+
+</body>
+</html>

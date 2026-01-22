@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>关键施工技术方案 - p25</title>
+    <style>
+        /* --- 设计系统 --- */
+        :root {
+            --crcc-blue: #003366;
+            --crcc-red: #E60012;
+            --tech-teal: #319795;
+            --soil-color: #d69e2e;
+            --stone-gray: #718096;
+            --rain-blue: #4299e1;
+            --bg-grad: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            --glass-bg: rgba(255,255,255,0.96);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+            height: 100vh; width: 100vw; overflow: hidden;
+            background: var(--bg-grad);
+            display: flex; justify-content: center; align-items: center;
+            color: #2d3748;
+        }
+
+        .container {
+            width: 98vw; height: 96vh;
+            display: flex; flex-direction: column;
+            padding: 20px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            box-shadow: 0 15px 50px rgba(0,0,0,0.15);
+            border: 1px solid rgba(255,255,255,0.6);
+        }
+
+        /* --- 头部 --- */
+        .header-section {
+            flex: 0 0 auto;
+            border-bottom: 2px solid rgba(0, 51, 102, 0.1);
+            padding-bottom: 10px; margin-bottom: 10px;
+            display: flex; justify-content: space-between; align-items: flex-end;
+        }
+        h2 { font-size: 1.6rem; color: var(--crcc-blue); display: flex; align-items: center; gap: 12px; margin: 0; }
+        h2::before { content:''; width: 6px; height: 26px; background: var(--crcc-red); display: block; }
+        
+        /* --- 布局容器 (核心修复：增加底部内边距) --- */
+        .content-scroll {
+            flex: 1; overflow-y: auto; padding-right: 10px;
+            display: flex; flex-direction: column; gap: 20px;
+            /* 关键修复：预留足够空间防止底部按钮遮挡内容 */
+            padding-bottom: 100px; 
+        }
+
+        /* 滚动条美化 */
+        .content-scroll::-webkit-scrollbar { width: 8px; }
+        .content-scroll::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
+        .content-scroll::-webkit-scrollbar-thumb { background: #cbd5e0; border-radius: 4px; }
+        .content-scroll::-webkit-scrollbar-thumb:hover { background: #a0aec0; }
+        
+        /* --- 通用卡片 --- */
+        .tech-card {
+            background: white; border-radius: 12px; padding: 20px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.03); border: 1px solid #e2e8f0;
+            position: relative; overflow: visible; /* 允许阴影溢出 */
+            flex-shrink: 0; /* 防止被压缩 */
+        }
+        .card-header {
+            font-size: 1.2rem; font-weight: bold; color: var(--crcc-blue);
+            margin-bottom: 15px; display: flex; align-items: center; gap: 10px;
+            border-bottom: 1px dashed #cbd5e0; padding-bottom: 10px;
+        }
+        .step-badge {
+            background: var(--crcc-blue); color: white; width: 28px; height: 28px;
+            border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 0.9rem; flex-shrink: 0;
+        }
+
+        /* --- 1. 石灰改良土 (流程图) --- */
+        .process-flow {
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px;
+        }
+        .process-step {
+            background: #f7fafc; border-radius: 8px; padding: 15px;
+            border-top: 4px solid var(--tech-teal); position: relative;
+            transition: transform 0.3s; height: 100%; display: flex; flex-direction: column;
+        }
+        .process-step:hover { transform: translateY(-5px); box-shadow: 0 5px 15px rgba(0,0,0,0.08); }
+        
+        .step-title { font-weight: bold; color: var(--tech-teal); margin-bottom: 8px; font-size: 1rem; }
+        .step-content { font-size: 0.85rem; color: #4a5568; line-height: 1.6; flex: 1; }
+        
+        /* 拌合深度示意图 (优化高度和显示) */
+        .mixing-demo {
+            margin-top: 15px; 
+            height: 75px; /* 增加高度 */
+            background: #ecc94b; border-radius: 4px;
+            position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center;
+            border: 1px solid #d69e2e;
+        }
+        .layer-bottom {
+            position: absolute; bottom: 0; width: 100%; height: 35px; background: #b7791f;
+            border-top: 1px dashed rgba(255,255,255,0.3);
+        }
+        .blade-mark {
+            width: 100%; height: 0px; border-bottom: 2px dashed var(--crcc-red);
+            position: absolute; bottom: 25px; /* 侵入位置 */
+            z-index: 5;
+        }
+        .mix-label { 
+            font-size: 0.75rem; color: #fff; z-index: 10; 
+            text-shadow: 0 1px 3px rgba(0,0,0,0.8); font-weight: bold; text-align: center;
+        }
+
+        /* --- 2. 石方利用 (分流图) --- */
+        .stone-grid {
+            display: grid; grid-template-columns: 1fr 0.2fr 1.5fr; gap: 15px; align-items: stretch;
+        }
+        .blast-zone {
+            background: #edf2f7; padding: 15px; border-radius: 8px; display: flex; flex-direction: column; justify-content: center;
+        }
+        .distribute-zone {
+            display: flex; flex-direction: column; gap: 10px;
+        }
+        .use-case {
+            background: #f0fff4; border: 1px solid #c6f6d5; padding: 12px; border-radius: 8px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .use-case.high-value { background: #ebf8ff; border-color: #bee3f8; }
+        
+        .flow-arrows {
+            display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 30px;
+        }
+        .arrow-right { width: 40px; height: 4px; background: #cbd5e0; position: relative; }
+        .arrow-right::after { content: '►'; position: absolute; right: -8px; top: -10px; color: #cbd5e0; font-size: 18px; }
+
+        /* 红线管控 (修复换行问题) */
+        .red-line-box {
+            grid-column: 1 / -1; margin-top: 15px;
+            background: #fff5f5; border: 1px solid #feb2b2; border-left: 5px solid var(--crcc-red);
+            padding: 12px; font-size: 0.9rem; color: #c53030; display: flex; align-items: flex-start; gap: 10px;
+            word-wrap: break-word; /* 确保长文本换行 */
+        }
+
+        /* --- 3. 雨季施工 (四重盾牌) --- */
+        .rain-grid {
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px;
+        }
+        .shield-card {
+            background: linear-gradient(to bottom right, #fff, #ebf8ff);
+            border: 1px solid #bee3f8; border-radius: 8px; padding: 15px;
+            text-align: center; transition: transform 0.3s;
+            display: flex; flex-direction: column; height: 100%;
+        }
+        .shield-card:hover { transform: scale(1.03); border-color: var(--rain-blue); z-index: 5; }
+        .shield-icon { font-size: 2rem; margin-bottom: 10px; display: block; }
+        .shield-title { font-weight: bold; color: #2b6cb0; margin-bottom: 5px; }
+        .shield-desc { font-size: 0.85rem; color: #4a5568; text-align: left; margin-top: auto; line-height: 1.4; }
+
+        /* 数据高亮 */
+        .hl-data { font-weight: bold; color: var(--crcc-blue); background: rgba(0, 51, 102, 0.1); padding: 0 4px; border-radius: 3px; }
+        .hl-red { color: var(--crcc-red); font-weight: bold; }
+
+        /* 导航 */
+        .nav-btn {
+            position: fixed; bottom: 30px; padding: 12px 30px;
+            background: var(--crcc-blue); color: white;
+            border-radius: 30px; text-decoration: none; font-weight: bold;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2); transition: 0.3s; z-index: 200; font-size: 1rem;
+        }
+        .nav-btn:hover { background: var(--crcc-red); transform: scale(1.05); }
+        .prev-btn { right: 150px; background: white; color: var(--crcc-blue); border: 1px solid var(--crcc-blue); }
+        .next-btn { right: 30px; }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header-section">
+        <div>
+            <h2>关键施工技术方案 <span style="font-size:1rem; color:#718096; margin-left:10px;">G4222和含高速二分部</span></h2>
+            <div class="subtitle">三大核心：石灰改良土质控、土石方精细调配、雨季严防死守</div>
+        </div>
+    </div>
+
+    <div class="content-scroll">
+        
+        <div class="tech-card">
+            <div class="card-header">
+                <span class="step-badge">1</span>
+                <span>石灰改良土施工 (全线质量控制核心)</span>
+                <span style="font-size:0.8rem; background:#fefcbf; color:#744210; padding:2px 8px; border-radius:10px; border:1px solid #fbd38d;">任务量: 232.55万m³</span>
+            </div>
+            
+            <div style="margin-bottom:15px; font-weight:bold; color:var(--crcc-blue);">
+                工艺原则：场外集中消解 ➜ 精准布料 ➜ 路拌法强制拌合 ➜ 组合碾压
+            </div>
+
+            <div class="process-flow">
+                <div class="process-step">
+                    <div class="step-title">🏭 集中消解</div>
+                    <div class="step-content">
+                        • <strong>设施：</strong>3处大棚 (K17, K25, K38)。<br>
+                        • <strong>时效：</strong>消解≥3-5天，过筛使用。<br>
+                        • <strong>储备：</strong>保<span class="hl-data">7天</span>用量，防雨季断供。
+                    </div>
+                </div>
+
+                <div class="process-step">
+                    <div class="step-title">🚛 精准布料</div>
+                    <div class="step-content">
+                        • <strong>严禁：</strong>人工抛洒。<br>
+                        • <strong>设备：</strong>智能撒布车。<br>
+                        • <strong>校核：</strong>打格校核法，灰剂量偏差 <span class="hl-data">-0.5%~+1.0%</span>。
+                    </div>
+                </div>
+
+                <div class="process-step">
+                    <div class="step-title">🚜 强制拌合</div>
+                    <div class="step-content">
+                        • <strong>设备：</strong>大功率路拌机。<br>
+                        • <strong>含水率：</strong>最佳 -1%~+2%。
+                        <div class="mixing-demo">
+                            <div class="layer-bottom"></div>
+                            <div class="blade-mark"></div>
+                            <div class="mix-label">刀头侵入下层 1-2cm<br>(消除素土夹层)</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="process-step">
+                    <div class="step-title">🛣️ 组合碾压</div>
+                    <div class="step-content">
+                        1. <strong>初压：</strong>22t羊角碾 (破大土块)。<br>
+                        2. <strong>精平：</strong>平地机刮平。<br>
+                        3. <strong>复压：</strong>强振碾压。<br>
+                        4. <strong>终压：</strong>光轮静压收光。
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tech-card">
+            <div class="card-header">
+                <span class="step-badge">2</span>
+                <span>服务区石方开挖与利用 (K28-K30 土石方调配关键)</span>
+                <span style="font-size:0.8rem; background:#e2e8f0; color:#4a5568; padding:2px 8px; border-radius:10px;">储量: 近50万方</span>
+            </div>
+
+            <div class="stone-grid">
+                <div class="blast-zone">
+                    <div style="font-weight:bold; margin-bottom:10px;">🧨 精细化爆破</div>
+                    <ul style="font-size:0.85rem; padding-left:15px; line-height:1.8;">
+                        <li><strong>主攻：</strong>深孔台阶爆破</li>
+                        <li><strong>边坡：</strong>光面/预裂爆破</li>
+                        <li><strong>监测：</strong>严控单响药量</li>
+                    </ul>
+                </div>
+
+                <div class="flow-arrows">
+                    <div class="arrow-right"></div>
+                    <div class="arrow-right"></div>
+                </div>
+
+                <div class="distribute-zone">
+                    <div class="use-case high-value">
+                        <div>
+                            <div style="font-weight:bold; color:#2b6cb0;">大块石料 (优先)</div>
+                            <div style="font-size:0.8rem; color:#4a5568;">利用强度/透水性</div>
+                        </div>
+                        <div style="text-align:right; font-size:0.85rem; font-weight:bold;">
+                            ➜ 梁场段软基抛石<br>➜ 93区以下路堤
+                        </div>
+                    </div>
+                    
+                    <div class="use-case">
+                        <div>
+                            <div style="font-weight:bold; color:#2f855a;">中小石料/石屑</div>
+                            <div style="font-size:0.8rem; color:#4a5568;">加工利用</div>
+                        </div>
+                        <div style="text-align:right; font-size:0.85rem; font-weight:bold;">
+                            ➜ 碎石加工<br>➜ 一般路基填筑
+                        </div>
+                    </div>
+                </div>
+
+                <div class="red-line-box">
+                    <div style="font-size:1.5rem; flex-shrink:0;">🚫</div>
+                    <div>
+                        <strong>红线管控 (严禁事项)：</strong><br>
+                        1. <span class="hl-red">严禁</span> 私自用石渣代替石灰土 (特别是路床0-80cm、台背、设计改良层)。<br>
+                        2. 必须严格执行 232万方灰土改良量，确保路基板体性。
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tech-card">
+            <div class="card-header">
+                <span class="step-badge">3</span>
+                <span>雨季及膨胀土施工专项措施 (全年仅210天有效工期)</span>
+            </div>
+
+            <div class="rain-grid">
+                <div class="shield-card">
+                    <span class="shield-icon">📅</span>
+                    <div class="shield-title">避开梅雨</div>
+                    <div class="shield-desc">
+                        <strong>6月中-7月中：</strong>原则停止大面积改良土施工。<br>
+                        <strong>转战：</strong>排水沟、备料、预制。
+                    </div>
+                </div>
+                
+                <div class="shield-card">
+                    <span class="shield-icon">🌊</span>
+                    <div class="shield-title">临时排水</div>
+                    <div class="shield-desc">
+                        <strong>路基：</strong>始终保持 <span class="hl-data">2%-4%</span> 双向横坡。<br>
+                        <strong>边沟：</strong>随填筑同步提升，绝不积水。
+                    </div>
+                </div>
+
+                <div class="shield-card">
+                    <span class="shield-icon">🚜</span>
+                    <div class="shield-title">雨前封顶</div>
+                    <div class="shield-desc">
+                        <strong>制度：</strong>收工前/雨前必须光轮碾压封闭。<br>
+                        <strong>禁令：</strong>严禁雨中拌合或摊铺。
+                    </div>
+                </div>
+
+                <div class="shield-card">
+                    <span class="shield-icon">☔</span>
+                    <div class="shield-title">防雨覆盖</div>
+                    <div class="shield-desc">
+                        <strong>物资：</strong>足量储备彩条布/防雨膜。<br>
+                        <strong>对象：</strong>已拌合未压实段必覆盖。
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<a href="p24.html" class="nav-btn prev-btn">上一页</a>
+<a href="p26.html" class="nav-btn next-btn">下一页</a>
+
+</body>
+</html>

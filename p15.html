@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>梁场规划与设计</title>
+    <style>
+        /* --- 1. 核心配色 --- */
+        :root {
+            --crcc-blue: #003366;
+            --crcc-light: #f0f7ff;
+            --crcc-red: #E60012;
+            --text-main: #1a202c;
+            --text-sub: #4a5568;
+            --bg-grad: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            --card-bg: rgba(255, 255, 255, 0.9);
+            --border-color: #e2e8f0;
+            
+            /* 功能色 */
+            --c-production: #3182ce; /* 生产蓝 */
+            --c-storage: #38a169;    /* 存储绿 */
+            --c-equip: #d69e2e;      /* 设备金 */
+            --c-steel: #805ad5;      /* 钢筋紫 */
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            background: var(--bg-grad);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: var(--text-main);
+        }
+
+        /* --- 2. 主容器 --- */
+        .container {
+            width: 96vw;
+            height: 94vh;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            padding: 25px;
+            background: rgba(255,255,255,0.7);
+            backdrop-filter: blur(15px);
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+            border: 1px solid rgba(255,255,255,0.6);
+        }
+
+        /* 标题区 */
+        .header-section {
+            flex: 0 0 auto;
+            border-bottom: 2px solid rgba(0, 51, 102, 0.1);
+            padding-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        h2 { font-size: 2rem; color: var(--crcc-blue); display: flex; align-items: center; gap: 15px; }
+        h2::before { content:''; width: 8px; height: 35px; background: var(--crcc-red); display: block; }
+        .subtitle { font-size: 1rem; color: var(--text-sub); margin-top: 8px; }
+
+        /* --- 3. 内容网格 --- */
+        .grid-layout {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 40% 58%; /* 左4右6 */
+            grid-template-rows: 1fr 1fr;
+            gap: 20px;
+            overflow: hidden;
+        }
+
+        /* 通用卡片 */
+        .card {
+            background: white; border-radius: 12px; padding: 20px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            display: flex; flex-direction: column;
+            position: relative; overflow: hidden;
+            border-left: 5px solid transparent;
+            transition: transform 0.3s;
+        }
+        .card:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
+
+        .card-title {
+            font-size: 1.1rem; font-weight: bold; color: var(--crcc-blue);
+            margin-bottom: 15px; display: flex; align-items: center; gap: 8px;
+            padding-bottom: 8px; border-bottom: 1px dashed #eee;
+        }
+        .card-icon { font-size: 1.2rem; }
+
+        /* === 区域1：选址与规模 (左上) === */
+        .section-scale { border-left-color: var(--c-production); grid-row: 1 / 2; }
+        
+        .info-row { margin-bottom: 10px; font-size: 0.9rem; color: #555; }
+        .info-row strong { color: #333; }
+        .hl-num { color: var(--crcc-red); font-weight: 900; font-size: 1.1rem; }
+
+        /* 梁型条形图 */
+        .beam-chart { margin-top: 10px; display: flex; flex-direction: column; gap: 8px; }
+        .bar-group { display: flex; align-items: center; font-size: 0.8rem; }
+        .bar-label { width: 80px; text-align: right; margin-right: 10px; color: #666; font-weight:bold;}
+        .bar-track { flex: 1; height: 12px; background: #edf2f7; border-radius: 6px; overflow: hidden; }
+        .bar-fill { height: 100%; border-radius: 6px; animation: fillBar 1.5s ease-out forwards; position: relative;}
+        .bar-value { margin-left: 8px; font-weight: bold; color: var(--crcc-blue); width: 40px;}
+        
+        /* === 区域2：产能与工效 (左下) === */
+        .section-efficiency { border-left-color: var(--c-equip); grid-row: 2 / 3; }
+        
+        .eff-grid { display: flex; gap: 15px; margin-top: 10px; }
+        .eff-box { 
+            flex: 1; background: #fffaf0; border: 1px solid #fee_bc8; 
+            border-radius: 8px; padding: 10px; text-align: center; 
+        }
+        .eff-val { font-size: 1.8rem; font-weight: 900; color: #d69e2e; display: block; line-height: 1.2;}
+        .eff-label { font-size: 0.8rem; color: #744210; font-weight: bold;}
+        .eff-sub { font-size: 0.75rem; color: #975a16; margin-top: 5px; }
+
+        .cycle-list { margin-top: 15px; font-size: 0.9rem; color: #555; }
+        .cycle-item { display: flex; justify-content: space-between; border-bottom: 1px dashed #eee; padding: 5px 0; }
+
+        /* === 区域3：功能区与台座 (右上) === */
+        .section-layout { border-left-color: var(--c-storage); grid-row: 1 / 2; }
+        
+        .zone-container { display: flex; gap: 15px; height: 100%; }
+        
+        /* 竖向分区卡片 */
+        .zone-card {
+            flex: 1; border-radius: 8px; padding: 10px;
+            display: flex; flex-direction: column;
+            border: 1px solid #e2e8f0;
+        }
+        .zc-steel { background: #f3e8ff; border-color: #d6bcfa; }
+        .zc-make { background: #ebf8ff; border-color: #bee3f8; }
+        .zc-store { background: #f0fff4; border-color: #c6f6d5; }
+
+        .zc-head { font-weight: bold; font-size: 0.95rem; margin-bottom: 8px; text-align: center; padding-bottom: 5px; border-bottom: 1px solid rgba(0,0,0,0.1); }
+        .zc-content { font-size: 0.85rem; color: #555; line-height: 1.6; }
+        .zc-total { 
+            margin-top: auto; text-align: center; 
+            font-weight: 900; font-size: 1.2rem; 
+            background: rgba(255,255,255,0.6); border-radius: 4px; padding: 5px;
+        }
+
+        /* === 区域4：设备与模板 (右下) === */
+        .section-equip { border-left-color: var(--c-steel); grid-row: 2 / 3; }
+        
+        /* 龙门吊 */
+        .gantry-box { display: flex; gap: 20px; margin-bottom: 15px; background: #f7fafc; padding: 10px; border-radius: 8px; }
+        .gb-item { display: flex; align-items: center; gap: 10px; }
+        .gb-icon { font-size: 1.5rem; }
+        .gb-text span { display: block; font-size: 0.8rem; color: #666; }
+        .gb-text strong { font-size: 1rem; color: var(--crcc-blue); }
+
+        /* 模板表格 */
+        .form-table {
+            width: 100%; border-collapse: collapse; font-size: 0.85rem; text-align: center;
+        }
+        .form-table th { background: var(--crcc-blue); color: white; padding: 6px; font-weight: normal; }
+        .form-table td { border: 1px solid #e2e8f0; padding: 6px; color: #333; }
+        .form-table tr:nth-child(even) { background: #f8fafc; }
+        .form-table td:last-child { text-align: left; font-size: 0.8rem; color: #555; }
+        .ft-total { font-weight: bold; color: var(--crcc-red); }
+
+        /* 导航按钮 */
+        .nav-btn {
+            position: fixed; bottom: 30px; right: 30px;
+            padding: 12px 30px; background: var(--crcc-blue); color: white;
+            border-radius: 30px; text-decoration: none; font-weight: bold;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2); transition: 0.3s; z-index: 100;
+        }
+        .nav-btn:hover { background: var(--crcc-red); }
+        .prev-btn { right: 150px; background: white; color: var(--crcc-blue); border: 1px solid var(--crcc-blue); }
+
+        /* 动画 */
+        @keyframes fillBar { from { width: 0; } }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .card { animation: fadeInUp 0.6s ease backwards; }
+        .card:nth-child(1) { animation-delay: 0.1s; }
+        .card:nth-child(2) { animation-delay: 0.2s; }
+        .card:nth-child(3) { animation-delay: 0.3s; }
+        .card:nth-child(4) { animation-delay: 0.4s; }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- 标题 -->
+        <div class="header-section">
+            <h2>梁场规划与设计</h2>
+            <div class="subtitle">K26+700 ~ K27+900 (主线路基范围内)</div>
+        </div>
+
+        <div class="grid-layout">
+            
+            <!-- 1. 选址与规模 -->
+            <div class="card section-scale">
+                <div class="card-title"><span class="card-icon">🏗️</span> 选址与生产任务</div>
+                <div class="info-row"><strong>占地面积：</strong>长 1200m × 宽 36m (利用红线内路基)</div>
+                <div class="info-row"><strong>生产任务：</strong>全线预制梁共计 <span class="hl-num">1223</span> 片</div>
+                
+                <div class="beam-chart">
+                    <div class="bar-group">
+                        <div class="bar-label">13m T梁</div>
+                        <div class="bar-track"><div class="bar-fill" style="width: 43%; background: #4299e1;"></div></div>
+                        <div class="bar-value">522</div>
+                    </div>
+                    <div class="bar-group">
+                        <div class="bar-label">25m 箱梁</div>
+                        <div class="bar-track"><div class="bar-fill" style="width: 48%; background: #48bb78;"></div></div>
+                        <div class="bar-value">585</div>
+                    </div>
+                    <div class="bar-group">
+                        <div class="bar-label">35m 箱梁</div>
+                        <div class="bar-track"><div class="bar-fill" style="width: 9%; background: #ed8936;"></div></div>
+                        <div class="bar-value">106</div>
+                    </div>
+                    <div class="bar-group">
+                        <div class="bar-label">40m 箱梁</div>
+                        <div class="bar-track"><div class="bar-fill" style="width: 1%; background: #e53e3e;"></div></div>
+                        <div class="bar-value">10</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. 功能区与台座 -->
+            <div class="card section-layout">
+                <div class="card-title"><span class="card-icon">🗺️</span> 功能区划与台座布置</div>
+                <div class="zone-container">
+                    <!-- 钢筋 -->
+                    <div class="zone-card zc-steel">
+                        <div class="zc-head" style="color:#6b46c1">钢筋绑扎区</div>
+                        <div class="zc-content">
+                            <div>• 25m/40m通用: 4个</div>
+                            <div>• 13m专用: 4个</div>
+                            <div>• 35m专用: 2个</div>
+                        </div>
+                        <div class="zc-total" style="color:#6b46c1">10 个</div>
+                    </div>
+                    <!-- 制梁 -->
+                    <div class="zone-card zc-make">
+                        <div class="zc-head" style="color:#2b6cb0">制梁区</div>
+                        <div class="zc-content">
+                            <div>• 13m台座: 15个</div>
+                            <div>• 25m台座: 15个</div>
+                            <div>• 35m/40m通用: 5个</div>
+                        </div>
+                        <div class="zc-total" style="color:#2b6cb0">35 个</div>
+                    </div>
+                    <!-- 存梁 -->
+                    <div class="zone-card zc-store">
+                        <div class="zc-head" style="color:#2f855a">存梁区</div>
+                        <div class="zc-content">
+                            <div>• 13m: 100片 (单层)</div>
+                            <div>• 25m: 260片 (双层)</div>
+                            <div>• 35m: 60片 (双层)</div>
+                        </div>
+                        <div class="zc-total" style="color:#2f855a">420 片</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. 生产能力 -->
+            <div class="card section-efficiency">
+                <div class="card-title"><span class="card-icon">⚡</span> 生产能力与工效</div>
+                <div class="eff-grid">
+                    <div class="eff-box">
+                        <span class="eff-label">月生产能力</span>
+                        <span class="eff-val">100<span style="font-size:1rem">片</span></span>
+                        <div class="eff-sub">满足总体工期要求</div>
+                    </div>
+                    <div class="eff-box">
+                        <span class="eff-label">有效生产期</span>
+                        <span class="eff-val">13-14<span style="font-size:1rem">个月</span></span>
+                        <div class="eff-sub">预计工期</div>
+                    </div>
+                </div>
+                <div class="cycle-list">
+                    <div class="cycle-item"><span>13m T梁生产周期</span><strong>6 天/片</strong></div>
+                    <div class="cycle-item"><span>25m/35m/40m 箱梁生产周期</span><strong>7 天/片</strong></div>
+                </div>
+            </div>
+
+            <!-- 4. 设备与模板 -->
+            <div class="card section-equip">
+                <div class="card-title"><span class="card-icon">⚙️</span> 机械设备与模板配置</div>
+                
+                <div class="gantry-box">
+                    <div class="gb-item">
+                        <div class="gb-icon">🏗️</div>
+                        <div class="gb-text"><span>提梁/存梁/装车</span><strong>80t-34m 龙门吊 ×2</strong></div>
+                    </div>
+                    <div style="width:1px; background:#ccc;"></div>
+                    <div class="gb-item">
+                        <div class="gb-icon">🔧</div>
+                        <div class="gb-text"><span>钢筋/模板/浇筑</span><strong>10t-34m 龙门吊 ×3</strong></div>
+                    </div>
+                </div>
+
+                <table class="form-table">
+                    <thead>
+                        <tr><th>梁型</th><th>边梁</th><th>中梁</th><th>内模</th><th>备注</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>13m T梁</td><td>2套</td><td>3套</td><td>-</td><td>满足522片生产，周转率高</td></tr>
+                        <tr><td>25m 箱梁</td><td>2套</td><td>3套</td><td>6套</td><td>满足585片生产</td></tr>
+                        <tr><td>35m 箱梁</td><td>2套</td><td>1套</td><td>3套</td><td>满足106片生产</td></tr>
+                        <tr><td>40m 箱梁</td><td>1套</td><td>1套</td><td>3套</td><td>满足10片生产，少量周转</td></tr>
+                        <tr style="background:#fffaf0; border-top:2px solid #ccc;">
+                            <td><strong>合计重量</strong></td>
+                            <td class="ft-total">224t</td>
+                            <td class="ft-total">224t</td>
+                            <td class="ft-total">90t</td>
+                            <td class="ft-total">总计投入约 538吨</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- 导航 -->
+    <a href="p14.html" class="nav-btn prev-btn">上一页</a>
+    <a href="p16.html" class="nav-btn">下一页</a>
+
+</body>
+</html>

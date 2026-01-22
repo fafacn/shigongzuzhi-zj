@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>路基施工总体方案 - p22</title>
+    <style>
+        /* --- 1. 核心配色 --- */
+        :root {
+            --crcc-blue: #003366;
+            --crcc-red: #E60012;
+            --tech-teal: #319795;
+            --earth-brown: #8D6E63;
+            --layer-6: #CDDC39; /* 顶层最亮 */
+            --layer-4: #AFB42B; /* 中层稍暗 */
+            --layer-3: #827717; /* 底层最暗 */
+            --bg-grad: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            --glass-bg: rgba(255,255,255,0.96);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+            height: 100vh; width: 100vw; overflow: hidden;
+            background: var(--bg-grad);
+            display: flex; justify-content: center; align-items: center;
+            color: #1a202c;
+        }
+
+        .container {
+            width: 98vw; height: 96vh;
+            display: flex; flex-direction: column;
+            padding: 20px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            box-shadow: 0 15px 50px rgba(0,0,0,0.15);
+            border: 1px solid rgba(255,255,255,0.6);
+        }
+
+        /* --- 头部 --- */
+        .header-section {
+            flex: 0 0 auto;
+            border-bottom: 2px solid rgba(0, 51, 102, 0.1);
+            padding-bottom: 10px; margin-bottom: 15px;
+            display: flex; justify-content: space-between; align-items: flex-end;
+        }
+        h2 { font-size: 1.8rem; color: var(--crcc-blue); display: flex; align-items: center; gap: 12px; margin: 0; }
+        h2::before { content:''; width: 6px; height: 28px; background: var(--crcc-red); display: block; }
+        .subtitle { font-size: 0.95rem; color: #718096; font-weight: 500;}
+
+        /* --- 核心布局：Bento Grid (恢复原版布局) --- */
+        .dashboard-grid {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 1.2fr 1fr 1fr; /* 左-中-右 */
+            grid-template-rows: auto 1fr;
+            gap: 15px;
+            overflow: hidden;
+        }
+
+        /* 通用卡片样式 */
+        .card {
+            background: white; border-radius: 12px; padding: 15px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.04); border: 1px solid #edf2f7;
+            display: flex; flex-direction: column;
+            transition: transform 0.2s;
+        }
+        .card:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.06); }
+        
+        .card-title {
+            font-size: 1rem; font-weight: 800; color: var(--crcc-blue);
+            margin-bottom: 12px; padding-left: 8px; border-left: 3px solid var(--tech-teal);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+
+        /* --- 模块1：土石方全貌 (左侧全高) --- */
+        .card-earth-main {
+            grid-column: 1 / 2; grid-row: 1 / 3;
+        }
+        .balance-flow {
+            flex: 1; display: flex; flex-direction: column; gap: 15px; justify-content: center;
+        }
+        .flow-item {
+            display: flex; align-items: center; justify-content: space-between;
+            background: #f7fafc; padding: 10px; border-radius: 8px; border-left: 4px solid #ccc;
+        }
+        .flow-item.source { border-color: #ed8936; }
+        .flow-item.dest { border-color: var(--crcc-blue); }
+        
+        .big-num { font-size: 1.4rem; font-weight: bold; color: #2d3748; }
+
+        /* --- 模块2：梁场核心段 (中上 - 红色警戒) --- */
+        .card-beam {
+            grid-column: 2 / 3; grid-row: 1 / 2;
+            background: linear-gradient(to bottom right, #fff, #fff5f5);
+            border: 1px solid #feb2b2; border-left: 5px solid var(--crcc-red);
+        }
+        .card-beam .card-title { border: none; padding-left: 0; color: var(--crcc-red); margin-bottom: 5px; }
+        
+        .beam-stats {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 5px;
+        }
+        .beam-stat-box {
+            padding: 8px; border-radius: 6px; text-align: center;
+            display: flex; flex-direction: column; justify-content: center;
+        }
+        .beam-label { font-size: 0.75rem; color: #718096; margin-bottom: 2px; }
+        .beam-val { font-size: 1.1rem; font-weight: bold; line-height: 1.2; }
+
+        /* --- 模块3：膨胀土改良 (中下) --- */
+        .card-structure {
+            grid-column: 2 / 3; grid-row: 2 / 3;
+        }
+        .soil-stack {
+            flex: 1; display: flex; flex-direction: column; /* 上到下排列 */
+            gap: 4px; padding: 10px 5px; background: #e2e8f0; border-radius: 8px;
+            border-bottom: 6px solid #5d4037;
+        }
+        .soil-layer {
+            width: 100%; display: flex; align-items: center; justify-content: space-between;
+            padding: 0 10px; color: #3e2723; font-weight: bold; font-size: 0.85rem;
+            border: 1px dashed rgba(0,0,0,0.1);
+            transition: all 0.3s; cursor: default;
+        }
+        .soil-layer:hover { transform: scale(1.02); z-index: 10; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+
+        .layer-6 { height: 25%; background: var(--layer-6); border-radius: 6px 6px 0 0; }
+        .layer-4 { height: 50%; background: var(--layer-4); } 
+        .layer-3 { height: 25%; background: var(--layer-3); border-radius: 0 0 2px 2px; }
+
+        /* --- 模块4：工期与气候 (右侧全高) --- */
+        .card-schedule {
+            grid-column: 3 / 4; grid-row: 1 / 3;
+            display: flex; flex-direction: column;
+        }
+        
+        /* 气候动画容器 (梅雨 SVG) */
+        .weather-anim-box {
+            position: relative;
+            height: 120px; /* 固定高度 */
+            background: linear-gradient(to bottom, #4b6cb7, #182848);
+            border-radius: 8px;
+            overflow: hidden;
+            color: white;
+            margin-bottom: 15px;
+            flex: 0 0 auto;
+        }
+        
+        .weather-info {
+            position: relative; z-index: 10; padding: 10px;
+            display: flex; justify-content: space-between; height: 100%;
+            flex-direction: column;
+        }
+
+        /* 云朵 SVG 动画 */
+        .cloud {
+            position: absolute; top: 15px; left: 20px;
+            width: 50px; height: 25px; background: #dbeafe; border-radius: 50px;
+            opacity: 0.8; animation: float 6s ease-in-out infinite alternate;
+        }
+        .cloud::after {
+            content: ''; position: absolute; top: -12px; left: 10px;
+            width: 25px; height: 25px; background: #dbeafe; border-radius: 50%;
+        }
+        .cloud-sm {
+            width: 30px; height: 15px; top: 40px; left: 60px; opacity: 0.6;
+            animation: float 8s ease-in-out infinite alternate-reverse;
+        }
+        .cloud-sm::after { width: 15px; height: 15px; top: -8px; left: 5px; }
+
+        @keyframes float { from { transform: translateX(0); } to { transform: translateX(15px); } }
+
+        /* 雨滴 SVG 动画 */
+        .rain-svg {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5;
+        }
+        .rain-drop {
+            stroke: #a5d8ff; stroke-width: 1.5; stroke-linecap: round;
+            opacity: 0; animation: rain 1s linear infinite;
+        }
+        .d1 { animation-delay: 0s; }
+        .d2 { animation-delay: 0.5s; }
+        .d3 { animation-delay: 0.2s; }
+        
+        @keyframes rain {
+            0% { transform: translateY(-10px); opacity: 0; }
+            20% { opacity: 0.8; }
+            100% { transform: translateY(130px); opacity: 0; }
+        }
+
+        /* 时间轴 */
+        .timeline-box {
+            flex: 1; overflow-y: auto;
+            position: relative; padding-left: 20px;
+            border-left: 2px solid #e2e8f0; margin-left: 5px;
+        }
+        .time-node { position: relative; margin-bottom: 20px; }
+        .time-dot {
+            width: 12px; height: 12px; background: white; border: 3px solid var(--crcc-blue);
+            border-radius: 50%; position: absolute; left: -27px; top: 4px;
+        }
+        .time-date { font-family: monospace; font-weight: bold; color: var(--crcc-blue); font-size: 0.9rem; }
+        .time-desc { font-size: 0.85rem; color: #4a5568; background: #f7fafc; padding: 8px; border-radius: 6px; margin-top: 4px; }
+        
+        /* 红色节点 */
+        .node-red .time-dot { border-color: var(--crcc-red); animation: pulse 2s infinite; }
+        .node-red .time-date { color: var(--crcc-red); }
+        .node-red .time-desc { background: #fff5f5; border-left: 3px solid var(--crcc-red); }
+        
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(230,0,18,0.4); } 70% { box-shadow: 0 0 0 6px rgba(230,0,18,0); } 100% { box-shadow: 0 0 0 0 rgba(230,0,18,0); } }
+
+        /* 底部导航按钮 */
+        .nav-btn {
+            position: fixed; bottom: 30px; padding: 12px 30px;
+            background: var(--crcc-blue); color: white;
+            border-radius: 30px; text-decoration: none; font-weight: bold;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2); transition: 0.3s; z-index: 200; font-size: 1rem;
+        }
+        .nav-btn:hover { background: var(--crcc-red); transform: scale(1.05); }
+        .prev-btn { right: 150px; background: white; color: var(--crcc-blue); border: 1px solid var(--crcc-blue); }
+        .next-btn { right: 30px; }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header-section">
+        <div>
+            <h2>G4222和含高速二分部路基施工总体方案 (K15+236～K41+105)</h2>
+            <div class="subtitle">土石方调配平衡 · 膨胀土改良结构 · 关键路径管控</div>
+        </div>
+        <div style="font-size:0.9rem; color:#718096; background:#edf2f7; padding:5px 15px; border-radius:20px;">
+            全长 25.869km | 挖方总量 226.44万m³
+        </div>
+    </div>
+
+    <div class="dashboard-grid">
+
+        <div class="card card-earth-main">
+            <div class="card-title">土石方调配平衡 (万m³)</div>
+            <div class="balance-flow">
+                <div class="flow-item source">
+                    <div>
+                        <div style="font-size:0.85rem; color:#d97706; font-weight:bold;">挖方来源</div>
+                        <div class="big-num">226.44</div>
+                        <div style="font-size:0.8rem; margin-top:5px; color:#666;">
+                            ★ 褒禅山服务区 (49.2万)<br>
+                            • K20-K21 (24万)<br>
+                            • K31-K32 (13.9万)
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flow-item source" style="border-color:#38b2ac;">
+                    <div>
+                        <div style="font-size:0.85rem; color:#2c7a7b; font-weight:bold;">借方来源</div>
+                        <div class="big-num">102.66</div>
+                        <div style="font-size:0.8rem; margin-top:5px; color:#666;">
+                            坏峰水库、5-2、8#取土场
+                        </div>
+                    </div>
+                </div>
+
+                <div style="text-align:center; color:#ccc; font-size:1.5rem; margin:-5px 0;">⬇</div>
+
+                <div class="flow-item dest">
+                    <div>
+                        <div style="font-size:0.85rem; color:var(--crcc-blue); font-weight:bold;">填方去向 (系数1.1)</div>
+                        <div class="big-num" style="color:var(--crcc-blue);">329.10</div>
+                        <div style="font-size:0.8rem; margin-top:5px; color:#666;">
+                            全线一般路基及软基换填
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card card-beam">
+            <div class="card-title">
+                <span>🚩 梁场核心段 (控制工期)</span>
+            </div>
+            <div style="font-size:0.85rem; margin-bottom:5px; color:#c53030;">
+                <strong>K26+620 ～ K27+025</strong>
+            </div>
+            
+            <div class="beam-stats">
+                <div class="beam-stat-box" style="border:1px solid #ecc94b; background:#fffaf0;">
+                    <div class="beam-label">需挖方(万m³)</div>
+                    <div class="beam-val" style="color:#d69e2e;">20.84</div>
+                </div>
+                <div class="beam-stat-box" style="border:1px solid #90cdf4; background:#f0f9ff;">
+                    <div class="beam-label">填土方(万m³)</div>
+                    <div class="beam-val" style="color:#3182ce;">1.40</div>
+                </div>
+                <div class="beam-stat-box" style="border:1px solid #a0aec0; background:#f7fafc; grid-column:span 2;">
+                    <div class="beam-label">填石方(万m³)</div>
+                    <div class="beam-val" style="color:#4a5568;">3.86</div>
+                </div>
+            </div>
+            <div style="margin-top:8px; font-size:0.8rem; color:#e53e3e; text-align:center;">
+                死命令：2026.5.15 前必须交付！
+            </div>
+        </div>
+
+        <div class="card card-structure">
+            <div class="card-title">
+                <span>膨胀土改良结构 (232.55万m³)</span>
+            </div>
+            <div class="soil-stack">
+                <div class="soil-layer layer-6">
+                    <span>6% 石灰土</span>
+                    <span>65.13万</span>
+                </div>
+                
+                <div class="soil-layer layer-4">
+                    <span>4% 石灰土 (核心层)</span>
+                    <span style="font-size:1.1em; color:#827717;">147.25万</span>
+                </div>
+                
+                <div class="soil-layer layer-3">
+                    <span>3% 石灰土</span>
+                    <span>20.16万</span>
+                </div>
+            </div>
+            <div style="text-align:center; font-size:0.8rem; color:#666; margin-top:5px;">
+                改良土占填方总量 >70%
+            </div>
+        </div>
+
+        <div class="card card-schedule">
+            <div class="card-title">工期管控与气候</div>
+            
+            <div class="weather-anim-box">
+                <div class="cloud"></div>
+                <div class="cloud cloud-sm"></div>
+                <svg class="rain-svg">
+                    <line x1="20" y1="0" x2="20" y2="15" class="rain-drop d1" />
+                    <line x1="50" y1="0" x2="50" y2="15" class="rain-drop d2" />
+                    <line x1="80" y1="0" x2="80" y2="15" class="rain-drop d3" />
+                    <line x1="35" y1="-20" x2="35" y2="-5" class="rain-drop d2" />
+                    <line x1="65" y1="-20" x2="65" y2="-5" class="rain-drop d1" />
+                </svg>
+
+                <div class="weather-info">
+                    <div style="font-size:0.85rem; opacity:0.9;">⛈ <strong>梅雨(Meiyu)</strong></div>
+                    <div style="text-align:right;">
+                        <div style="font-size:1.8rem; font-weight:bold;">210<span style="font-size:0.9rem">天</span></div>
+                        <div style="font-size:0.75rem; opacity:0.8;">有效施工期</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="timeline-box">
+                <div class="time-node">
+                    <div class="time-dot"></div>
+                    <div class="time-date">2026.03.01</div>
+                    <div class="time-desc">路基主体施工启动<br>通涵先行</div>
+                </div>
+
+                <div class="time-node node-red">
+                    <div class="time-dot"></div>
+                    <div class="time-date">2026.05.15 (红线)</div>
+                    <div class="time-desc">
+                        <strong>梁场段交付使用</strong><br>
+                        制架梁起始点
+                    </div>
+                </div>
+
+                <div class="time-node">
+                    <div class="time-dot"></div>
+                    <div class="time-date">2027.07.01</div>
+                    <div class="time-desc">路基主体完工</div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<a href="p21.html" class="nav-btn prev-btn">上一页</a>
+<a href="p23.html" class="nav-btn next-btn">下一页</a>
+
+</body>
+</html>

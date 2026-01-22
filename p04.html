@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>主要技术标准</title>
+    <style>
+        /* --- 1. 核心配色 --- */
+        :root {
+            --crcc-blue: #003366;
+            --crcc-light-blue: #f0f7ff;
+            --crcc-red: #E60012;
+            --text-main: #1a202c;
+            --text-sub: #4a5568;
+            --bg-grad: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            background: var(--bg-grad);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: var(--text-main);
+        }
+
+        /* --- 2. 主布局 --- */
+        .container {
+            width: 96vw;
+            height: 92vh;
+            display: grid;
+            grid-template-columns: 48% 50%;
+            grid-template-rows: auto 1fr;
+            gap: 20px;
+            padding: 30px;
+            background: rgba(255,255,255,0.6);
+            backdrop-filter: blur(15px);
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+            border: 1px solid rgba(255,255,255,0.6);
+        }
+
+        .header-section {
+            grid-column: 1 / -1;
+            border-bottom: 2px solid rgba(0, 51, 102, 0.1);
+            padding-bottom: 15px;
+            margin-bottom: 5px;
+        }
+        h2 { font-size: 2.2rem; color: var(--crcc-blue); display: flex; align-items: center; gap: 15px; }
+        h2::before { content:''; width: 8px; height: 35px; background: var(--crcc-red); display: block; }
+        .subtitle { font-size: 1rem; color: var(--text-sub); margin-left: 23px; margin-top: 5px; }
+
+        .num-badge {
+            display: inline-flex; justify-content: center; align-items: center;
+            width: 26px; height: 26px; background: var(--crcc-red); color: white;
+            border-radius: 50%; font-size: 0.9rem; font-weight: bold; margin-right: 10px;
+            flex-shrink: 0; box-shadow: 0 2px 5px rgba(230, 0, 18, 0.3);
+        }
+
+        /* --- 左侧：路基断面可视化 --- */
+        .left-panel { display: flex; flex-direction: column; gap: 20px; }
+
+        .summary-card {
+            background: white; padding: 20px; border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05); display: grid;
+            grid-template-columns: 1fr 1fr; gap: 15px;
+            animation: fadeInLeft 0.8s ease backwards;
+        }
+        .summary-item { border-left: 3px solid var(--crcc-blue); padding-left: 10px; }
+        .s-label { font-size: 0.9rem; color: #666; }
+        .s-val { font-size: 1.2rem; font-weight: 800; color: var(--crcc-blue); }
+
+        .cross-section-box {
+            flex: 1; background: white; border-radius: 12px; padding: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05); position: relative;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            animation: fadeInLeft 0.8s ease 0.2s backwards;
+        }
+        .cs-title {
+            position: absolute; top: 15px; left: 20px;
+            font-size: 1.1rem; font-weight: bold; color: var(--crcc-blue);
+            background: var(--crcc-light-blue); padding: 5px 10px; border-radius: 6px;
+            display: flex; align-items: center;
+        }
+
+        /* --- 核心：路基模型 CSS (v5.0 汽车图纸风格) --- */
+        .road-model {
+            width: 100%; height: 220px; 
+            position: relative; margin-top: 20px; 
+            display: flex; align-items: flex-end; justify-content: center;
+        }
+        
+        /* 基础色块 */
+        .block {
+            height: 40px; display: flex; justify-content: center; align-items: center;
+            font-size: 0.8rem; color: white; font-weight: bold; position: relative;
+            transition: all 0.3s;
+        }
+        
+        /* 土路肩 & 硬路肩 */
+        .b-soil { width: 2.2%; background: #8d6e63; border-radius: 4px 0 0 4px; border-right: 1px dashed rgba(255,255,255,0.3); }
+        .b-hard { width: 8.7%; background: #5d4037; border-right: 1px dashed rgba(255,255,255,0.3); }
+        
+        /* 0.75m 外部标注 (引线向上) */
+        .label-pin-up {
+            position: absolute; top: -25px; left: 50%; transform: translateX(-50%);
+            color: #5d4037; font-size: 0.75rem; font-weight: bold; white-space: nowrap;
+        }
+        .label-pin-up::after {
+            content: ''; position: absolute; bottom: -5px; left: 50%; transform: translateX(-50%);
+            width: 1px; height: 5px; background: #5d4037;
+        }
+
+        /* 3.0m 内部标注 */
+        .label-inner { z-index: 5; font-size: 0.8rem; }
+
+        /* 车道组容器 (11.25m) */
+        .b-lane-group {
+            width: 32.6%; background: #37474f; 
+            display: flex; 
+            border-right: 1px dashed rgba(255,255,255,0.3);
+            position: relative;
+        }
+
+        /* 单车道 */
+        .single-lane {
+            flex: 1; height: 100%; position: relative;
+            border-right: 1px dashed rgba(255,255,255,0.3);
+            display: flex; justify-content: center; align-items: center;
+        }
+        .single-lane:last-child { border-right: none; }
+
+        /* 车辆容器 */
+        .car-container {
+            position: absolute; 
+            bottom: 45px; /* 悬浮在色块上方 */
+            left: 50%; transform: translateX(-50%);
+            width: 90%; 
+            display: flex; flex-direction: column; align-items: center;
+        }
+        
+        /* 1. 修改点：汽车正视图 SVG */
+        .car-svg {
+            width: 100%; height: auto;
+            filter: drop-shadow(0 2px 2px rgba(0,0,0,0.1));
+        }
+
+        /* 车道宽度标注 */
+        .lane-width-tag {
+            font-size: 0.75rem; color: #555; font-weight: bold; 
+            margin-top: 2px;
+        }
+
+        /* 3. 修改点：11.25m 尺寸标注线 */
+        .dim-line-1125 {
+            position: absolute; top: 50%; left: 0; width: 100%; height: 10px;
+            transform: translateY(-50%);
+            display: flex; justify-content: center; align-items: center;
+            border-bottom: 1px solid rgba(255,255,255,0.7); /* 横线 */
+        }
+        .dim-line-1125::before, .dim-line-1125::after {
+            content:''; position: absolute; bottom: 0; width: 1px; height: 6px; background: rgba(255,255,255,0.7);
+        }
+        .dim-line-1125::before { left: 0; }
+        .dim-line-1125::after { right: 0; }
+        
+        .dim-text-1125 {
+            background: #37474f; /* 遮挡线条背景 */
+            padding: 0 5px;
+            font-size: 1.1rem; color: rgba(255,255,255,0.9); font-weight: 900; z-index: 2;
+        }
+
+        /* 中间带容器 */
+        .b-mid-container { width: 13%; display: flex; height: 40px; position: relative; }
+        
+        .sub-edge { 
+            width: 16.6%; background: #455a64; color: #fff; 
+            display: flex; justify-content: center; align-items: center;
+            position: relative;
+        }
+        
+        /* 2. 修改点：中间带 0.75 移到下方 */
+        .label-edge-bottom {
+            position: absolute; bottom: -35px; left: 50%; transform: translateX(-50%);
+            color: #455a64; font-size: 0.7rem; font-weight: bold;
+        }
+        .label-edge-bottom::after {
+            content:''; position: absolute; top: -10px; left: 50%; transform: translateX(-50%);
+            width: 1px; height: 10px; background: #455a64;
+        }
+
+        .sub-center { width: 66.8%; background: #2e7d32; color: #fff; font-size: 0.9rem; display: flex; justify-content: center; align-items: center; font-weight: bold; }
+        
+        /* 中间带顶部标注 (4.5) */
+        .mid-label-line {
+            position: absolute; top: -55px; left: 0; width: 100%;
+            border-bottom: 1px solid #333; height: 10px; border-left: 1px solid #333; border-right: 1px solid #333;
+        }
+        .mid-label-text {
+            position: absolute; top: -75px; left: 50%; transform: translateX(-50%);
+            font-size: 0.8rem; color: var(--crcc-red); font-weight: bold; white-space: nowrap;
+        }
+        .mid-val-text {
+            position: absolute; top: -45px; left: 50%; transform: translateX(-50%);
+            font-size: 1rem; color: #333; font-weight: bold;
+        }
+
+        /* 底部总宽标注 */
+        .total-width {
+            width: 100%; margin-top: 40px; /* 增加间距给下方0.75 */
+            border-top: 2px solid var(--crcc-blue);
+            text-align: center; padding-top: 8px; font-weight: 900; font-size: 1.6rem; color: var(--crcc-blue);
+            position: relative;
+        }
+        .total-width::before, .total-width::after { 
+            content:''; position:absolute; top:-8px; width:2px; height:16px; background:var(--crcc-blue); 
+        }
+        .total-width::before { left: 0; } .total-width::after { right: 0; }
+
+        .cs-details {
+            margin-top: 20px; width: 100%;
+            display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+            font-size: 0.85rem; color: #555;
+        }
+        .cs-item::before { content: '•'; color: var(--crcc-blue); margin-right: 5px; font-weight: bold; }
+
+        /* --- 右侧：卡片矩阵 --- */
+        .right-panel {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: repeat(3, 1fr);
+            gap: 15px;
+        }
+
+        .spec-card {
+            background: white; border-radius: 12px; padding: 15px 18px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.03); display: flex; flex-direction: column;
+            transition: all 0.3s; border-top: 4px solid transparent;
+        }
+        .spec-card:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        
+        .c-bridge { border-top-color: #3182ce; }
+        .c-tunnel { border-top-color: #d69e2e; }
+        .c-inter { border-top-color: #805ad5; }
+        .c-other { border-top-color: #38a169; }
+
+        .card-head { display: flex; align-items: center; margin-bottom: 10px; }
+        .card-title { font-weight: bold; font-size: 1.1rem; color: #2d3748; }
+
+        .spec-list { font-size: 0.85rem; line-height: 1.5; color: #4a5568; }
+        .spec-row { display: flex; justify-content: space-between; border-bottom: 1px dashed #eee; padding: 3px 0; }
+        .spec-row:last-child { border-bottom: none; }
+        .hl-val { font-weight: bold; color: var(--crcc-blue); }
+
+        .nav-btn {
+            position: fixed; bottom: 30px; right: 30px;
+            padding: 12px 30px; background: var(--crcc-blue); color: white;
+            border-radius: 30px; text-decoration: none; font-weight: bold;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2); transition: 0.3s; z-index: 100;
+        }
+        .nav-btn:hover { background: var(--crcc-red); }
+        .prev-btn { right: 150px; background: white; color: var(--crcc-blue); border: 1px solid var(--crcc-blue); }
+
+        @keyframes fadeInLeft { from { opacity:0; transform:translateX(-20px); } to { opacity:1; transform:translateX(0); } }
+        @keyframes fadeInRight { from { opacity:0; transform:translateX(20px); } to { opacity:1; transform:translateX(0); } }
+
+        .spec-card:nth-child(1) { animation: fadeInRight 0.6s ease 0.1s backwards; }
+        .spec-card:nth-child(2) { animation: fadeInRight 0.6s ease 0.2s backwards; }
+        .spec-card:nth-child(3) { animation: fadeInRight 0.6s ease 0.3s backwards; }
+        .spec-card:nth-child(4) { animation: fadeInRight 0.6s ease 0.4s backwards; }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- 标题 -->
+        <div class="header-section">
+            <h2>主要技术标准</h2>
+            <div class="subtitle">全线采用双向六车道高速公路标准建设</div>
+        </div>
+
+        <!-- 左侧：路基断面可视化 -->
+        <div class="left-panel">
+            <div class="summary-card">
+                <div class="cs-title" style="background:none; padding:0; top:-10px; position:relative;">
+                    <span class="num-badge">1</span>道路主要技术指标
+                </div>
+                <div style="grid-column: 1/-1; display:grid; grid-template-columns:1fr 1fr; gap:15px; padding-top:10px;">
+                    <div class="summary-item">
+                        <div class="s-label">公路等级</div>
+                        <div class="s-val">高速公路</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="s-label">设计速度</div>
+                        <div class="s-val">120 <span style="font-size:0.8rem">km/h</span></div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="s-label">车道数</div>
+                        <div class="s-val">双向六车道</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="s-label">路面荷载</div>
+                        <div class="s-val">BZZ-100 <span style="font-size:0.8rem; font-weight:normal; color:#666;">(标准轴载100kN)</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="cross-section-box">
+                <div class="cs-title">
+                    <span class="num-badge">2</span>整体式路基横断面 (34.5m)
+                </div>
+                
+                <div class="road-model">
+                    <!-- 左侧土路肩 -->
+                    <div class="block b-soil">
+                        <div class="label-pin-up">0.75</div>
+                    </div>
+                    <!-- 硬路肩 -->
+                    <div class="block b-hard">
+                        <span class="label-inner">3.0</span>
+                    </div>
+                    
+                    <!-- 左幅行车道组 -->
+                    <div class="block b-lane-group">
+                        <!-- 车道1 -->
+                        <div class="single-lane">
+                            <div class="car-container">
+                                <!-- 汽车正视图 SVG -->
+                                <svg class="car-svg" viewBox="0 0 64 48">
+                                    <path d="M4 24 L12 8 H52 L60 24 V40 H4 Z" fill="white" stroke="#E60012" stroke-width="2"/>
+                                    <rect x="14" y="12" width="36" height="10" fill="none" stroke="#E60012" stroke-width="1"/>
+                                    <circle cx="12" cy="40" r="4" fill="#333"/>
+                                    <circle cx="52" cy="40" r="4" fill="#333"/>
+                                </svg>
+                                <div class="lane-width-tag">3.75</div>
+                            </div>
+                        </div>
+                        <!-- 车道2 -->
+                        <div class="single-lane">
+                            <div class="car-container">
+                                <svg class="car-svg" viewBox="0 0 64 48">
+                                    <path d="M4 24 L12 8 H52 L60 24 V40 H4 Z" fill="white" stroke="#E60012" stroke-width="2"/>
+                                    <rect x="14" y="12" width="36" height="10" fill="none" stroke="#E60012" stroke-width="1"/>
+                                    <circle cx="12" cy="40" r="4" fill="#333"/>
+                                    <circle cx="52" cy="40" r="4" fill="#333"/>
+                                </svg>
+                                <div class="lane-width-tag">3.75</div>
+                            </div>
+                        </div>
+                        <!-- 车道3 -->
+                        <div class="single-lane">
+                            <div class="car-container">
+                                <svg class="car-svg" viewBox="0 0 64 48">
+                                    <path d="M4 24 L12 8 H52 L60 24 V40 H4 Z" fill="white" stroke="#E60012" stroke-width="2"/>
+                                    <rect x="14" y="12" width="36" height="10" fill="none" stroke="#E60012" stroke-width="1"/>
+                                    <circle cx="12" cy="40" r="4" fill="#333"/>
+                                    <circle cx="52" cy="40" r="4" fill="#333"/>
+                                </svg>
+                                <div class="lane-width-tag">3.75</div>
+                            </div>
+                        </div>
+                        
+                        <!-- 11.25m 尺寸标注 -->
+                        <div class="dim-line-1125">
+                            <span class="dim-text-1125">11.25</span>
+                        </div>
+                    </div>
+                    
+                    <!-- 中间带 -->
+                    <div class="b-mid-container">
+                        <div class="sub-edge">
+                            <!-- 0.75 移到下方 -->
+                            <div class="label-edge-bottom">0.75</div>
+                        </div>
+                        <div class="sub-center">3.0</div>
+                        <div class="sub-edge">
+                            <!-- 0.75 移到下方 -->
+                            <div class="label-edge-bottom">0.75</div>
+                        </div>
+
+                        <div class="mid-label-line"></div>
+                        <div class="mid-label-text">含路缘带</div>
+                        <div class="mid-val-text">4.5</div>
+                    </div>
+                    
+                    <!-- 右幅行车道组 -->
+                    <div class="block b-lane-group" style="border-right:none; border-left:1px dashed rgba(255,255,255,0.3);">
+                        <!-- 车道1 -->
+                        <div class="single-lane">
+                            <div class="car-container">
+                                <svg class="car-svg" viewBox="0 0 64 48">
+                                    <path d="M4 24 L12 8 H52 L60 24 V40 H4 Z" fill="white" stroke="#E60012" stroke-width="2"/>
+                                    <rect x="14" y="12" width="36" height="10" fill="none" stroke="#E60012" stroke-width="1"/>
+                                    <circle cx="12" cy="40" r="4" fill="#333"/>
+                                    <circle cx="52" cy="40" r="4" fill="#333"/>
+                                </svg>
+                                <div class="lane-width-tag">3.75</div>
+                            </div>
+                        </div>
+                        <!-- 车道2 -->
+                        <div class="single-lane">
+                            <div class="car-container">
+                                <svg class="car-svg" viewBox="0 0 64 48">
+                                    <path d="M4 24 L12 8 H52 L60 24 V40 H4 Z" fill="white" stroke="#E60012" stroke-width="2"/>
+                                    <rect x="14" y="12" width="36" height="10" fill="none" stroke="#E60012" stroke-width="1"/>
+                                    <circle cx="12" cy="40" r="4" fill="#333"/>
+                                    <circle cx="52" cy="40" r="4" fill="#333"/>
+                                </svg>
+                                <div class="lane-width-tag">3.75</div>
+                            </div>
+                        </div>
+                        <!-- 车道3 -->
+                        <div class="single-lane">
+                            <div class="car-container">
+                                <svg class="car-svg" viewBox="0 0 64 48">
+                                    <path d="M4 24 L12 8 H52 L60 24 V40 H4 Z" fill="white" stroke="#E60012" stroke-width="2"/>
+                                    <rect x="14" y="12" width="36" height="10" fill="none" stroke="#E60012" stroke-width="1"/>
+                                    <circle cx="12" cy="40" r="4" fill="#333"/>
+                                    <circle cx="52" cy="40" r="4" fill="#333"/>
+                                </svg>
+                                <div class="lane-width-tag">3.75</div>
+                            </div>
+                        </div>
+                        
+                        <div class="dim-line-1125">
+                            <span class="dim-text-1125">11.25</span>
+                        </div>
+                    </div>
+                    
+                    <!-- 右硬路肩 -->
+                    <div class="block b-hard" style="border-left:1px dashed rgba(255,255,255,0.3); border-right:1px dashed rgba(255,255,255,0.3);">
+                        <span class="label-inner">3.0</span>
+                    </div>
+                    <!-- 右土路肩 -->
+                    <div class="block b-soil" style="border-radius:0 4px 4px 0; border-right:none;">
+                        <div class="label-pin-up">0.75</div>
+                    </div>
+                </div>
+
+                <!-- 总宽 -->
+                <div class="total-width">路基全宽 34.5 米</div>
+
+                <div class="cs-details">
+                    <div class="cs-item">行车道：2 × 3 × 3.75m</div>
+                    <div class="cs-item">中间带：4.5m (含路缘带 2×0.75)</div>
+                    <div class="cs-item">硬路肩：2 × 3.00m</div>
+                    <div class="cs-item">土路肩：2 × 0.75m</div>
+                    <div class="cs-item">路拱横坡：行车道 2.0%</div>
+                    <div class="cs-item">土路肩横坡：4.0%</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 右侧：技术指标 -->
+        <div class="right-panel">
+            <div class="spec-card c-bridge">
+                <div class="card-head"><span class="num-badge">3</span><div class="card-title">桥涵及结构物</div></div>
+                <div class="spec-list">
+                    <div class="spec-row"><span>设计荷载</span><span class="hl-val">公路-Ⅰ级</span></div>
+                    <div class="spec-row"><span>特大桥洪水频率</span><span class="hl-val">1/300</span></div>
+                    <div class="spec-row"><span>一般结构洪水</span><span class="hl-val">1/100</span></div>
+                    <div class="spec-row"><span>抗震设防烈度</span><span class="hl-val">VI度 (按7度设防)</span></div>
+                    <div class="spec-row"><span>PGA / 周期</span><span>0.05g / 0.35s</span></div>
+                </div>
+            </div>
+
+            <div class="spec-card c-tunnel">
+                <div class="card-head"><span class="num-badge">4</span><div class="card-title">长山隧道标准</div></div>
+                <div class="spec-list">
+                    <div class="spec-row"><span>隧道形式</span><span class="hl-val">分离式</span></div>
+                    <div class="spec-row"><span>设计速度</span><span class="hl-val">120 km/h</span></div>
+                    <div class="spec-row"><span>单洞建筑限界</span><span class="hl-val">净宽14.5m (三车道)</span></div>
+                    <div class="spec-row"><span>净高控制</span><span class="hl-val">5.0 米</span></div>
+                </div>
+            </div>
+
+            <div class="spec-card c-inter">
+                <div class="card-head"><span class="num-badge">5</span><div class="card-title">互通立交 (含山北)</div></div>
+                <div class="spec-list">
+                    <div class="spec-row"><span>匝道设计速度</span><span class="hl-val">40 ~ 60 km/h</span></div>
+                    <div class="spec-row"><span>单向单车道宽</span><span>9.0 米</span></div>
+                    <div class="spec-row"><span>单向双车道宽</span><span>10.5 / 12.0 米</span></div>
+                    <div class="spec-row"><span>上跨主线净高</span><span class="hl-val">≥ 5.0 米</span></div>
+                </div>
+            </div>
+
+            <div class="spec-card c-other">
+                <div class="card-head"><span class="num-badge">6</span><div class="card-title">其他设施 & 环保</div></div>
+                <div class="spec-list">
+                    <div class="spec-row" style="display:block; line-height:1.5; color:#555;">
+                        • 设置安全、通讯、监控、收费系统及服务区。<br>
+                        • <strong>环保措施：</strong>敏感点设声屏障，满足水保要求。
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <a href="p03.html" class="nav-btn prev-btn">上一页</a>
+    <a href="p05.html" class="nav-btn">下一页</a>
+
+</body>
+</html>

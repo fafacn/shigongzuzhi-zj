@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>施工保障措施 - p26</title>
+    <style>
+        /* --- 设计系统 --- */
+        :root {
+            --crcc-blue: #003366;
+            --crcc-red: #E60012;
+            --tech-teal: #319795;
+            --safety-orange: #dd6b20;
+            --bg-grad: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            --glass-bg: rgba(255,255,255,0.96);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+            height: 100vh; width: 100vw; overflow: hidden;
+            background: var(--bg-grad);
+            display: flex; justify-content: center; align-items: center;
+            color: #2d3748;
+        }
+
+        .container {
+            width: 98vw; height: 96vh;
+            display: flex; flex-direction: column;
+            padding: 20px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            box-shadow: 0 15px 50px rgba(0,0,0,0.15);
+            border: 1px solid rgba(255,255,255,0.6);
+        }
+
+        /* --- 头部 --- */
+        .header-section {
+            flex: 0 0 auto;
+            border-bottom: 2px solid rgba(0, 51, 102, 0.1);
+            padding-bottom: 10px; margin-bottom: 10px;
+            display: flex; justify-content: space-between; align-items: flex-end;
+        }
+        h2 { font-size: 1.6rem; color: var(--crcc-blue); display: flex; align-items: center; gap: 12px; margin: 0; }
+        h2::before { content:''; width: 6px; height: 26px; background: var(--crcc-red); display: block; }
+        
+        /* --- 内容网格 --- */
+        .content-grid {
+            flex: 1; overflow-y: auto; padding-right: 5px;
+            display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: auto auto 1fr;
+            gap: 15px;
+            padding-bottom: 80px; /* 底部留白给导航 */
+        }
+
+        /* --- 通用卡片 --- */
+        .card {
+            background: white; border-radius: 12px; padding: 15px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.03); border: 1px solid #e2e8f0;
+            display: flex; flex-direction: column; transition: transform 0.3s;
+        }
+        .card:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,0.06); }
+        
+        .card-header {
+            font-size: 1.1rem; font-weight: bold; margin-bottom: 12px;
+            display: flex; align-items: center; gap: 10px; padding-bottom: 8px;
+            border-bottom: 1px dashed rgba(0,0,0,0.1);
+        }
+        .icon-box {
+            width: 32px; height: 32px; border-radius: 6px; color: white;
+            display: flex; justify-content: center; align-items: center; font-size: 1.2rem;
+        }
+
+        /* 1. 梁场优先 (红) - 占据上方全宽 */
+        .priority-card {
+            grid-column: 1 / -1;
+            background: linear-gradient(to right, #fff, #fff5f5);
+            border-left: 5px solid var(--crcc-red);
+        }
+        .priority-header { color: var(--crcc-red); }
+        .priority-icon { background: var(--crcc-red); }
+        
+        .priority-content {
+            display: flex; align-items: center; gap: 20px;
+        }
+        .priority-list { flex: 1; }
+        .list-item { margin-bottom: 8px; font-size: 0.9rem; line-height: 1.5; padding-left: 15px; position: relative; }
+        .list-item::before { content: '•'; position: absolute; left: 0; color: var(--crcc-red); font-weight: bold; }
+        
+        /* 死命令日历 */
+        .dead-order-box {
+            background: white; border: 2px solid var(--crcc-red); border-radius: 8px;
+            padding: 10px 20px; text-align: center; color: var(--crcc-red);
+            box-shadow: 0 5px 15px rgba(230,0,18,0.15);
+            animation: pulse 2s infinite; min-width: 180px;
+        }
+        .do-title { font-size: 0.8rem; font-weight: bold; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 1px; }
+        .do-date { font-size: 1.6rem; font-weight: 800; line-height: 1; }
+        .do-desc { font-size: 0.75rem; margin-top: 5px; opacity: 0.8; }
+        
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.02); } 100% { transform: scale(1); } }
+
+        /* 2. 灰土检测 (青) */
+        .quality-card {
+            border-left: 5px solid var(--tech-teal);
+        }
+        .quality-header { color: var(--tech-teal); }
+        .quality-icon { background: var(--tech-teal); }
+        
+        .dual-control {
+            display: flex; gap: 10px; margin: 10px 0;
+        }
+        .control-box {
+            flex: 1; background: #f0fdfa; border: 1px solid #ccfbf1; padding: 10px; border-radius: 6px;
+            text-align: center;
+        }
+        .control-val { font-weight: bold; color: var(--tech-teal); display: block; margin-bottom: 4px; }
+        .control-label { font-size: 0.75rem; color: #555; }
+
+        .zero-tolerance {
+            margin-top: auto; background: #fff; border: 2px dashed #e53e3e; color: #e53e3e;
+            padding: 10px; border-radius: 6px; font-size: 0.85rem; position: relative;
+            display: flex; align-items: center; gap: 10px;
+        }
+        .stamp {
+            border: 2px solid #e53e3e; border-radius: 4px; padding: 2px 6px; 
+            font-weight: bold; transform: rotate(-10deg); font-size: 0.8rem;
+            animation: stamp-in 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; opacity: 0;
+        }
+        @keyframes stamp-in { from { opacity: 0; transform: scale(2) rotate(-10deg); } to { opacity: 1; transform: scale(1) rotate(-10deg); } }
+
+        /* 3. 交通保畅 (橙) */
+        .safety-card {
+            border-left: 5px solid var(--safety-orange);
+        }
+        .safety-header { color: var(--safety-orange); }
+        .safety-icon { background: var(--safety-orange); }
+        
+        .road-viz {
+            margin-top: 10px; background: #4a5568; padding: 15px; border-radius: 8px;
+            position: relative; overflow: hidden; color: white; font-size: 0.75rem;
+        }
+        .road-line {
+            height: 2px; background: repeating-linear-gradient(to right, white 0, white 10px, transparent 10px, transparent 20px);
+            margin: 10px 0; opacity: 0.5;
+        }
+        .passing-bay {
+            position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+            width: 50px; height: 40px; border: 1px dashed #f6e05e; border-radius: 0 10px 10px 0;
+            display: flex; align-items: center; justify-content: center; color: #f6e05e; font-weight: bold;
+            background: rgba(246, 224, 94, 0.1);
+        }
+        .traffic-rule {
+            display: flex; justify-content: space-between; align-items: center; margin-top: 10px;
+            background: #fffaf0; padding: 8px; border-radius: 6px; font-size: 0.85rem; border: 1px solid #fbd38d;
+        }
+        .rule-tag { background: var(--safety-orange); color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; font-weight: bold; margin-right: 5px;}
+
+        /* 底部总结 */
+        .summary-box {
+            grid-column: 1 / -1;
+            background: linear-gradient(135deg, var(--crcc-blue), #1a365d);
+            color: white; padding: 15px 20px; border-radius: 12px;
+            display: flex; align-items: center; gap: 15px;
+            box-shadow: 0 10px 20px rgba(0, 51, 102, 0.2);
+        }
+        .summary-icon { font-size: 2rem; opacity: 0.8; }
+        .summary-text { font-size: 0.9rem; line-height: 1.6; opacity: 0.95; }
+        .highlight-w { color: #90cdf4; font-weight: bold; }
+
+        /* 导航 */
+        .nav-btn {
+            position: fixed; bottom: 30px; padding: 12px 30px;
+            background: var(--crcc-blue); color: white;
+            border-radius: 30px; text-decoration: none; font-weight: bold;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2); transition: 0.3s; z-index: 200; font-size: 1rem;
+        }
+        .nav-btn:hover { background: var(--crcc-red); transform: scale(1.05); }
+        .prev-btn { right: 150px; background: white; color: var(--crcc-blue); border: 1px solid var(--crcc-blue); }
+        .next-btn { right: 30px; }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header-section">
+        <div>
+            <h2>施工保障措施 <span style="font-size:1rem; color:#718096; margin-left:10px;">G4222和含高速二分部</span></h2>
+            <div class="subtitle">三维立体保障体系：进度优先 · 质量死守 · 安全护航</div>
+        </div>
+    </div>
+
+    <div class="content-grid">
+        
+        <div class="card priority-card">
+            <div class="card-header priority-header">
+                <div class="icon-box priority-icon">🚀</div>
+                <div>梁场优先 (进度保障)</div>
+            </div>
+            <div class="priority-content">
+                <div class="priority-list">
+                    <div class="list-item">
+                        <strong>最高优先级：</strong> 二工班进场<span style="color:var(--crcc-red);">第一周</span>，必须集中设备打通 <span style="background:rgba(230,0,18,0.1); padding:0 4px; border-radius:3px;">K26+700~K27+900</span> 纵向便道。
+                    </div>
+                    <div class="list-item">
+                        <strong>资源集结：</strong> 集中投入土石方机械，实施“鱼塘清淤-石方换填-灰土封顶”连续突击。
+                    </div>
+                </div>
+                <div class="dead-order-box">
+                    <div class="do-title">⚠️ 死命令 (Dead Order)</div>
+                    <div class="do-date">2026.05.15</div>
+                    <div class="do-desc">完成路基交验<br>为梁场临建争取绝对时间</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card quality-card">
+            <div class="card-header quality-header">
+                <div class="icon-box quality-icon">🧪</div>
+                <div>灰土检测 (质量保障)</div>
+            </div>
+            
+            <div style="font-size:0.9rem; margin-bottom:5px;">
+                <strong>👤 专人专岗：</strong> 每段配备 2名 专职试验员，随进度检测。
+            </div>
+
+            <div class="dual-control">
+                <div class="control-box">
+                    <span class="control-val">灰剂量滴定</span>
+                    <span class="control-label">每2000m²检测<br>保掺量真实</span>
+                </div>
+                <div class="control-box">
+                    <span class="control-val">压实度检测</span>
+                    <span class="control-label">与灰剂量同步<br>不合格重压</span>
+                </div>
+            </div>
+
+            <div class="zero-tolerance">
+                <div class="stamp" style="animation-delay:0.5s">零容忍</div>
+                <div>
+                    严禁“弹簧土”过夜！<br>
+                    <span style="font-size:0.75rem;">发现即翻晒或换填，严禁覆盖掩盖。</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="card safety-card">
+            <div class="card-header safety-header">
+                <div class="icon-box safety-icon">🚧</div>
+                <div>交通保畅与安全 (安全保障)</div>
+            </div>
+
+            <div style="font-size:0.9rem; color:#666; margin-bottom:5px;">
+                <strong>交叉干扰：</strong> S213省道、X027县道、村道。运梁车(180T)混行。
+            </div>
+
+            <div class="traffic-rule">
+                <div><span class="rule-tag">管控</span> 平交口设警示，24h专人轮班指挥。</div>
+            </div>
+
+            <div class="road-viz">
+                <div style="margin-bottom:5px;">施工便道示意 (每300m设错车道)</div>
+                <div class="road-line"></div>
+                <div class="passing-bay">错车<br>道</div>
+                <div style="display:flex; justify-content:space-between; margin-top:15px;">
+                    <span>🚛 土方车 (20T)</span>
+                    <span style="color:#f6e05e;">⚠️ 避让</span>
+                    <span style="font-weight:bold;">运梁车 (180T) 🚚</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="summary-box">
+            <div class="summary-icon">🤝</div>
+            <div class="summary-text">
+                通过上述方案，在满足最低资源配置基础上，通过 <span class="highlight-w">强化二工班机械投入</span> (确保石方与梁场进度) 和 <span class="highlight-w">死守石灰土改良工艺</span> (确保路基质量)，可有效化解“工期紧、天气差、土质劣”的矛盾，实现路基工程的<strong>高效履约</strong>。
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<a href="p25.html" class="nav-btn prev-btn">上一页</a>
+<a href="p27.html" class="nav-btn next-btn">下一页</a>
+
+</body>
+</html>

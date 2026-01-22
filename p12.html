@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>施工用水用电</title>
+    <style>
+        /* --- 1. 核心配色 --- */
+        :root {
+            --crcc-blue: #003366;
+            --crcc-light: #e6f0ff;
+            --crcc-red: #E60012;
+            --power-main: #d69e2e; /* 仪表盘金 */
+            --temp-power: #003366; /* 临时电深蓝 */
+            --perm-power: #2f855a; /* 永久电森林绿 */
+            --water-main: #3182ce; /* 水力蓝 */
+            --text-main: #1a202c;
+            --text-sub: #718096;
+            --bg-grad: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            background: var(--bg-grad);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: var(--text-main);
+        }
+
+        /* --- 2. 主容器 --- */
+        .container {
+            width: 96vw;
+            height: 94vh;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            padding: 25px;
+            background: rgba(255,255,255,0.7);
+            backdrop-filter: blur(15px);
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+            border: 1px solid rgba(255,255,255,0.6);
+        }
+
+        /* 标题区 */
+        .header-section {
+            flex: 0 0 auto;
+            border-bottom: 2px solid rgba(0, 51, 102, 0.1);
+            padding-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        h2 { font-size: 2rem; color: var(--crcc-blue); display: flex; align-items: center; gap: 15px; }
+        h2::before { content:''; width: 8px; height: 35px; background: var(--crcc-red); display: block; }
+        .subtitle { font-size: 1rem; color: var(--text-sub); margin-top: 8px; }
+
+        /* --- 布局网格 --- */
+        .content-grid {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 70% 28%; /* 左电右水 */
+            gap: 2%;
+            overflow: hidden;
+        }
+
+        /* === 左侧：电力系统 === */
+        .power-section {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        /* 区域1：总述 (仪表盘) - 金色系 */
+        .dashboard-bar {
+            display: flex;
+            gap: 15px;
+            height: 90px;
+        }
+        .dash-card {
+            flex: 1; background: white; border-radius: 10px; padding: 15px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            display: flex; align-items: center; justify-content: space-between;
+            border-left: 5px solid var(--power-main); /* 金色边框 */
+        }
+        .dc-info h4 { margin: 0; color: var(--text-sub); font-size: 0.9rem; }
+        .dc-val { font-size: 1.8rem; font-weight: 900; color: var(--power-main); font-family: Impact, sans-serif; }
+        .dc-unit { font-size: 0.9rem; color: #999; margin-left: 5px; font-weight: normal;}
+        .dc-icon { font-size: 2.5rem; opacity: 0.2; color: var(--power-main); }
+
+        /* 区域2：临时变压器 - 深蓝系 */
+        .transformer-grid-container {
+            flex: 1;
+            background: white; border-radius: 12px; padding: 20px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            display: flex; flex-direction: column;
+            overflow: hidden;
+            border-top: 4px solid var(--temp-power); /* 顶部蓝条区分 */
+        }
+        .tg-title { font-weight: bold; color: var(--temp-power); margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;}
+        .tg-badge { background: var(--temp-power); color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.8rem; }
+
+        .transformer-list {
+            flex: 1;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-auto-rows: min-content;
+            gap: 12px;
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+        .transformer-list::-webkit-scrollbar { width: 4px; }
+        .transformer-list::-webkit-scrollbar-thumb { background: #ccc; border-radius: 2px; }
+
+        /* 变压器卡片 */
+        .tf-card {
+            border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px;
+            background: #fdfdfd; position: relative; overflow: hidden;
+            transition: all 0.3s; display: flex; flex-direction: column; gap: 5px;
+        }
+        .tf-card:hover { 
+            transform: translateY(-3px); 
+            box-shadow: 0 5px 15px rgba(0, 51, 102, 0.15); 
+            border-color: var(--temp-power);
+        }
+        
+        .tf-high { background: linear-gradient(to bottom right, #f0f7ff, #fff); border-top: 3px solid var(--temp-power); }
+        .tf-normal { border-top: 3px solid #cbd5e0; }
+
+        .tf-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+        .tf-capacity { font-weight: 900; font-size: 1.2rem; color: var(--temp-power); }
+        .tf-id { background: #eee; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; color: #666; font-weight: bold;}
+        
+        .tf-loc { font-size: 0.8rem; color: #555; display: flex; align-items: center; gap: 5px; }
+        .tf-usage { font-size: 0.85rem; font-weight: bold; color: #333; margin-top: 3px; }
+        .tf-note { font-size: 0.7rem; color: #999; margin-top: auto; border-top: 1px dashed #eee; padding-top: 4px; }
+
+        /* === 右侧：水 & 永临结合 === */
+        .side-section {
+            display: flex;
+            flex-direction: column;
+            gap: 15px; /* 间距微调 */
+            height: 100%;
+        }
+
+        /* 区域3：永久变压器 - 绿色系 */
+        .perm-power-box {
+            /* 修改：高度占比缩小，flex: 0.8 */
+            flex: 0.8;
+            background: white; border-radius: 12px; padding: 15px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            border-top: 4px solid var(--perm-power); /* 绿色顶边 */
+            display: flex; flex-direction: column;
+        }
+        .perm-title { font-weight: bold; color: var(--perm-power); margin-bottom: 15px; }
+        
+        .pp-list { margin-top: 5px; display: flex; flex-direction: column; gap: 10px; flex: 1; justify-content: space-evenly; }
+        .pp-item { 
+            display: flex; justify-content: space-between; align-items: center; 
+            background: #f0fff4; padding: 10px; border-radius: 6px; border-left: 3px solid var(--perm-power);
+        }
+        .pp-name { font-size: 0.85rem; font-weight: bold; color: #276749; }
+        .pp-cap { font-weight: bold; color: var(--perm-power); font-size: 0.95rem; }
+
+        /* 区域4：施工用水 - 蓝色渐变 */
+        .water-box {
+            /* 修改：高度占比放大，flex: 1.2 */
+            flex: 1.2;
+            background: linear-gradient(135deg, #ebf8ff 0%, #fff 100%); 
+            border-radius: 12px; padding: 25px; /* 增加内边距 */
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            border: 1px solid #bee3f8;
+            display: flex; flex-direction: column; justify-content: center;
+        }
+        .w-title { font-weight: bold; color: var(--water-main); font-size: 1.3rem; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+        .w-desc { font-size: 1rem; color: #2c5282; line-height: 1.8; text-align: justify; margin-bottom: 25px;}
+        
+        .w-tags { display: flex; flex-direction: column; gap: 12px; }
+        .w-tag { 
+            background: white; color: var(--water-main); 
+            padding: 10px 15px; border-radius: 8px; font-size: 0.95rem; font-weight: bold;
+            border-left: 5px solid var(--water-main); box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            display: flex; justify-content: space-between;
+        }
+
+        /* 导航按钮 */
+        .nav-btn {
+            position: fixed; bottom: 30px; right: 30px;
+            padding: 12px 30px; background: var(--crcc-blue); color: white;
+            border-radius: 30px; text-decoration: none; font-weight: bold;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2); transition: 0.3s; z-index: 100;
+        }
+        .nav-btn:hover { background: var(--crcc-red); }
+        .prev-btn { right: 150px; background: white; color: var(--crcc-blue); border: 1px solid var(--crcc-blue); }
+
+        /* 动画 */
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .dash-card, .transformer-grid-container, .side-section > div { animation: fadeInUp 0.6s ease backwards; }
+        .transformer-grid-container { animation-delay: 0.2s; }
+        .side-section > div:nth-child(2) { animation-delay: 0.3s; }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- 标题 -->
+        <div class="header-section">
+            <h2>施工用水、用电方案</h2>
+            <div class="subtitle">永临结合 • 节能高效</div>
+        </div>
+
+        <div class="content-grid">
+            
+            <!-- 左侧：电力系统 -->
+            <div class="power-section">
+                <!-- 区域1: 仪表盘 (金色) -->
+                <div class="dashboard-bar">
+                    <div class="dash-card">
+                        <div class="dc-info"><h4>临时变压器总功率</h4><div class="dc-val">7230<span class="dc-unit">KVA</span></div></div>
+                        <div class="dc-icon">⚡</div>
+                    </div>
+                    <div class="dash-card">
+                        <div class="dc-info"><h4>变压器总数量</h4><div class="dc-val">11<span class="dc-unit">座</span></div></div>
+                        <div class="dc-icon">🔋</div>
+                    </div>
+                    <div class="dash-card">
+                        <div class="dc-info"><h4>供电系统</h4><div class="dc-val" style="font-size:1.5rem">TN-S</div></div>
+                        <div class="dc-info" style="text-align:right"><h4>三级配电</h4><h4>二级防护</h4></div>
+                    </div>
+                </div>
+
+                <!-- 区域2: 临时变压器 (深蓝) -->
+                <div class="transformer-grid-container">
+                    <div class="tg-title">
+                        <span>⚡ 现场临时变压器配置 (11台)</span>
+                        <span class="tg-badge">大电接入+自发电</span>
+                    </div>
+                    
+                    <div class="transformer-list">
+                        <!-- 1 -->
+                        <div class="tf-card tf-normal">
+                            <div class="tf-head"><span class="tf-capacity">630</span><span class="tf-id">No.1</span></div>
+                            <div class="tf-usage">三场 - 拌合站</div>
+                            <div class="tf-loc">📍 K26+100 左1.2km</div>
+                            <div class="tf-note">备用: 2台200kw发电机</div>
+                        </div>
+                        <!-- 2 -->
+                        <div class="tf-card tf-high">
+                            <div class="tf-head"><span class="tf-capacity">1000</span><span class="tf-id">No.2</span></div>
+                            <div class="tf-usage">三场 - 钢筋/小型构件</div>
+                            <div class="tf-loc">📍 K26+100 左1.2km</div>
+                        </div>
+                        <!-- 3 -->
+                        <div class="tf-card tf-normal">
+                            <div class="tf-head"><span class="tf-capacity">630</span><span class="tf-id">No.3</span></div>
+                            <div class="tf-usage">含山北互通 (特大桥)</div>
+                            <div class="tf-loc">📍 K26+400 左红线边</div>
+                            <div class="tf-note">备用: 1台200kw发电机</div>
+                        </div>
+                        <!-- 4 -->
+                        <div class="tf-card tf-normal">
+                            <div class="tf-head"><span class="tf-capacity">630</span><span class="tf-id">No.4</span></div>
+                            <div class="tf-usage">预制梁场 (K26+~K27+)</div>
+                            <div class="tf-loc">📍 K27+000 左红线边</div>
+                            <div class="tf-note">备用: 1台200kw + 1台100kw</div>
+                        </div>
+                        <!-- 5 -->
+                        <div class="tf-card tf-normal">
+                            <div class="tf-head"><span class="tf-capacity">250</span><span class="tf-id">No.5</span></div>
+                            <div class="tf-usage">九连支渠/清溪二干渠桥</div>
+                            <div class="tf-loc">📍 K31+160 左红线边</div>
+                        </div>
+                        <!-- 6 (修改：1000 -> 800) -->
+                        <div class="tf-card tf-high">
+                            <div class="tf-head"><span class="tf-capacity">800</span><span class="tf-id">No.6</span></div>
+                            <div class="tf-usage">长山隧道施工</div>
+                            <div class="tf-loc">📍 K40+500 隧道入口</div>
+                            <div class="tf-note">备用: 1台200kw发电机</div>
+                        </div>
+                        <!-- 7 -->
+                        <div class="tf-card tf-normal">
+                            <div class="tf-head"><span class="tf-capacity">630</span><span class="tf-id">No.7</span></div>
+                            <div class="tf-usage">隧道入口钢筋场/拌合</div>
+                            <div class="tf-loc">📍 K40+500 隧道入口</div>
+                        </div>
+                        <!-- 8 -->
+                        <div class="tf-card tf-normal">
+                            <div class="tf-head"><span class="tf-capacity">200</span><span class="tf-id">No.8</span></div>
+                            <div class="tf-usage">项目部及试验室</div>
+                            <div class="tf-loc">📍 K24+200 右1.2km</div>
+                        </div>
+                        <!-- 9 -->
+                        <div class="tf-card tf-normal">
+                            <div class="tf-head"><span class="tf-capacity">630</span><span class="tf-id">No.9</span></div>
+                            <div class="tf-usage">鸡笼山水稳站</div>
+                            <div class="tf-loc">📍 K13+200 服务区</div>
+                        </div>
+                        <!-- 10 -->
+                        <div class="tf-card tf-normal">
+                            <div class="tf-head"><span class="tf-capacity">630</span><span class="tf-id">No.10</span></div>
+                            <div class="tf-usage">褒禅山服务区水稳站</div>
+                            <div class="tf-loc">📍 K29+300 左广场</div>
+                        </div>
+                        <!-- 11 -->
+                        <div class="tf-card tf-high">
+                            <div class="tf-head"><span class="tf-capacity">1000</span><span class="tf-id">No.11</span></div>
+                            <div class="tf-usage">褒禅山服务区沥青站</div>
+                            <div class="tf-loc">📍 K29+300 右广场</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 右侧：水 & 永临 -->
+            <div class="side-section">
+                <!-- 区域3: 永久用电 (绿色) -->
+                <div class="perm-power-box">
+                    <div class="perm-title">🔌 永久变压器 (业主提供)</div>
+                    <div class="pp-list">
+                        <div class="pp-item">
+                            <span class="pp-name">服务区南广场</span>
+                            <span class="pp-cap">630+1000</span>
+                        </div>
+                        <div class="pp-item">
+                            <span class="pp-name">服务区北广场</span>
+                            <span class="pp-cap">630+1250</span>
+                        </div>
+                        <div class="pp-item">
+                            <span class="pp-name">含山北收费站</span>
+                            <span class="pp-cap">315</span>
+                        </div>
+                        <div class="pp-item">
+                            <span class="pp-name">交警+路政营房</span>
+                            <span class="pp-cap">315</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 区域4: 施工用水 (蓝色) -->
+                <div class="water-box">
+                    <div class="w-title">💧 施工用水方案</div>
+                    <div class="w-desc">
+                        本标段沿线水资源丰富。生产用水主要采用打井取水，部分场站利用自来水。
+                    </div>
+                    <div class="w-tags">
+                        <div class="w-tag"><span>拌和站/隧道</span><span>打井取水</span></div>
+                        <div class="w-tag"><span>梁场</span><span>拌和站引水</span></div>
+                        <div class="w-tag"><span>生活用水</span><span>接自来水</span></div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- 导航 -->
+    <a href="p11.html" class="nav-btn prev-btn">上一页</a>
+    <a href="p13.html" class="nav-btn">下一页</a>
+
+</body>
+</html>

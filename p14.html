@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>总体施工进度计划</title>
+    <style>
+        /* --- 1. 核心配色 --- */
+        :root {
+            --crcc-blue: #003366;
+            --crcc-red: #E60012;
+            
+            /* 条形图颜色定义 */
+            --beam-bar-width: 16px; 
+            --beam-red-bg: #E60012;
+            --beam-blue-bg: #0070c0;
+            --beam-light-yellow: #FFFF00; 
+
+            --bar-main: #3182ce;
+            --text-main: #1a202c;
+            --bg-grad: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            
+            /* 表格行背景色 */
+            --row-blue: #00b0f0;
+            --row-yellow: #ffc000;
+            --row-green: #92d050;
+            --row-gray: #f2f2f2;
+            --row-tunnel: #e6fffb;
+            --row-finish: #fff7e6;
+            
+            /* 行高设置 */
+            --row-height: 48px; 
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            background: var(--bg-grad);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: var(--text-main);
+        }
+
+        /* --- 2. 主容器 --- */
+        .container {
+            width: 98vw;
+            height: 96vh;
+            display: flex;
+            flex-direction: column;
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(15px);
+            border-radius: 8px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+            border: 1px solid rgba(255,255,255,0.6);
+            overflow: hidden;
+        }
+
+        /* 标题区 */
+        .header-section {
+            flex: 0 0 auto;
+            padding: 10px 20px;
+            border-bottom: 2px solid rgba(0, 51, 102, 0.1);
+            display: flex; align-items: center; justify-content: space-between;
+            background: white; z-index: 10;
+        }
+        .h-left { display: flex; align-items: center; gap: 15px; }
+        h2 { font-size: 1.5rem; color: var(--crcc-blue); margin: 0; }
+        h2::before { content:''; display:inline-block; width: 6px; height: 24px; background: var(--crcc-red); margin-right: 10px; vertical-align: middle; }
+        .subtitle { font-size: 0.9rem; color: #666; margin-top: 2px; }
+        
+        .legend { display: flex; gap: 15px; font-size: 0.8rem; }
+        .l-item { display: flex; align-items: center; gap: 5px; }
+        .l-box { width: 12px; height: 12px; border-radius: 2px; border: 1px solid #ccc; }
+
+        /* --- 3. 甘特图主体 --- */
+        .gantt-wrapper {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+            position: relative;
+            background: #fff;
+        }
+
+        /* 左侧：数据表格区 */
+        .data-panel {
+            flex: 0 0 1050px;
+            background: white;
+            border-right: 2px solid #999;
+            display: flex;
+            flex-direction: column;
+            z-index: 5;
+            box-shadow: 5px 0 15px rgba(0,0,0,0.05);
+        }
+        
+        /* 表头 */
+        .panel-header-row {
+            height: 40px; background: #e0e0e0; color: #000;
+            display: flex; align-items: center; font-weight: bold; font-size: 0.85rem;
+            flex-shrink: 0; border-bottom: 1px solid #999;
+        }
+        
+        /* 列定义 */
+        .col-id { width: 40px; text-align: center; border-right: 1px solid #ccc; flex-shrink: 0;}
+        .col-name { width: 320px; padding-left: 5px; border-right: 1px solid #ccc; flex-shrink: 0;}
+        
+        .col-beam { 
+            width: 100px; 
+            text-align: center; 
+            border-right: 1px solid #ccc; 
+            flex-shrink: 0; 
+            position: relative; 
+            height: 100%; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: visible; 
+            z-index: 1;
+        }
+        
+        .col-dur { width: 70px; text-align: center; border-right: 1px solid #ccc; flex-shrink: 0;}
+        .col-date { width: 95px; text-align: center; border-right: 1px solid #ccc; flex-shrink: 0;}
+        .col-note { flex: 1; padding-left: 5px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+
+        /* 数据行容器 - 修改为可滚动但隐藏滚动条 */
+        .data-rows-container {
+            flex: 1; 
+            overflow-y: auto; /* 允许垂直滚动 */
+            background: #fff;
+            
+            /* 隐藏滚动条样式 */
+            scrollbar-width: none; /* Firefox */
+            -ms-overflow-style: none; /* IE 10+ */
+        }
+        .data-rows-container::-webkit-scrollbar { 
+            display: none; /* Chrome/Safari */
+        }
+        
+        .data-row {
+            height: var(--row-height); 
+            display: flex; align-items: center; 
+            border-bottom: 1px solid #ddd;
+            font-size: 12px; color: #000;
+            transition: background 0.1s;
+            position: relative; 
+        }
+        .data-row:hover { filter: brightness(0.95); }
+        .data-row.highlight { background: #ffffcc !important; }
+
+        /* 背景色类 */
+        .bg-blue { background-color: var(--row-blue); }
+        .bg-yellow { background-color: var(--row-yellow); }
+        .bg-green { background-color: var(--row-green); }
+        .bg-gray { background-color: var(--row-gray); }
+        .bg-tunnel { background-color: var(--row-tunnel); }
+        .bg-finish { background-color: var(--row-finish); }
+
+        .cell-text { white-space: normal; line-height: 1.2; height: 100%; display: flex; align-items: center; overflow: hidden; }
+        .cell-center { text-align: center; height: 100%; display: flex; align-items: center; justify-content: center; font-family: Arial, sans-serif; }
+        .data-row > div { border-right: 1px solid #ddd; }
+        .data-row > div:last-child { border-right: none; }
+
+        /* --- 垂直条形图与光束动画 --- */
+        
+        .beam-bar-container {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            width: var(--beam-bar-width);
+            z-index: 1; 
+            top: 0; 
+            bottom: 0; 
+            pointer-events: none;
+        }
+
+        /* 1. 红色向上流光条形 */
+        .anim-up {
+            background: linear-gradient(
+                to bottom, 
+                var(--beam-red-bg) 0%, 
+                var(--beam-light-yellow) 50%, 
+                var(--beam-red-bg) 100%
+            );
+            background-size: 100% 60px; 
+            animation: beamFlowUp 1s linear infinite; 
+            box-shadow: 0 0 4px rgba(230,0,18,0.4);
+        }
+
+        /* 2. 蓝色向下流光条形 */
+        .anim-down {
+            background: linear-gradient(
+                to bottom, 
+                var(--beam-blue-bg) 0%, 
+                var(--beam-light-yellow) 50%, 
+                var(--beam-blue-bg) 100%
+            );
+            background-size: 100% 60px;
+            animation: beamFlowDown 1s linear infinite;
+            box-shadow: 0 0 4px rgba(0,112,192,0.4);
+        }
+
+        /* 向上流动动画：背景位置向上移动 */
+        @keyframes beamFlowUp {
+            from { background-position: 0 60px; }
+            to { background-position: 0 0; }
+        }
+
+        /* 向下流动动画：背景位置向下移动 */
+        @keyframes beamFlowDown {
+            from { background-position: 0 0; }
+            to { background-position: 0 60px; }
+        }
+
+        /* 箭头头部 */
+        .arrow-cap {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0; height: 0;
+            z-index: 2;
+        }
+        .arrow-cap-up {
+            top: -12px;
+            border-left: 12px solid transparent;
+            border-right: 12px solid transparent;
+            border-bottom: 16px solid var(--beam-red-bg);
+            filter: drop-shadow(0 -2px 2px rgba(0,0,0,0.1));
+        }
+        .arrow-cap-down {
+            bottom: -12px;
+            border-left: 12px solid transparent;
+            border-right: 12px solid transparent;
+            border-top: 16px solid var(--beam-blue-bg);
+            filter: drop-shadow(0 2px 2px rgba(0,0,0,0.1));
+        }
+
+        /* 架梁参数文字框 */
+        .beam-info-box {
+            position: relative;
+            z-index: 10; 
+            background: #fff;
+            border: 2px solid;
+            font-size: 11px;
+            font-weight: bold;
+            padding: 2px 4px;
+            border-radius: 4px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+            line-height: 1.2;
+            min-width: 60px;
+        }
+        .box-red { border-color: var(--beam-red-bg); color: var(--beam-red-bg); }
+        .box-blue { border-color: var(--beam-blue-bg); color: var(--beam-blue-bg); }
+
+
+        /* 右侧：图表区 */
+        .chart-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto; /* 保持可见滚动条 */
+            overflow-x: hidden;
+            position: relative;
+            background: white;
+        }
+        
+        .timeline-header {
+            height: 40px;
+            position: sticky; top: 0; z-index: 4;
+            background: #fff;
+            border-bottom: 1px solid #ccc;
+            display: flex;
+            flex-shrink: 0;
+            width: 100%;
+        }
+        
+        .time-block {
+            height: 100%; border-right: 1px solid #eee;
+            display: flex; flex-direction: column;
+            box-sizing: border-box;
+        }
+        .tb-year { 
+            height: 50%; background: #f0f7ff; color: var(--crcc-blue); 
+            font-weight: bold; font-size: 0.8rem;
+            display: flex; align-items: center; justify-content: center;
+            border-bottom: 1px solid #eee;
+        }
+        .tb-quarters { height: 50%; display: flex; }
+        .tb-q { flex: 1; border-right: 1px dashed #eee; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; color: #999; }
+
+        .chart-body { position: relative; width: 100%; } 
+        
+        .grid-bg {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            display: flex; pointer-events: none; z-index: 0;
+        }
+        .grid-year-col { height: 100%; border-right: 1px solid #f0f0f0; display:flex; }
+        .grid-q-col { flex:1; border-right: 1px dashed #f9f9f9; height: 100%; }
+
+        .bar-rows-container { position: relative; z-index: 1; }
+        
+        .bar-row {
+            height: var(--row-height);
+            border-bottom: 1px solid #eee;
+            position: relative;
+            width: 100%;
+        }
+        .bar-row:hover { background: rgba(0,0,0,0.02); }
+
+        .gantt-bar {
+            position: absolute; top: 14px; height: 20px;
+            background: var(--bar-main);
+            border-radius: 2px;
+            cursor: pointer;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+            width: 0;
+            animation: expandWidth 0.5s ease-out forwards;
+        }
+        .bar-blue { background: #0070c0; }
+        .bar-yellow { background: #ffc000; border: 1px solid #e0a000; }
+        .bar-green { background: #00b050; }
+
+        .gantt-bar:hover { filter: brightness(1.1); transform: scaleY(1.1); z-index: 2;}
+
+        .tooltip {
+            position: fixed;
+            background: rgba(0, 51, 102, 0.95); color: white;
+            padding: 8px 12px; border-radius: 4px;
+            font-size: 0.8rem; pointer-events: none;
+            z-index: 1000; display: none; white-space: nowrap;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+
+        .nav-btn {
+            position: fixed; bottom: 20px; right: 20px;
+            padding: 8px 20px; background: var(--crcc-blue); color: white;
+            border-radius: 4px; text-decoration: none; font-weight: bold;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2); transition: 0.3s; z-index: 100;
+        }
+        .nav-btn:hover { background: var(--crcc-red); }
+        .prev-btn { right: 120px; background: white; color: var(--crcc-blue); border: 1px solid var(--crcc-blue); }
+
+        @keyframes expandWidth { to { width: var(--target-w); } }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="header-section">
+            <div class="h-left">
+                <h2>总体施工进度计划表</h2>
+                <div class="subtitle">计划工期：2025年6月 — 2028年5月</div>
+            </div>
+            <div class="legend">
+                <div class="l-item"><div class="l-box bg-blue"></div>桥梁/重点</div>
+                <div class="l-item"><div class="l-box bg-yellow"></div>特大桥/互通</div>
+                <div class="l-item"><div class="l-box bg-green"></div>梁场/预制</div>
+                <div class="l-item"><div class="l-box bg-tunnel" style="border:1px solid #ccc"></div>长山隧道</div>
+                <div class="l-item"><div class="l-box bg-finish" style="border:1px solid #ccc"></div>后续/路面</div>
+            </div>
+        </div>
+
+        <div class="gantt-wrapper">
+            <div class="data-panel">
+                <div class="panel-header-row">
+                    <div class="col-id">序号</div>
+                    <div class="col-name">任务名称</div>
+                    <div class="col-beam">架梁方向</div>
+                    <div class="col-dur">工期(天)</div>
+                    <div class="col-date">开始时间</div>
+                    <div class="col-date">结束时间</div>
+                    <div class="col-note">备注及逻辑关系说明</div>
+                </div>
+                <div class="data-rows-container" id="dataList"></div>
+            </div>
+
+            <div class="chart-panel" id="chartPanel">
+                <div class="timeline-header" id="timelineHeader"></div>
+                <div class="chart-body">
+                    <div class="grid-bg" id="gridBg"></div>
+                    <div class="bar-rows-container" id="barsContainer"></div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="tooltip" id="tooltip"></div>
+    </div>
+
+    <a href="p13.html" class="nav-btn prev-btn">上一页</a>
+    <a href="p15.html" class="nav-btn">下一页</a>
+
+    <script>
+        // 时间范围设定
+        const GLOBAL_START = new Date("2025/05/01"); 
+        const GLOBAL_END = new Date("2028/06/01");   
+        const TOTAL_MS = GLOBAL_END - GLOBAL_START;
+
+        const rawData = [
+            ["1", "起点K15+236 ~ K16+755.97段路基（路基长1.52km）", "380", "2026年3月1日", "2027年3月15日", "小里程终点，配合最后架梁", ""],
+            ["2", "起点K15+236 ~ K16+755.97段落涵洞（13道）", "245", "2026年3月1日", "2026年11月1日", "", ""],
+            ["3", "K15+608.703支线上跨", "215", "2026年6月1日", "2027年1月1日", "不占通道，正常施工", ""],
+            ["4", "K16+225.901支线上跨", "215", "2026年6月1日", "2027年1月1日", "", ""],
+            ["5", "K16+778.5上跨Y01G中桥 3×13m (K16+755.97 ~ K16+801.03)", "120", "2026年11月15日", "2027年3月15日", "预计架梁：2027年4月上旬", "bg-blue"],
+            ["6", "K16+801.03 ~ K17+835.97段路基（路基长1.03km）", "380", "2026年3月1日", "2027年3月15日", "", ""],
+            ["7", "K16+801.03 ~ K17+835.97段落涵洞（10道）", "245", "2026年3月1日", "2026年11月1日", "", ""],
+            ["8", "K17+858.5上跨Y003中桥 3×13m (K17+835.97 ~ K17+881.03)", "135", "2026年11月1日", "2027年3月15日", "预计架梁：2027年3月下旬", "bg-blue"],
+            ["9", "K17+881.03 ~ K18+165.47段路基（路基长0.28km）", "215", "2026年8月1日", "2027年3月1日", "", ""],
+            ["10", "K17+881.03 ~ K18+165.47段落涵洞（0道）", "/", "/", "/", "", ""],
+            ["11", "K18+188跨沟谷中桥 3×13m (K18+165.47 ~ K18+210.53)", "150", "2026年8月1日", "2026年12月30日", "预计架梁：2027年1月上旬(冬休前)", "bg-blue"],
+            ["12", "K18+210.53 ~ K20+711.47段路基（路基长2.50km）", "305", "2026年3月1日", "2026年12月30日", "必须赶在冬休前拉通", ""],
+            ["13", "K18+210.53 ~ K20+711.47段落涵洞（22道）", "215", "2026年3月1日", "2026年10月1日", "", ""],
+            ["14", "K18+990.212支线上跨", "215", "2026年6月1日", "2027年1月1日", "", ""],
+            ["15", "K19+270.749 X027分离立交", "215", "2026年6月1日", "2027年1月1日", "", ""],
+            ["16", "K20+734上跨Y04S中桥 2×15m (K20+711.47 ~ K20+756.53)", "185", "2026年6月1日", "2026年12月1日", "预计架梁：2026年12月中旬", "bg-blue"],
+            ["17", "K20+756.53 ~ K22+708.98段路基（路基长1.95km）", "275", "2026年3月1日", "2026年12月1日", "", ""],
+            ["18", "K20+756.53 ~ K22+708.98段落涵洞（10道）", "185", "2026年3月1日", "2026年9月1日", "", ""],
+            ["19", "K21+064.516支线上跨", "215", "2026年6月1日", "2027年1月1日", "", ""],
+            ["20", "K22+050.503支线上跨", "215", "2026年6月1日", "2027年1月1日", "", ""],
+            ["21", "K22+725上跨Y055中桥 3×13m (K22+708.98 ~ K22+741.02)", "185", "2026年5月1日", "2026年11月5日", "预计架梁：2026年11月中旬", "bg-blue"],
+            ["22", "K22+741.02 ~ K24+243.5段落路基（路基长1.50km）", "250", "2026年3月1日", "2026年11月5日", "", ""],
+            ["23", "K22+741.02 ~ K24+243.5段落涵洞（7道）", "155", "2026年3月1日", "2026年8月1日", "", ""],
+            ["24", "K23+668.938分离立交", "215", "2026年6月1日", "2027年1月1日", "", ""],
+            ["25", "K24+284上跨S213中桥 3×25m (K24+243.5 ~ K24+324.5)", "230", "2026年3月1日", "2026年10月15日", "预计架梁：2026年10月下旬", "bg-blue"],
+            ["26", "K24+324.5 ~ K25+500段落路基（路基长1.2km）", "230", "2026年3月1日", "2026年10月15日", "特大桥架完后立刻过车", ""],
+            ["27", "K24+324.5 ~ K25+500段落涵洞（9道）", "120", "2026年3月1日", "2026年7月1日", "", ""],
+            ["28", "K26+518含山北互通特大桥 21×25+3×35+19×25m (K25+520~K26+620)", "385", "2025年6月10日", "2026年6月30日", "首架点：2026.7.1开始架梁", "bg-yellow"],
+            ["29", "K26+620 ~ K27+945.47段落路基（路基长0.92km）【梁场区】", "76", "2026年3月1日", "2026年5月15日", "突击：梁场建设", "bg-green"],
+            ["30", "K27+025 ~ K27+945.47段落涵洞（10道）【梁场区】", "60", "2026年3月1日", "2026年4月30日", "", "bg-green"],
+            ["31", "K27+220.426支线上跨【梁场区】", "215", "2026年6月1日", "2027年1月1日", "", "bg-green"],
+            ["32", "K27+741.148分离立交【梁场区】", "215", "2026年6月1日", "2027年1月1日", "", "bg-green"],
+            ["33", "K27+971中桥 3×13m (K27+945.47 ~ K27+996.53)", "365", "2026年4月1日", "2027年4月1日", "大里程首架点(折返后)", "bg-blue"],
+            ["34", "K27+996.53 ~ K30+940段落路基（路基长2.94km）", "400", "2026年3月1日", "2027年4月1日", "折返需用运梁通道", ""],
+            ["35", "K27+996.53 ~ K30+940段落涵洞（23道）", "215", "2026年3月1日", "2026年10月1日", "", ""],
+            ["36", "K31+018九连支渠大桥 6×25m (K30+940 ~ K31+096)", "245", "2026年8月1日", "2027年4月20日", "预计架梁：2027年4月下旬", "bg-blue"],
+            ["37", "K31+096 ~ K31+227.47段落路基（路基长0.13km）", "120", "2026年12月1日", "2027年4月20日", "", ""],
+            ["38", "K31+096 ~ K31+227.47段落涵洞（0道）", "/", "/", "/", "", ""],
+            ["39", "K31+250清溪二级干渠中桥 3×13m (K31+227.47 ~ K31+272.53)", "245", "2026年8月1日", "2027年5月1日", "预计架梁：2027年5月上旬", "bg-blue"],
+            ["40", "K31+272.53 ~ K38+510.47段落路基（路基长7.24km）", "425", "2026年3月1日", "2027年5月15日", "分段交验，随架梁推进", ""],
+            ["41", "K31+272.53 ~ K38+510.47段落涵洞（54道）", "305", "2026年3月1日", "2027年1月1日", "", ""],
+            ["42", "K32+468.535支线上跨", "305", "2026年6月1日", "2027年4月1日", "", ""],
+            ["43", "K34+031.252支线上跨", "305", "2026年6月1日", "2027年4月1日", "", ""],
+            ["44", "K35+098.260分离立交", "305", "2026年6月1日", "2027年4月1日", "", ""],
+            ["45", "K36+006.834 Y021分离立交", "305", "2026年6月1日", "2027年4月1日", "", ""],
+            ["46", "K36+929.044 Y012分离立交", "305", "2026年6月1日", "2027年4月1日", "", ""],
+            ["47", "K37+939.318分离立交", "305", "2026年6月1日", "2027年4月1日", "", ""],
+            ["48", "K38+533巨兴二号中桥 3×13m (K38+510.47 ~ K38+555.53)", "215", "2026年12月1日", "2027年7月1日", "预计架梁：2027年7月", "bg-blue"],
+            ["49", "K38+555.53 ~ K40+526段落路基（路基长1.97km）", "335", "2026年8月1日", "2027年7月1日", "隧道口，最后架设段", ""],
+            ["50", "K38+555.53 ~ K40+526段落涵洞（13道）", "215", "2026年8月1日", "2027年3月1日", "", ""],
+            ["51", "K39+209.021 X020分离立交", "305", "2026年6月1日", "2027年4月1日", "", ""],
+            ["52", "/", "/", "/", "/", "/", ""],
+            ["53", "长山隧道工期计划", "721", "2025年11月1日", "2027年10月23日", "独立工期，不影响架梁", ""],
+            ["54", "    左右幅洞顶截水沟施工", "19", "2025年11月1日", "2025年11月20日", "", ""],
+            ["55", "    左洞（Z2K40+532 ~ Z2K41+147.879  全长615.879m）", "655", "2025年11月20日", "2027年9月6日", "", ""],
+            ["56", "    左洞仰坡及边坡开挖防护", "5", "2025年11月20日", "2025年11月25日", "", ""],
+            ["57", "    左洞套拱施工", "8", "2025年11月25日", "2025年12月3日", "", ""],
+            ["58", "    左洞管棚施工", "22", "2025年12月3日", "2025年12月25日", "", ""],
+            ["59", "    左洞进洞", "10", "2025年12月25日", "2026年1月4日", "", ""],
+            ["60", "    左洞进口开挖及初支", "485", "2026年1月4日", "2027年5月4日", "CRD法、CD法、台阶法", ""],
+            ["61", "    左洞进口仰拱施", "485", "2026年2月1日", "2027年6月1日", "", ""],
+            ["62", "    左洞进口二衬施", "485", "2026年2月21日", "2027年6月21日", "", ""],
+            ["63", "    左洞进口明洞及洞门施工", "62", "2027年6月21日", "2027年8月22日", "", ""],
+            ["64", "    左洞进口水沟、电缆槽、填充施工", "260", "2026年12月20日", "2027年9月6日", "", ""],
+            ["65", "右洞（K40+526 ~ K41+105.352  全长579.352m）", "625", "2026年2月5日", "2027年10月23日", "", ""],
+            ["66", "    右洞仰坡及边坡开挖防护", "5", "2026年2月5日", "2026年2月10日", "", ""],
+            ["67", "    右洞套拱施工", "8", "2026年3月10日", "2026年3月18日", "", ""],
+            ["68", "    右洞管棚施工", "22", "2026年3月18日", "2026年4月9日", "", ""],
+            ["69", "    右洞进洞", "10", "2026年4月9日", "2026年4月19日", "", ""],
+            ["70", "    右洞进口开挖及初支", "455", "2026年4月19日", "2027年7月18日", "CRD法、CD法、台阶法", ""],
+            ["71", "    右洞进口仰拱施", "455", "2026年4月17日", "2027年7月16日", "", ""],
+            ["72", "    右洞进口二衬施", "455", "2026年5月7日", "2027年8月5日", "", ""],
+            ["73", "    右洞进口明洞及洞门施工", "62", "2027年8月5日", "2027年10月6日", "", ""],
+            ["74", "    右洞进口水沟、电缆槽、填充施工", "260", "2027年2月5日", "2027年10月23日", "", ""],
+            ["75", "/", "/", "/", "/", "/", ""],
+            ["76", "后续施工-路基附属及后续路面、交安、绿化阶段", "", "", "", "", "bg-gray"],
+            ["77", "小里程（K26→K15）路基附属工程", "335", "2026年10月1日", "2027年9月1日", "随路基成型穿插施工，不影响运梁", ""],
+            ["78", "大里程（K27→K40）路基附属工程", "260", "2027年3月1日", "2027年11月15日", "必须在沥青下面层前完工", ""],
+            ["79", "小里程（K26→K15）桥面铺装及附属工程", "120", "2027年4月1日", "2027年7月30日", "架桥机通过后立即穿插施工（湿接缝、护栏、铺装）", ""],
+            ["80", "小里程（K26→K15）路面水稳底基层/基层施工", "120", "2027年5月1日", "2027年8月30日", "紧跟桥面系进度，形成半幅或全幅通道", ""],
+            ["81", "大里程（K27→K40）架梁施工（含运梁）", "105", "2027年4月1日", "2027年7月15日", "架桥机折返后，向长山隧道方向逐桥架设", ""],
+            ["82", "大里程（K27→K40）桥面铺装及附属工程", "90", "2027年7月16日", "2027年10月15日", "全线土建工程的最后收尾节点", ""],
+            ["83", "大里程（K27→K40）路面水稳底基层/基层施工", "90", "2027年8月1日", "2027年10月30日", "全线水稳基层贯通", ""],
+            ["84", "全线沥青下面层（中/下罗层）施工", "60", "2027年10月1日", "2027年11月30日", "抢在入冬前完成下面层，覆盖水稳保护", ""],
+            ["85", "冬休期（路基沉降观测及设备检修）", "45", "2028年1月15日", "2028年2月29日", "春节停工，利用此期间进行交安材料备货", ""],
+            ["86", "全线沥青上面层施工", "60", "2028年3月1日", "2028年4月30日", "气温回升后立即实施，确保路面外观质量", ""],
+            ["87", "全线交安设施、机电、绿化工程", "60", "2028年3月1日", "2028年4月30日", "与沥青路面同步交叉作业（标志牌、标线、隔离栅）", ""],
+            ["88", "竣工验收及工程移交", "30", "2028年5月1日", "2028年5月30日", "资料归档、专项验收、向业主移交", ""]
+        ];
+
+        // 梁片参数 Key: ID
+        const beamData = {
+            "5":  {count: 66, days: 14}, 
+            "8":  {count: 66, days: 14}, 
+            "11": {count: 66, days: 14}, 
+            "16": {count: 66, days: 14}, 
+            "21": {count: 44, days: 9},  
+            "25": {count: 30, days: 6},  
+            "28": {count: 498, days: 102},
+            "33": {count: 66, days: 14}, 
+            "36": {count: 60, days: 16}, 
+            "39": {count: 66, days: 16}, 
+            "48": {count: 66, days: 16}  
+        };
+
+        const UP_START_IDX = 28; 
+        const UP_END_IDX = 0;    
+        const DOWN_START_IDX = 29; 
+        const DOWN_END_IDX = 47;   
+
+        function parseDate(dateStr) {
+            if (!dateStr || dateStr === '/') return null;
+            let str = dateStr.replace('年', '/').replace('月', '/').replace('日', '');
+            return new Date(str);
+        }
+
+        // 生成架梁列的HTML
+        function getBeamColumnHtml(index, id) {
+            let html = '';
+            
+            // --- 向上方向 (红色) ---
+            if (index <= UP_START_IDX && index >= UP_END_IDX) {
+                let posStyle = '';
+
+                if (index === UP_END_IDX) {
+                    // 终点（最顶端）：只有下半截 + 箭头
+                    posStyle = 'top: 50%; bottom: 0;';
+                    html += `<div class="beam-bar-container anim-up" style="${posStyle}"></div>`;
+                    html += '<div class="arrow-cap arrow-cap-up"></div>';
+                } else if (index === UP_START_IDX) {
+                    // 起点（最底端）：只有上半截 (衔接中心)
+                    posStyle = 'top: 0; bottom: 50%;'; 
+                    html += `<div class="beam-bar-container anim-up" style="${posStyle}"></div>`;
+                } else {
+                    // 中间：全满
+                    html += `<div class="beam-bar-container anim-up"></div>`;
+                }
+            }
+
+            // --- 向下方向 (蓝色) ---
+            if (index >= DOWN_START_IDX && index <= DOWN_END_IDX) {
+                 if (index === DOWN_END_IDX) {
+                    // 终点（最底端）：只有上半截 + 箭头
+                    let posStyle = 'top: 0; bottom: 50%;';
+                    html += `<div class="beam-bar-container anim-down" style="${posStyle}"></div>`;
+                    html += '<div class="arrow-cap arrow-cap-down"></div>';
+                } else if (index === DOWN_START_IDX) {
+                    // 起点（最顶端）：只有下半截 (衔接中心)
+                    let posStyle = 'top: 50%; bottom: 0;';
+                    html += `<div class="beam-bar-container anim-down" style="${posStyle}"></div>`;
+                } else {
+                    // 中间：全满
+                    html += `<div class="beam-bar-container anim-down"></div>`;
+                }
+            }
+
+            // --- 数据标签 (文字框) ---
+            if (beamData[id]) {
+                const info = beamData[id];
+                let boxClass = 'box-blue'; 
+                if (index <= UP_START_IDX) boxClass = 'box-red';
+                
+                html += `<div class="beam-info-box ${boxClass}">${info.count}片<br>${info.days}天</div>`;
+            }
+
+            return html;
+        }
+
+        window.onload = function() {
+            const timelineHeader = document.getElementById('timelineHeader');
+            const gridBg = document.getElementById('gridBg');
+            const years = [2025, 2026, 2027, 2028]; 
+            
+            let htmlHeader = '';
+            let htmlGrid = '';
+
+            years.forEach(y => {
+                let yStart = new Date(y, 0, 1);
+                let yEnd = new Date(y + 1, 0, 1);
+                if (yStart < GLOBAL_START) yStart = GLOBAL_START;
+                if (yEnd > GLOBAL_END) yEnd = GLOBAL_END;
+                if (yStart < yEnd) {
+                    const duration = yEnd - yStart;
+                    const percent = (duration / TOTAL_MS) * 100;
+                    if (percent > 0) {
+                        htmlHeader += `
+                            <div class="time-block" style="width: ${percent}%">
+                                <div class="tb-year">${y}年</div>
+                                <div class="tb-quarters">
+                                    <div class="tb-q">Q1</div><div class="tb-q">Q2</div>
+                                    <div class="tb-q">Q3</div><div class="tb-q">Q4</div>
+                                </div>
+                            </div>`;
+                        htmlGrid += `
+                            <div class="grid-year-col" style="width: ${percent}%">
+                                <div class="grid-q-col"></div><div class="grid-q-col"></div>
+                                <div class="grid-q-col"></div><div class="grid-q-col"></div>
+                            </div>`;
+                    }
+                }
+            });
+            timelineHeader.innerHTML = htmlHeader;
+            gridBg.innerHTML = htmlGrid;
+
+            // 渲染数据行
+            const dataList = document.getElementById('dataList');
+            const barsContainer = document.getElementById('barsContainer');
+
+            rawData.forEach((item, index) => {
+                let [id, name, dur, startStr, endStr, note, bgClass] = item;
+                const cleanDur = dur ? dur.toString().replace(/[^0-9]/g, '') : '';
+                const d1 = parseDate(startStr);
+                const d2 = parseDate(endStr);
+                
+                if (index >= 52 && index <= 73) bgClass = 'bg-tunnel'; 
+                if (index >= 75 && index <= 87) bgClass = 'bg-finish'; 
+
+                // 左侧表格行
+                const row = document.createElement('div');
+                row.className = `data-row ${bgClass}`;
+                
+                const beamHtml = getBeamColumnHtml(index, id);
+
+                row.innerHTML = `
+                    <div class="col-id cell-center">${id}</div>
+                    <div class="col-name cell-text" title="${name}">${name}</div>
+                    <div class="col-beam">${beamHtml}</div>
+                    <div class="col-dur cell-center">${cleanDur}</div>
+                    <div class="col-date cell-center">${startStr}</div>
+                    <div class="col-date cell-center">${endStr}</div>
+                    <div class="col-note cell-text" title="${note}">${note}</div>
+                `;
+                
+                row.onmouseenter = () => highlight(index, true);
+                row.onmouseleave = () => highlight(index, false);
+                dataList.appendChild(row);
+
+                // 右侧进度条行
+                const barRow = document.createElement('div');
+                barRow.className = 'bar-row';
+                if (d1 && d2 && !isNaN(d1) && !isNaN(d2)) {
+                    const leftPercent = ((d1 - GLOBAL_START) / TOTAL_MS) * 100;
+                    const widthPercent = ((d2 - d1) / TOTAL_MS) * 100;
+                    
+                    let barColorClass = '';
+                    if (bgClass.includes('bg-blue')) barColorClass = 'bar-blue';
+                    else if (bgClass.includes('bg-yellow')) barColorClass = 'bar-yellow';
+                    else if (bgClass.includes('bg-green')) barColorClass = 'bar-green';
+                    else if (bgClass.includes('bg-tunnel') || bgClass.includes('bg-finish')) barColorClass = 'bar-blue';
+
+                    if (widthPercent > 0) {
+                        const bar = document.createElement('div');
+                        bar.className = `gantt-bar ${barColorClass}`;
+                        bar.style.left = leftPercent + '%';
+                        bar.style.setProperty('--target-w', widthPercent + '%');
+                        
+                        bar.onmousemove = (e) => showTooltip(e, name, startStr, endStr, cleanDur);
+                        bar.onmouseout = hideTooltip;
+                        barRow.appendChild(bar);
+                    }
+                }
+                barRow.onmouseenter = () => highlight(index, true);
+                barRow.onmouseleave = () => highlight(index, false);
+                barsContainer.appendChild(barRow);
+            });
+
+            // --- 核心滚动同步与逻辑 ---
+            const chartPanel = document.getElementById('chartPanel');
+            let activeHover = 'chart'; // 默认视为在图表上
+
+            // 监听鼠标位置，决定谁是主控滚动
+            dataList.addEventListener('mouseenter', () => activeHover = 'data');
+            chartPanel.addEventListener('mouseenter', () => activeHover = 'chart');
+            document.querySelector('.header-section').addEventListener('mouseenter', () => activeHover = 'container');
+            
+            // 左侧滚动 -> 同步右侧
+            dataList.addEventListener('scroll', () => {
+                if(activeHover === 'data') {
+                    chartPanel.scrollTop = dataList.scrollTop;
+                }
+            });
+            
+            // 右侧滚动 -> 同步左侧
+            chartPanel.addEventListener('scroll', () => {
+                if(activeHover === 'chart') {
+                    dataList.scrollTop = chartPanel.scrollTop;
+                }
+            });
+
+            // 全局滚轮监听 (针对 Header 或 空白处)
+            // 允许在非数据区滚动时，内容也能滚动
+            document.querySelector('.container').addEventListener('wheel', (e) => {
+                // 如果鼠标当前在容器范围内，但不在两个可滚动的面板上 (例如在Header)
+                // 手动触发右侧面板的滚动，右侧面板会通过上面的逻辑同步左侧
+                if (activeHover === 'container') {
+                    chartPanel.scrollTop += e.deltaY;
+                }
+            });
+        };
+
+        function highlight(idx, active) {
+            const dataRows = document.getElementById('dataList').children;
+            const barRows = document.getElementById('barsContainer').children;
+            if (dataRows[idx] && barRows[idx]) {
+                if (active) {
+                    dataRows[idx].classList.add('highlight');
+                    barRows[idx].style.background = "rgba(49, 130, 206, 0.1)";
+                } else {
+                    dataRows[idx].classList.remove('highlight');
+                    barRows[idx].style.background = "transparent";
+                }
+            }
+        }
+
+        const tooltip = document.getElementById('tooltip');
+        function showTooltip(e, name, start, end, days) {
+            tooltip.style.display = 'block';
+            tooltip.style.left = (e.clientX + 15) + 'px';
+            tooltip.style.top = (e.clientY + 15) + 'px';
+            tooltip.innerHTML = `
+                <div style="font-weight:bold; max-width:300px; white-space:normal">${name}</div>
+                <div style="margin-top:5px; font-size:0.75rem; color:#ccc">${start} — ${end}</div>
+                <div>工期: ${days} 天</div>
+            `;
+        }
+        function hideTooltip() { tooltip.style.display = 'none'; }
+
+    </script>
+</body>
+</html>

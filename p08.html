@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>组织架构与任务划分</title>
+    <style>
+        /* --- 1. 核心配色 --- */
+        :root {
+            --crcc-blue: #003366;
+            --crcc-red: #E60012;
+            --bg-grad: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            --card-shadow: 0 4px 15px rgba(0, 51, 102, 0.1);
+            --card-hover: 0 8px 25px rgba(0, 51, 102, 0.2);
+            --line-color: #cbd5e0;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            background: var(--bg-grad);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #333;
+        }
+
+        /* --- 2. 主容器 --- */
+        .container {
+            width: 98vw;
+            height: 96vh;
+            display: grid;
+            grid-template-columns: 58% 41%;
+            gap: 15px;
+            padding: 15px;
+            background: rgba(255,255,255,0.85);
+            backdrop-filter: blur(15px);
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+            border: 1px solid rgba(255,255,255,0.6);
+        }
+
+        .panel-header {
+            font-size: 1.3rem; font-weight: bold; color: var(--crcc-blue);
+            margin-bottom: 15px; padding-bottom: 8px;
+            border-bottom: 2px solid rgba(0, 51, 102, 0.1);
+            display: flex; align-items: center; gap: 10px;
+        }
+        .panel-header::before { content:''; width: 6px; height: 22px; background: var(--crcc-red); display: block; }
+
+        /* --- 左侧：现代组织架构图 --- */
+        .left-panel {
+            background: #f8fbff;
+            border-radius: 12px; padding: 20px;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.02);
+            display: flex; flex-direction: column; overflow: hidden;
+            position: relative; border: 1px solid #fff;
+        }
+
+        /* 架构图主容器 */
+        .org-chart {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 0;
+        }
+
+        .tier {
+            display: flex; justify-content: center; position: relative; width: 100%;
+        }
+
+        /* 通用节点卡片 */
+        .node {
+            background: white;
+            border-radius: 6px;
+            box-shadow: var(--card-shadow);
+            text-align: center;
+            font-weight: bold;
+            font-size: 0.9rem;
+            color: #333;
+            position: relative;
+            transition: all 0.3s;
+            z-index: 2;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .node:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: var(--card-hover);
+            z-index: 10;
+        }
+
+        /* 极简连线 */
+        .line-vertical::after {
+            content: ''; position: absolute; bottom: -20px; left: 50%; width: 1px; height: 20px; background: var(--line-color); z-index: 1;
+        }
+        .line-top::before {
+            content: ''; position: absolute; top: -20px; left: 50%; width: 1px; height: 20px; background: var(--line-color); z-index: 1;
+        }
+        .bridge-line {
+            position: absolute; top: -20px; height: 20px; border-top: 1px solid var(--line-color); z-index: 0;
+        }
+
+        /* --- 具体层级样式 --- */
+
+        /* L1: 项目部 */
+        .node-l1 {
+            background: var(--crcc-blue); color: white;
+            padding: 12px 40px; font-size: 1.2rem;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0, 51, 102, 0.3);
+        }
+
+        /* L2: 经理/书记 */
+        .tier-2 { gap: 60px; margin-top: 20px; }
+        .node-l2 {
+            width: 140px; height: 45px;
+            border-top: 4px solid var(--crcc-blue);
+        }
+        .tier-2 .bridge-line { left: calc(50% - 100px); width: 200px; }
+
+        /* L3: 副职/总工 */
+        .tier-3 { gap: 15px; margin-top: 25px; }
+        .node-l3 {
+            width: 100px; height: 40px; font-size: 0.85rem;
+            border-top: 3px solid #3182ce;
+            background: #f0f7ff;
+        }
+        .tier-3 .bridge-line { left: 10%; width: 80%; }
+
+        /* L4: 部门 (修改：增加 Gap) */
+        .tier-4 { gap: 25px; margin-top: 25px; } /* Gap 从 12px 增加到 25px */
+        .node-l4 {
+            writing-mode: vertical-lr; text-orientation: upright; letter-spacing: 2px;
+            width: 38px; height: 130px; 
+            background: #fdfdfd; border: 1px solid #e2e8f0;
+            border-top: 3px solid #805ad5;
+            font-size: 0.85rem; color: #555;
+        }
+        .tier-4 .bridge-line { left: 4%; width: 92%; } /* 调整横线宽度适配 */
+
+        /* L5: 工班 (修改：增加 Gap) */
+        .tier-5 { gap: 25px; margin-top: 25px; } /* Gap 从 10px 增加到 25px */
+        .node-l5 {
+            writing-mode: vertical-lr; text-orientation: upright; letter-spacing: 1px;
+            width: 42px; height: 160px;
+            background: #fff; border: 1px solid #cbd5e1;
+            border-top: 4px solid #38a169;
+            font-size: 0.9rem; font-weight: 800; color: var(--crcc-blue);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.08);
+        }
+        .tier-5 .bridge-line { left: 2%; width: 96%; }
+
+
+        /* --- 右侧：任务划分 (保持不变) --- */
+        .right-panel {
+            background: white; border-radius: 12px; padding: 20px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            display: flex; flex-direction: column; overflow: hidden;
+            animation: slideInRight 0.8s ease backwards;
+        }
+
+        .accordion { flex: 1; overflow-y: auto; padding-right: 8px; }
+        .accordion::-webkit-scrollbar { width: 5px; }
+        .accordion::-webkit-scrollbar-thumb { background: #cbd5e0; border-radius: 3px; }
+
+        .acc-item { margin-bottom: 12px; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; }
+        
+        .acc-header {
+            padding: 12px 20px; cursor: pointer;
+            font-weight: bold; font-size: 1.05rem;
+            display: flex; justify-content: space-between; align-items: center;
+            transition: all 0.2s; color: white;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+        .acc-header:hover { opacity: 0.9; }
+        .acc-icon { transition: transform 0.3s; font-size: 0.8rem; }
+        .acc-header.active .acc-icon { transform: rotate(180deg); }
+
+        .acc-content {
+            max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out;
+            background: white;
+        }
+        
+        .task-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+        .task-table td { padding: 10px 12px; border-bottom: 1px solid #f0f0f0; vertical-align: middle; }
+        .task-table tr:last-child td { border-bottom: none; }
+        .task-name { width: 28%; font-weight: bold; color: #333; background: #fafafa; border-right: 1px solid #f0f0f0; }
+        .task-desc { color: #555; line-height: 1.5; text-align: justify; }
+        
+        .cat-road .acc-header { background: #e67e22; }
+        .cat-pave .acc-header { background: #34495e; }
+        .cat-bridge .acc-header { background: #2980b9; }
+        .cat-tunnel .acc-header { background: #c0392b; }
+        .cat-green .acc-header { background: #27ae60; }
+        .cat-steel .acc-header { background: #8e44ad; }
+
+        .nav-btn {
+            position: fixed; bottom: 30px; right: 30px;
+            padding: 12px 30px; background: var(--crcc-blue); color: white;
+            border-radius: 30px; text-decoration: none; font-weight: bold;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2); transition: 0.3s; z-index: 100;
+        }
+        .nav-btn:hover { background: var(--crcc-red); }
+        .prev-btn { right: 150px; background: white; color: var(--crcc-blue); border: 1px solid var(--crcc-blue); }
+
+        @keyframes slideInRight { from { opacity:0; transform:translateX(30px); } to { opacity:1; transform:translateX(0); } }
+        
+        /* 动画依次出现 */
+        .tier { opacity: 0; animation: fadeUp 0.5s ease forwards; }
+        .tier-1 { animation-delay: 0.1s; }
+        .tier-2 { animation-delay: 0.3s; }
+        .tier-3 { animation-delay: 0.5s; }
+        .tier-4 { animation-delay: 0.7s; }
+        .tier-5 { animation-delay: 0.9s; }
+        @keyframes fadeUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        
+        <!-- 左侧：悬浮组织架构图 -->
+        <div class="left-panel">
+            <div class="panel-header">项目组织管理机构图</div>
+            
+            <div class="org-chart">
+                
+                <!-- Level 1 -->
+                <div class="tier tier-1">
+                    <div class="node node-l1 line-vertical">中铁二十局集团有限公司和含高速公路和含段项目经理部二分部</div>
+                </div>
+
+                <!-- Level 2 -->
+                <div class="tier tier-2">
+                    <div class="bridge-line"></div>
+                    <div class="node node-l2 line-top line-vertical">项目经理</div>
+                    <div class="node node-l2 line-top line-vertical">项目党支部书记</div>
+                </div>
+
+                <!-- Level 3 -->
+                <div class="tier tier-3">
+                    <div class="bridge-line"></div>
+                    <div class="node node-l3 line-top line-vertical">总工程师</div>
+                    <div class="node node-l3 line-top line-vertical">安全总监</div>
+                    <div class="node node-l3 line-top line-vertical">生产副经理1</div>
+                    <div class="node node-l3 line-top line-vertical">生产副经理2</div>
+                    <div class="node node-l3 line-top line-vertical">财务总监</div>
+                </div>
+
+                <!-- Level 4: 部门 (Gap Increased) -->
+                <div class="tier tier-4">
+                    <div class="bridge-line"></div>
+                    <div class="node node-l4 line-top line-vertical">工程管理部</div>
+                    <div class="node node-l4 line-top line-vertical">安全监督部</div>
+                    <div class="node node-l4 line-top line-vertical">设备物资部</div>
+                    <div class="node node-l4 line-top line-vertical">计划合约部</div>
+                    <div class="node node-l4 line-top line-vertical">财税部</div>
+                    <div class="node node-l4 line-top line-vertical">综合办公室</div>
+                    <div class="node node-l4 line-top line-vertical">测量班</div>
+                    <div class="node node-l4 line-top line-vertical">中心试验室</div>
+                </div>
+
+                <!-- Level 5: 工班 (Gap Increased) -->
+                <div class="tier tier-5">
+                    <div class="bridge-line"></div>
+                    <div class="node node-l5 line-top">路基工程工班</div>
+                    <div class="node node-l5 line-top">路面工程工班</div>
+                    <div class="node node-l5 line-top">桥梁工程工班</div>
+                    <div class="node node-l5 line-top">隧道工程工班</div>
+                    <div class="node node-l5 line-top">绿化与环境设施</div>
+                    <div class="node node-l5 line-top">钢筋集中加工场</div>
+                    <div class="node node-l5 line-top">小型构件预制场</div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- 右侧：详细任务划分 -->
+        <div class="right-panel">
+            <div class="panel-header">施工任务具体划分</div>
+            <div class="accordion">
+                <!-- 路基 -->
+                <div class="acc-item cat-road">
+                    <div class="acc-header active" onclick="toggleAcc(this)"><span>🛣️ 路基工程</span><span class="acc-icon">▼</span></div>
+                    <div class="acc-content" style="max-height: 600px;">
+                        <table class="task-table">
+                            <tr><td class="task-name">路基一工班</td><td class="task-desc">起点至K21+000段的路基土石方施工</td></tr>
+                            <tr><td class="task-name">路基二工班</td><td class="task-desc">K21+000至K36+000段的路基土石方施工</td></tr>
+                            <tr><td class="task-name">路基三工班</td><td class="task-desc">K36+000至K40+526段的路基土石方施工</td></tr>
+                            <tr><td class="task-name">抗滑桩施工队</td><td class="task-desc">长山隧道入口处边坡的抗滑桩施工</td></tr>
+                            <tr><td class="task-name">路基附属一工班</td><td class="task-desc">起点至K21+000段路基附属、排水工程，含管段内涵洞施工</td></tr>
+                            <tr><td class="task-name">路基附属二工班</td><td class="task-desc">K21+000至K36+000段路基附属、排水工程，含管段内涵洞施工</td></tr>
+                            <tr><td class="task-name">路基附属三工班</td><td class="task-desc">K36+000至K40+526段路基附属、排水工程，含管段内涵洞施工</td></tr>
+                        </table>
+                    </div>
+                </div>
+                <!-- 路面 -->
+                <div class="acc-item cat-pave">
+                    <div class="acc-header" onclick="toggleAcc(this)"><span>🚧 路面工程</span><span class="acc-icon">▼</span></div>
+                    <div class="acc-content">
+                        <table class="task-table">
+                            <tr><td class="task-name">水稳摊铺一工班</td><td class="task-desc">K0+000-K15+240段的水泥稳定碎石基层运输、摊铺、碾压、养护。</td></tr>
+                            <tr><td class="task-name">水稳摊铺二工班</td><td class="task-desc">K15+240-K40+526段的水泥稳定碎石基层运输、摊铺、碾压、养护</td></tr>
+                            <tr><td class="task-name">沥青摊铺一工班</td><td class="task-desc">K0+000-K15+240段沥青砼面层运输、摊铺、碾压、养护，透层、封层、粘层施工</td></tr>
+                            <tr><td class="task-name">沥青摊铺二工班</td><td class="task-desc">K15+240-K40+526段沥青砼面层运输、摊铺、碾压、养护，透层、封层、粘层施工</td></tr>
+                            <tr><td class="task-name">撒布一工班</td><td class="task-desc">沥青封层、透层、粘层施工</td></tr>
+                            <tr><td class="task-name">桥面防水工班</td><td class="task-desc">全线所有桥面喷砂打毛，喷防水层</td></tr>
+                            <tr><td class="task-name">路面附属一工班</td><td class="task-desc">全线砼路面、路肩加固砼，中央分隔带回填土，回填砼，纵向雨水管</td></tr>
+                        </table>
+                    </div>
+                </div>
+                <!-- 桥梁 -->
+                <div class="acc-item cat-bridge">
+                    <div class="acc-header" onclick="toggleAcc(this)"><span>🌉 桥梁工程</span><span class="acc-icon">▼</span></div>
+                    <div class="acc-content">
+                        <table class="task-table">
+                            <tr><td class="task-name">桩基一工班</td><td class="task-desc">起点至K21+000段、K36+000至K40+526段范围内桥梁及支线上跨桥钻孔桩施工</td></tr>
+                            <tr><td class="task-name">桩基二工班</td><td class="task-desc">K21+000至K36+000段范围内桥梁及支线上跨桥钻孔桩施工</td></tr>
+                            <tr><td class="task-name">桥梁结构一工班</td><td class="task-desc">起点至K21+000段、K36+000至K40+526段范围内桥梁及支线上跨桥梁下部结构任务。</td></tr>
+                            <tr><td class="task-name">桥梁结构二工班</td><td class="task-desc">K21+000至K36+000段范围内桥梁及支线上跨桥梁下部结构任务。</td></tr>
+                            <tr><td class="task-name">桥面系一工班</td><td class="task-desc">K15+236~K41+141所有桥梁湿接缝、桥面铺装、附属结构工程混凝土、钢筋安装等工程</td></tr>
+                            <tr><td class="task-name">制架梁一工班</td><td class="task-desc">全线571片25m箱梁、112片35m箱梁、522片13mT梁预制，架设</td></tr>
+                        </table>
+                    </div>
+                </div>
+                <!-- 隧道 -->
+                <div class="acc-item cat-tunnel">
+                    <div class="acc-header" onclick="toggleAcc(this)"><span>🚇 隧道工程</span><span class="acc-icon">▼</span></div>
+                    <div class="acc-content"><table class="task-table"><tr><td class="task-name">隧道一工班</td><td class="task-desc">长山隧道施工任务</td></tr></table></div>
+                </div>
+                <!-- 绿化 -->
+                <div class="acc-item cat-green">
+                    <div class="acc-header" onclick="toggleAcc(this)"><span>🌿 绿化与环境保护</span><span class="acc-icon">▼</span></div>
+                    <div class="acc-content"><table class="task-table"><tr><td class="task-name">绿化一工班</td><td class="task-desc">K15+240-K40+526段绿化工程</td></tr><tr><td class="task-name">声屏障一工班</td><td class="task-desc">K15+240-K40+526段路基3m高声屏障，路基段4m高声屏障，桥梁段3m高声屏障，通风隔声窗</td></tr></table></div>
+                </div>
+                <!-- 钢筋 -->
+                <div class="acc-item cat-steel">
+                    <div class="acc-header" onclick="toggleAcc(this)"><span>🏭 钢筋/小型预制</span><span class="acc-icon">▼</span></div>
+                    <div class="acc-content"><table class="task-table"><tr><td class="task-name">钢筋加工场</td><td class="task-desc">全线（K15+240-K40+526段）所有钢筋集中加工、运输</td></tr><tr><td class="task-name">小型构件预制工班</td><td class="task-desc">全线（K15+240-K40+526段）圆管涵、装配式箱涵、正交盖板、预制水沟、六菱块、拱形骨架、土路肩块、隧道电缆槽盖板等预制、运输，约3.9万方。</td></tr></table></div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- 导航 -->
+    <a href="p07.html" class="nav-btn prev-btn">上一页</a>
+    <a href="p09.html" class="nav-btn">下一页</a>
+
+    <script>
+        function toggleAcc(header) {
+            const allContent = document.querySelectorAll('.acc-content');
+            const allHeaders = document.querySelectorAll('.acc-header');
+            
+            const content = header.nextElementSibling;
+            const isOpen = header.classList.contains('active');
+
+            allHeaders.forEach(h => h.classList.remove('active'));
+            allContent.forEach(c => c.style.maxHeight = null);
+
+            if (!isOpen) {
+                header.classList.add('active');
+                content.style.maxHeight = content.scrollHeight + "px";
+            }
+        }
+    </script>
+
+</body>
+</html>

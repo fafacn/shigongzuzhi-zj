@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>长山隧道：超前地质预报与监控量测系统 - p33</title>
+    
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']] // 配置 $...$ 为行内公式
+            },
+            svg: {
+                fontCache: 'global'
+            }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <style>
+        :root {
+            --bg-color: #0b1120;
+            --panel-bg: rgba(20, 30, 48, 0.7);
+            --accent-cyan: #00f2ff;
+            --accent-blue: #007bff;
+            --accent-red: #ff4757;
+            --accent-yellow: #ffa502;
+            --accent-green: #2ed573;
+            --text-main: #ffffff;
+            --text-sub: #a4b0be;
+            --border-color: rgba(0, 242, 255, 0.2);
+            --glass: blur(10px);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            background-image: 
+                linear-gradient(rgba(11, 17, 32, 0.9), rgba(11, 17, 32, 0.95)),
+                url('https://images.unsplash.com/photo-1519608487953-e999c9dc296f?q=80&w=2070&auto=format&fit=crop'); 
+            background-size: cover;
+            background-position: center;
+            color: var(--text-main);
+            height: 100vh;
+            overflow: hidden; /* 全局无滚动条 */
+            display: flex;
+        }
+
+        /* 侧边导航 */
+        .sidebar {
+            width: 260px;
+            background: rgba(10, 15, 25, 0.95);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            z-index: 100;
+            box-shadow: 5px 0 15px rgba(0,0,0,0.3);
+        }
+
+        .logo-area {
+            margin-bottom: 40px;
+            border-bottom: 2px solid var(--accent-cyan);
+            padding-bottom: 15px;
+        }
+
+        .logo-area h1 {
+            font-size: 1.2rem;
+            color: var(--accent-cyan);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .logo-area span {
+            font-size: 0.8rem;
+            color: var(--text-sub);
+        }
+
+        .nav-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-sub);
+            padding: 15px;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 8px;
+            border-left: 3px solid transparent;
+            font-size: 0.95rem;
+            border-radius: 0 4px 4px 0;
+        }
+
+        .nav-btn:hover, .nav-btn.active {
+            background: rgba(0, 242, 255, 0.1);
+            color: var(--accent-cyan);
+            border-left: 3px solid var(--accent-cyan);
+            text-shadow: 0 0 8px rgba(0, 242, 255, 0.4);
+        }
+
+        /* 主内容区 */
+        .main-content {
+            flex: 1;
+            padding: 30px;
+            /* 底部增加 padding 防止遮挡 footer */
+            padding-bottom: 90px; 
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .slide {
+            display: none;
+            height: 100%;
+            flex-direction: column;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        .slide.active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .header-title {
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-shrink: 0;
+        }
+
+        .header-title::before {
+            content: '';
+            display: block;
+            width: 8px;
+            height: 30px;
+            background: var(--accent-cyan);
+            box-shadow: 0 0 10px var(--accent-cyan);
+        }
+
+        /* 网格布局通用样式 */
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            height: 100%; /* 占满剩余空间 */
+            min-height: 0; /* 允许 flex 子项缩小 */
+            overflow: hidden;
+        }
+
+        /* 内容卡片 */
+        .card {
+            background: var(--panel-bg);
+            backdrop-filter: var(--glass);
+            border: 1px solid var(--border-color);
+            padding: 20px;
+            border-radius: 8px;
+            overflow-y: auto; /* 卡片内容过多时内部滚动 */
+            position: relative;
+            transition: transform 0.3s, box-shadow 0.3s;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .card:hover {
+            box-shadow: 0 0 20px rgba(0, 242, 255, 0.1);
+            border-color: rgba(0, 242, 255, 0.5);
+        }
+
+        .card h3 {
+            color: var(--accent-cyan);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+
+        .card h4 {
+            color: var(--accent-blue);
+            margin-top: 15px;
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+        }
+
+        .tag {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            margin-right: 5px;
+            font-weight: bold;
+        }
+        .tag-blue { background: rgba(0, 123, 255, 0.2); color: var(--accent-blue); }
+        .tag-red { background: rgba(255, 71, 87, 0.2); color: var(--accent-red); }
+        .tag-yellow { background: rgba(255, 165, 2, 0.2); color: var(--accent-yellow); }
+        .tag-green { background: rgba(46, 213, 115, 0.2); color: var(--accent-green); }
+
+        ul, ol {
+            padding-left: 0;
+            list-style: none;
+        }
+
+        li {
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            position: relative;
+            padding-left: 15px;
+            color: #dcdde1;
+        }
+
+        li::before {
+            content: '>';
+            position: absolute;
+            left: 0;
+            color: var(--accent-cyan);
+            font-weight: bold;
+        }
+
+        /* 概览页特殊样式 */
+        .principle-box {
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-shrink: 0;
+        }
+        .p-item {
+            text-align: center;
+            background: rgba(0, 242, 255, 0.05);
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px dashed var(--accent-cyan);
+            flex: 1;
+        }
+        .p-item h2 { font-size: 1.1rem; margin-bottom: 5px; color: var(--accent-cyan); }
+        .p-item p { font-size: 0.85rem; color: #ccc; }
+
+        /* 预警表格样式 */
+        .warning-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+            margin-top: 10px;
+        }
+        .warning-table th, .warning-table td {
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 12px 8px;
+            text-align: left;
+            vertical-align: middle;
+        }
+        .warning-table th {
+            background: rgba(0, 242, 255, 0.1);
+            color: var(--accent-cyan);
+        }
+        .row-red { border-left: 4px solid var(--accent-red); background: rgba(255, 71, 87, 0.05); }
+        .row-yellow { border-left: 4px solid var(--accent-yellow); background: rgba(255, 165, 2, 0.05); }
+        .row-green { border-left: 4px solid var(--accent-green); background: rgba(46, 213, 115, 0.05); }
+
+        /* 底部状态栏 */
+        .footer-quote {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 70px;
+            padding: 0 40px;
+            background: rgba(6, 11, 25, 0.98);
+            border-top: 1px solid var(--accent-cyan);
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.5);
+            font-style: italic;
+            color: var(--accent-cyan);
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 50;
+        }
+
+        /* 选项卡内容 */
+        .tab-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-shrink: 0;
+        }
+        .tab-btn {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: var(--text-sub);
+            padding: 8px 20px;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+        .tab-btn:hover { background: rgba(255,255,255,0.1); }
+        .tab-btn.active {
+            background: var(--accent-cyan);
+            color: #0b1120;
+            font-weight: bold;
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 10px rgba(0, 242, 255, 0.3);
+        }
+        .tab-content { display: none; height: 100%; overflow: hidden;}
+        .tab-content.active { display: block; }
+
+        /* 特殊数据高亮 */
+        .highlight-val {
+            font-weight: bold;
+            color: var(--accent-yellow);
+        }
+
+        /* 公式容器样式修正 */
+        mjx-container {
+            font-size: 1.05em !important;
+            color: inherit !important;
+        }
+
+        /* 滚动条美化 */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); }
+        ::-webkit-scrollbar-thumb { background: rgba(0, 242, 255, 0.3); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--accent-cyan); }
+
+        /* --- 悬浮导航按钮 (适配本页风格) --- */
+        .nav-btn-float {
+            position: fixed; bottom: 30px; padding: 12px 30px;
+            background: var(--accent-cyan);
+            color: #0b1120;
+            border-radius: 30px; text-decoration: none; font-weight: bold;
+            box-shadow: 0 0 15px rgba(0, 242, 255, 0.4);
+            transition: all 0.3s; z-index: 9999; font-size: 1rem;
+            border: 1px solid var(--accent-cyan);
+        }
+        .nav-btn-float:hover {
+            background: var(--accent-yellow);
+            border-color: var(--accent-yellow);
+            box-shadow: 0 0 20px rgba(255, 165, 2, 0.6);
+            transform: scale(1.05);
+            color: #000;
+        }
+        .prev-btn {
+            right: 150px;
+            background: rgba(11, 17, 32, 0.8);
+            color: var(--accent-cyan);
+            border: 1px solid var(--accent-cyan);
+            backdrop-filter: blur(5px);
+        }
+        .prev-btn:hover {
+            background: var(--accent-yellow);
+            color: #000;
+        }
+        .next-btn { right: 30px; }
+
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <div class="logo-area">
+            <h1>长山隧道工程</h1>
+            <span>Section 7: 地质预报与监控</span>
+        </div>
+        <button class="nav-btn active" onclick="showSlide('slide1')">01. 总体原则与体系</button>
+        <button class="nav-btn" onclick="showSlide('slide2')">02. 超前地质预报</button>
+        <button class="nav-btn" onclick="showSlide('slide3')">03. 监控量测部署</button>
+        <button class="nav-btn" onclick="showSlide('slide4')">04. 监测频率与实施</button>
+        <button class="nav-btn" onclick="showSlide('slide5')">05. 数据分析与预警</button>
+        <button class="nav-btn" onclick="showSlide('slide6')">06. 决策与反馈机制</button>
+    </div>
+
+    <div class="main-content">
+
+        <div id="slide1" class="slide active">
+            <div class="header-title">总体原则：长短结合，全方位监测</div>
+            
+            <div class="principle-box">
+                <div class="p-item">
+                    <h2>预报先行</h2>
+                    <p>物探先行，钻探验证</p>
+                </div>
+                <div class="p-item">
+                    <h2>监测护航</h2>
+                    <p>必测全覆盖，选测针对性</p>
+                </div>
+                <div class="p-item">
+                    <h2>数据说话</h2>
+                    <p>回归分析，趋势预测</p>
+                </div>
+                <div class="p-item">
+                    <h2>动态调整</h2>
+                    <p>红黄绿三级反馈处置</p>
+                </div>
+            </div>
+
+            <div class="grid-container" style="grid-template-columns: 1fr 1fr;">
+                <div class="card">
+                    <h3>项目背景关键点</h3>
+                    <ul>
+                        <li><span class="highlight-val">V级富水软弱围岩</span>：浅埋、破碎、偏压。</li>
+                        <li><span class="highlight-val">风力发电设备</span>：右线 K41+010 附近临近，需严格控制爆破震速。</li>
+                        <li><span class="highlight-val">大变形风险</span>：预留变形量达 20cm。</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h3>体系架构</h3>
+                    <ul>
+                        <li><strong>宏观控制（长）：</strong>TSP法，探测前方 100~150m。</li>
+                        <li><strong>精细探测（短）：</strong>地质雷达（GPR），探测前方 30m。</li>
+                        <li><strong>精准验证：</strong>超前钻探（A级3孔/B级1孔）。</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="footer-quote">
+                <span>"本标段坚持 '预报先行、监测护航、数据说话、动态调整' 的原则。"</span>
+            </div>
+        </div>
+
+        <div id="slide2" class="slide">
+            <div class="header-title">超前地质预报体系（深度完善版）</div>
+            
+            <div class="grid-container">
+                <div class="card">
+                    <h3>TSP 长距离预报 (宏观)</h3>
+                    <div class="tag tag-blue">100~150m</div>
+                    <h4>实施参数：</h4>
+                    <ul>
+                        <li><strong>频率：</strong>每掘进 100m 采集一次。</li>
+                        <li><strong>重叠距离：</strong>≥ 10m。</li>
+                        <li><strong>激发：</strong>左右边墙交替，深度 1.5-2.0m 瞬发电雷管。</li>
+                    </ul>
+                    <h4>目标：</h4>
+                    <p>断层破碎带、岩性接触带及含水构造。</p>
+                </div>
+
+                <div class="card">
+                    <h3>地质雷达 GPR (精细)</h3>
+                    <div class="tag tag-blue">30m</div>
+                    <p style="font-size:0.8rem; color:var(--accent-yellow); margin-bottom: 5px;">现状：已成功探测 ZK40+538~+568 段极破碎岩体。</p>
+                    <h4>核心技术：</h4>
+                    <ul>
+                        <li><strong>天线：</strong>100MHz (破碎岩体) / 400MHz (空洞)。</li>
+                        <li><strong>测线：</strong>2横 + 1纵。</li>
+                        <li><strong>重叠：</strong>≥ 5m (严禁把30m全部挖完再探)。</li>
+                        <li><strong>判识：</strong>强反射(空洞/水)、同相轴错断(断层)。</li>
+                    </ul>
+                </div>
+
+                <div class="card">
+                    <h3>超前地质钻探 (验证)</h3>
+                    <div class="tag tag-red">金标准</div>
+                    <h4>分级实施：</h4>
+                    <ul>
+                        <li><strong>A级风险(富水/断层)：</strong>3孔及以上 (拱顶1 + 拱腰2外插)。</li>
+                        <li><strong>B级风险(一般)：</strong>1孔抽检。</li>
+                    </ul>
+                    <h4>控制要点：</h4>
+                    <ul>
+                        <li><strong>深度：</strong>30m/循环，搭接 ≥5m。</li>
+                        <li><strong>记录：</strong>钻速突快(空洞)、水变浑(破碎)、水量大(富水)。</li>
+                        <li><strong>岩芯：</strong>盒装留存、拍照。</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="footer-quote">
+                <span>"严格执行清单中‘3孔钻探+雷达全覆盖’的高标准配置，每循环30m钻探、保留5m搭接绝不打折扣。"</span>
+            </div>
+        </div>
+
+        <div id="slide3" class="slide">
+            <div class="header-title">监控量测布点与内容</div>
+
+            <div class="tab-controls">
+                <button class="tab-btn active" onclick="switchTab(this, 'monitor-must')">必测项目 (常规)</button>
+                <button class="tab-btn" onclick="switchTab(this, 'monitor-select')">选测项目 (针对性)</button>
+            </div>
+
+            <div id="monitor-must" class="tab-content active">
+                <div class="grid-container" style="grid-template-columns: 1fr 1fr;">
+                    <div class="card">
+                        <h3>洞内观察 & 位移监测</h3>
+                        <h4>洞内观察</h4>
+                        <ul>
+                            <li><strong>对象：</strong>掌子面地质、初期支护状态（裂缝、渗水）。</li>
+                            <li><strong>频次：</strong>每循环开挖后、支护后各一次。</li>
+                        </ul>
+                        <h4>拱顶下沉 & 周边收敛</h4>
+                        <ul>
+                            <li><strong>V级围岩：</strong>每 <span class="highlight-val">10m</span> 设一个断面 (严于规范)。</li>
+                            <li><strong>IV级围岩：</strong>每 20m 设一个断面。</li>
+                            <li><strong>CRD法：</strong>必须监测 <span class="highlight-val">中隔壁</span> 顶部位移。</li>
+                        </ul>
+                    </div>
+                    <div class="card">
+                        <h3>地表下沉 (浅埋段核心)</h3>
+                        <ul>
+                            <li><strong>范围：</strong>隧道埋深 $H \le 2b$ (b为开挖宽度) 区域及洞口段。</li>
+                            <li><strong>布点：</strong>须与洞内测点在同一里程。</li>
+                            <li><strong>横向延伸：</strong>中线两侧各 30~50m。</li>
+                            <li><strong>间距：</strong>2~5m。</li>
+                        </ul>
+                        <div style="margin-top:20px; border:1px dashed var(--accent-cyan); padding:10px; border-radius:5px; background: rgba(0,0,0,0.2);">
+                            <small style="color:var(--accent-yellow)">注：对于V级浅埋段，地表下沉速率若连续3天 > 2mm/d，亦视为报警状态。</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="monitor-select" class="tab-content">
+                <div class="grid-container" style="grid-template-columns: 1fr 1fr;">
+                    <div class="card" style="border-color: var(--accent-red);">
+                        <h3>爆破振动监测 (风电保护关键)</h3>
+                        <div class="tag tag-red">重点</div>
+                        <ul>
+                            <li><strong>对象：</strong>右线 K41+010 风力发电机基座及民房。</li>
+                            <li><strong>控制指标：</strong>震速 <span class="highlight-val">≤ 4.2 cm/s (42mm/s)</span>。</li>
+                            <li><strong>布点：</strong>风机基座最靠近隧道侧，三向传感器。</li>
+                            <li><strong>频率：</strong>临近段(前后100m)每次爆破必须监测。</li>
+                        </ul>
+                    </div>
+                    <div class="card">
+                        <h3>渗水压力 & 钢架内力</h3>
+                        <ul>
+                            <li><strong>对象：</strong>V级富水软弱段。</li>
+                            <li><strong>设备：</strong>轴力计、渗压计。</li>
+                            <li><strong>目的：</strong>监测钢架受力状态及背后水压。</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer-quote">
+                <span>"不仅是填表归档，更是指导施工的‘眼睛’。重点锁定风机段 42mm/s 震速硬性指标。"</span>
+            </div>
+        </div>
+
+        <div id="slide4" class="slide">
+            <div class="header-title">监测频率与实操控制</div>
+            
+            <div class="grid-container">
+                <div class="card">
+                    <h3>频率控制红线 (时间空间双控)</h3>
+                    <ul>
+                        <li style="color:var(--accent-red)"><strong>极高风险期 (<2B 或 ≥5mm/d)：</strong> 2次/天。</li>
+                        <li style="color:var(--accent-yellow)"><strong>高风险期 (2B~5B 或 1~5mm/d)：</strong> 1次/天。</li>
+                        <li style="color:var(--accent-green)"><strong>稳定期 (>5B 或 <0.2mm/d)：</strong> 1次/3天 ~ 1次/7天。</li>
+                    </ul>
+                </div>
+
+                <div class="card">
+                    <h3>埋设与保护 ("真"监测前提)</h3>
+                    <ul>
+                        <li><strong>时机：</strong>喷砼初凝后、下一爆破前 (≤开挖后12h)。</li>
+                        <li><strong>拱顶下沉：</strong>焊接在钢架或锚杆，<span class="highlight-val">严禁</span>仅挂在钢筋网上。</li>
+                        <li><strong>收敛测线：</strong>带保护罩，防止机械剐蹭。</li>
+                        <li><strong>初始读数：</strong>埋设后立即读取 ($u_0$)，不过夜。</li>
+                    </ul>
+                </div>
+
+                <div class="card">
+                    <h3>特殊工况实施</h3>
+                    <h4>CRD法 / 双侧壁：</h4>
+                    <p>重点监测<strong>中隔壁沉降</strong>。若速率过快，立即停止下台阶开挖，基底注浆。</p>
+                    <h4>风机段减震联动：</h4>
+                    <p>若震速接近 3.5cm/s (预警值)，通知调整爆破参数(减少药量/增加段数)。</p>
+                </div>
+            </div>
+            
+            <div class="footer-quote">
+                <span>"在CRD法施工中，特别强调‘初始读数不过夜’和‘中隔壁重点测’。"</span>
+            </div>
+        </div>
+
+        <div id="slide5" class="slide">
+            <div class="header-title">数据分析与三级预警体系</div>
+
+            <div style="display:flex; gap:20px; height: 100%; min-height: 0;">
+                <div style="flex:1; display:flex; flex-direction:column; gap:20px; overflow: hidden;">
+                    <div class="card" style="flex:0 0 auto;">
+                        <h3>回归分析模型</h3>
+                        <p>针对V级围岩流变特性，必须进行趋势预测 ($R \ge 0.9$)。</p>
+                        <div style="display:flex; justify-content:space-between; margin-top:10px;">
+                            <div style="background:rgba(0,0,0,0.3); padding:10px; border-radius:4px; width:48%;">
+                                <strong>对数函数：</strong><br> $u = A + B \ln(1+t)$
+                            </div>
+                            <div style="background:rgba(0,0,0,0.3); padding:10px; border-radius:4px; width:48%;">
+                                <strong>指数函数：</strong><br> $u = Ae^{-B/t}$
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card" style="flex:1;">
+                        <h3>三级预警管理 (基准：预留200mm)</h3>
+                        <div style="overflow-y: auto;">
+                            <table class="warning-table">
+                                <thead>
+                                    <tr>
+                                        <th>等级</th>
+                                        <th>累计变形量 $U$</th>
+                                        <th>变形速率 $v$</th>
+                                        <th>对策</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="row-red">
+                                        <td><strong style="color:var(--accent-red)">I级 (报警)</strong></td>
+                                        <td>$U > \frac{2}{3}U_0$ (>133mm)</td>
+                                        <td>$v \ge 5$ mm/d</td>
+                                        <td><strong>立即停工</strong>，人员撤离，回填反压，会商设计。</td>
+                                    </tr>
+                                    <tr class="row-yellow">
+                                        <td><strong style="color:var(--accent-yellow)">II级 (预警)</strong></td>
+                                        <td>$\frac{1}{3}U_0 \le U \le \frac{2}{3}U_0$</td>
+                                        <td>$1 \le v < 5$ mm/d</td>
+                                        <td>加强支护，加密监测至1次/天，发黄色预警。</td>
+                                    </tr>
+                                    <tr class="row-green">
+                                        <td><strong style="color:var(--accent-green)">III级 (正常)</strong></td>
+                                        <td>$U < \frac{1}{3}U_0$ (<66mm)</td>
+                                        <td>$v < 1$ mm/d</td>
+                                        <td>正常施工，继续监测。</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="flex:1; display:flex; flex-direction:column; overflow: hidden;">
+                    <div class="card" style="height:100%; border: 1px solid var(--accent-red);">
+                        <h3>地质预报异常反馈 (红/黄/绿)</h3>
+                        <div style="overflow-y: auto;">
+                            <div style="margin-bottom: 15px; border-left: 3px solid var(--accent-red); padding-left: 10px; background: rgba(255, 71, 87, 0.05); padding: 10px;">
+                                <h4 style="color:var(--accent-red); margin:0;">I 级异常 (红色)</h4>
+                                <p style="font-size:0.85rem; margin:5px 0;">特征：钻孔突涌水(>10L/min·m)、雷达示大空洞。</p>
+                                <p style="font-size:0.85rem;">处置：<strong>停工</strong>，改工法(如CRD)。</p>
+                            </div>
+
+                            <div style="margin-bottom: 15px; border-left: 3px solid var(--accent-yellow); padding-left: 10px; background: rgba(255, 165, 2, 0.05); padding: 10px;">
+                                <h4 style="color:var(--accent-yellow); margin:0;">II 级异常 (黄色)</h4>
+                                <p style="font-size:0.85rem; margin:5px 0;">特征：岩体较破碎，线状流水。</p>
+                                <p style="font-size:0.85rem;">处置：暂停，缩短进尺(0.5m)，加密钢架。</p>
+                            </div>
+
+                            <div style="border-left: 3px solid var(--accent-green); padding-left: 10px; background: rgba(46, 213, 115, 0.05); padding: 10px;">
+                                <h4 style="color:var(--accent-green); margin:0;">III 级正常 (绿色)</h4>
+                                <p style="font-size:0.85rem;">处置：按原设计施工。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="footer-quote">
+                <span>"将报警红线设定在133mm (2/3)，确保将V级围岩的坍塌风险消灭在萌芽状态。"</span>
+            </div>
+        </div>
+
+        <div id="slide6" class="slide">
+            <div class="header-title">关键工序决策与信息流转</div>
+
+            <div class="grid-container">
+                <div class="card">
+                    <h3>二次衬砌施作时机</h3>
+                    <div class="tag tag-green">适时施作</div>
+                    <p>必须<strong>同时满足</strong>以下条件：</p>
+                    <ol style="margin-left: 20px; margin-top:10px;">
+                        <li>周边位移速率明显收敛，<strong>$v < 0.2$ mm/d</strong>。</li>
+                        <li>拱顶下沉速率 <strong>$v < 0.15$ mm/d</strong>。</li>
+                        <li>累计位移值达预计总位移 <strong>80%</strong> 以上。</li>
+                        <li>初期支护无明显裂缝。</li>
+                    </ol>
+                </div>
+
+                <div class="card">
+                    <h3>CRD法 临时支撑拆除</h3>
+                    <div class="tag tag-red">高危环节</div>
+                    <ul>
+                        <li><strong>决策依据：</strong>初支变形完全稳定 (速率 < 0.2mm/d 持续一周)。</li>
+                        <li><strong>反馈控制：</strong>若拆除中拱顶下沉突增 (>1mm/d)，立即停止，临时回顶。</li>
+                    </ul>
+                </div>
+
+                <div class="card">
+                    <h3>风电爆破参数调整</h3>
+                    <p>每次爆破后分析震速：</p>
+                    <ul>
+                        <li><strong>&lt; 3.0cm/s：</strong>维持参数。</li>
+                        <li><strong>3.0 ~ 4.2cm/s：</strong>预警，减药量/增延期。</li>
+                        <li><strong>&ge; 4.2cm/s：</strong><span style="color:var(--accent-red)">立即停止爆破</span>，改机械开挖或电子雷管逐孔起爆。</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div style="margin-top:20px; background:var(--panel-bg); padding:15px; border-radius:8px; border-left:4px solid var(--accent-cyan);">
+                <strong>信息流转流程：</strong> 
+                日报表(2小时内签字) &rarr; 
+                异常报告(II级以上 <strong>30分钟</strong>口头，<strong>2小时</strong>书面) &rarr; 
+                直接张贴在洞口及掌子面。
+            </div>
+
+             <div class="footer-quote">
+                <span>"死守‘二衬施作前速率&lt;0.2mm/d’的质量底线，杜绝‘马后炮’式监测。"</span>
+            </div>
+        </div>
+
+    </div>
+
+    <a href="p32.html" class="nav-btn-float prev-btn">上一页</a>
+    <a href="p34.html" class="nav-btn-float next-btn">下一页</a>
+
+    <script>
+        function showSlide(slideId) {
+            // 隐藏所有幻灯片
+            document.querySelectorAll('.slide').forEach(slide => {
+                slide.classList.remove('active');
+            });
+            // 显示选中的幻灯片
+            document.getElementById(slideId).classList.add('active');
+
+            // 更新导航按钮状态
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+        }
+
+        function switchTab(btn, tabId) {
+            // 找到父级容器内的所有tab按钮和内容
+            let parent = btn.closest('.slide');
+            
+            parent.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            parent.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+
+            btn.classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+        }
+    </script>
+</body>
+</html>

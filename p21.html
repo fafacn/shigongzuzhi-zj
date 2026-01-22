@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>抗滑桩专项施工方案总结 - p21</title>
+    <style>
+        /* --- 1. 核心配色 --- */
+        :root {
+            --crcc-blue: #003366;
+            --crcc-red: #E60012;
+            --tech-teal: #319795;
+            --plan-orange: #dd6b20;
+            --status-green: #38a169; /* 已浇筑 */
+            --status-blue: #3182ce;  /* 已成孔 */
+            --status-yellow: #d69e2e; /* 开挖中 */
+            --status-gray: #cbd5e0;   /* 未开始 */
+            --bg-grad: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            --glass-bg: rgba(255,255,255,0.95);
+            --text-main: #1a202c;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+            height: 100vh; width: 100vw; overflow: hidden;
+            background: var(--bg-grad);
+            display: flex; justify-content: center; align-items: center;
+            color: var(--text-main);
+        }
+
+        .container {
+            width: 98vw; height: 96vh;
+            display: flex; flex-direction: column;
+            padding: 25px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            box-shadow: 0 15px 50px rgba(0,0,0,0.15);
+            border: 1px solid rgba(255,255,255,0.6);
+        }
+
+        /* --- 标题区 --- */
+        .header-section {
+            flex: 0 0 auto;
+            border-bottom: 2px solid rgba(0, 51, 102, 0.1);
+            padding-bottom: 15px; margin-bottom: 20px;
+            display: flex; justify-content: space-between; align-items: flex-end;
+        }
+        h2 { font-size: 2.0rem; color: var(--crcc-blue); display: flex; align-items: center; gap: 15px; margin: 0; }
+        h2::before { content:''; width: 8px; height: 32px; background: var(--crcc-red); display: block; }
+        .subtitle { font-size: 1rem; color: #718096; font-weight: 500;}
+
+        /* --- 选项卡导航 --- */
+        .tabs-nav { display: flex; gap: 10px; margin-bottom: 20px; padding-bottom: 5px; }
+        
+        .tab-btn {
+            flex: 1; padding: 12px 10px; background: #eef2f6; border: none; border-radius: 12px;
+            cursor: pointer; font-weight: bold; color: #64748b;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.03);
+        }
+        .badge {
+            width: 24px; height: 24px; background: var(--crcc-red); color: white; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.85rem; font-weight: 800; box-shadow: 0 2px 4px rgba(230, 0, 18, 0.3);
+            transition: transform 0.3s;
+        }
+        .tab-btn.active {
+            background: var(--crcc-blue); color: white; transform: translateY(-4px);
+            box-shadow: 0 8px 20px rgba(0, 51, 102, 0.3);
+        }
+        .tab-btn.active .badge { background: white; color: var(--crcc-blue); transform: scale(1.1); }
+        .tab-btn:hover:not(.active) { background: #e2e8f0; transform: translateY(-2px); }
+
+        /* --- 内容区域 --- */
+        .content-area { flex: 1; overflow: hidden; position: relative; padding: 5px; }
+        .tab-pane {
+            display: none; height: 100%; overflow-y: auto; scrollbar-width: none;
+        }
+        .tab-pane::-webkit-scrollbar { display: none; }
+        .tab-pane.active { display: flex; flex-direction: column; gap: 20px; }
+
+        /* 动画 */
+        .animate-item {
+            opacity: 0; transform: translateY(20px);
+            animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        .animate-item:nth-child(1) { animation-delay: 0.05s; }
+        .animate-item:nth-child(2) { animation-delay: 0.15s; }
+        .animate-item:nth-child(3) { animation-delay: 0.25s; }
+        @keyframes slideUp { to { opacity: 1; transform: translateY(0); } }
+
+        /* --- 模块样式 --- */
+        .section-box {
+            background: white; border-radius: 12px; padding: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03); border: 1px solid #f0f0f0;
+            transition: transform 0.3s; display: flex; flex-direction: column;
+        }
+        .section-box:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(0,0,0,0.06); }
+        .section-title { 
+            font-size: 1.15rem; font-weight: 800; color: var(--crcc-blue); 
+            margin-bottom: 15px; padding-bottom: 8px; border-bottom: 2px dashed #e2e8f0;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .section-title::before {
+            content: ''; display: inline-block; width: 6px; height: 18px; 
+            background: var(--crcc-blue); margin-right: 10px; border-radius: 3px;
+        }
+
+        /* 布局网格 */
+        .grid-2-col { display: grid; grid-template-columns: 1fr 1.5fr; gap: 20px; height: 100%; }
+        .grid-3-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+
+        /* --- 表格样式升级 (Modern Table) --- */
+        .modern-table-wrapper {
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+        .modern-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; background: white; }
+        
+        .modern-table thead th {
+            background: linear-gradient(135deg, var(--crcc-blue), #2c5282);
+            color: white; padding: 12px 8px; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 0.5px;
+            position: sticky; top: 0; z-index: 10;
+            border-bottom: 2px solid #90cdf4;
+        }
+        
+        .modern-table tbody tr {
+            transition: all 0.2s ease;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .modern-table tbody tr:hover {
+            background-color: #f8fafc;
+            transform: scale(1.01);
+            z-index: 5;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            position: relative;
+        }
+        
+        .modern-table td {
+            padding: 10px 8px; text-align: center; color: #475569;
+        }
+        
+        /* 数据列字体 */
+        .val-font { font-family: 'Consolas', 'Monaco', monospace; font-weight: bold; color: #2d3748; }
+        
+        /* 高亮样式优化 */
+        .row-hl-yellow {
+            background-color: rgba(254, 252, 191, 0.3) !important; /* 柔和黄 */
+            border-left: 4px solid #d69e2e; /* 左侧金边 */
+        }
+        .row-hl-blue {
+            background-color: rgba(190, 227, 248, 0.3) !important; /* 柔和蓝 */
+            border-left: 4px solid #3182ce; /* 左侧蓝边 */
+        }
+
+        /* 阶段卡片 */
+        .stage-card {
+            border-left: 5px solid #cbd5e0; padding: 15px; background: #fff; 
+            border-radius: 8px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        .stage-1 { border-left-color: var(--status-blue); }
+        .stage-2 { border-left-color: var(--status-yellow); }
+        .stage-3 { border-left-color: var(--status-green); }
+
+        /* 进度可视化网格 */
+        .pile-grid {
+            display: grid; grid-template-columns: repeat(16, 1fr); gap: 8px; margin-top: 15px;
+        }
+        .pile-box {
+            aspect-ratio: 1; border-radius: 4px; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; font-size: 0.8rem; font-weight: bold;
+            color: white; position: relative; cursor: pointer; transition: transform 0.2s;
+        }
+        .pile-box:hover { transform: scale(1.1); z-index: 10; }
+        .pile-id { font-size: 0.9rem; }
+        
+        .status-poured { background: var(--status-green); box-shadow: 0 0 10px rgba(56, 161, 105, 0.4); }
+        .status-hole { background: var(--status-blue); box-shadow: 0 0 10px rgba(49, 130, 206, 0.4); }
+        .status-digging { background: var(--status-yellow); animation: pulse 2s infinite; }
+        .status-wait { background: var(--status-gray); color: #718096; border: 1px dashed #a0aec0; }
+
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }
+
+        .legend-item { display: flex; align-items: center; gap: 6px; font-size: 0.85rem; margin-left: 15px; }
+        .legend-dot { width: 12px; height: 12px; border-radius: 3px; }
+
+        /* 导航按钮 */
+        .nav-btn {
+            position: fixed; bottom: 30px; padding: 12px 30px;
+            background: var(--crcc-blue); color: white;
+            border-radius: 30px; text-decoration: none; font-weight: bold;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2); transition: 0.3s; z-index: 200; font-size: 1rem;
+        }
+        .nav-btn:hover { background: var(--crcc-red); transform: scale(1.05); }
+        .prev-btn { right: 150px; background: white; color: var(--crcc-blue); border: 1px solid var(--crcc-blue); }
+        .next-btn { right: 30px; }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header-section">
+        <div>
+            <h2>抗滑桩专项施工方案总结 (K40+370～K40+526)</h2>
+            <div class="subtitle">32根C30钢筋砼抗滑桩 · 隔桩跳挖 · 实时进度管控</div>
+        </div>
+    </div>
+
+    <!-- 选项卡导航 -->
+    <div class="tabs-nav">
+        <button class="tab-btn active" onclick="openTab(event, 'tab1')"><span class="badge">1</span> 工程概况与参数</button>
+        <button class="tab-btn" onclick="openTab(event, 'tab2')"><span class="badge">2</span> 施工部署与工期</button>
+        <button class="tab-btn" onclick="openTab(event, 'tab3')"><span class="badge">3</span> 关键工艺技术</button>
+        <button class="tab-btn" onclick="openTab(event, 'tab4')"><span class="badge">4</span> 进度与监测预警</button>
+    </div>
+
+    <div class="content-area">
+        
+        <!-- Tab 1: 概况与参数 -->
+        <div id="tab1" class="tab-pane active">
+            <div class="grid-2-col animate-item">
+                <!-- 左侧：文字概况 -->
+                <div class="section-box">
+                    <div class="section-title">工程概况与地质特征</div>
+                    <ul class="detail-list" style="flex:1; overflow-y:auto; line-height:1.8;">
+                        <li><strong>位置：</strong>右侧挖方高边坡，桩号 K40+370～K40+526，全长156m。</li>
+                        <li><strong>规模：</strong>共计 <strong>32根</strong> (1#～32#)。混凝土总方量约 4080m³。</li>
+                        <li><strong>结构：</strong>截面 2.0m×3.0m (矩形)。<br>桩长 17m～24m (14根为24m)。<br>每桩设两束Φ15.2-6孔锚索，单束长30m。</li>
+                        <li><strong>地质：</strong>粉质黏土、角砾土及强/中风化泥质砂岩。岩体破碎，需人工挖掘+浅孔爆破。</li>
+                    </ul>
+                </div>
+
+                <!-- 右侧：详细参数表 (视觉升级版) -->
+                <div class="section-box" style="padding:0; background:transparent; border:none; box-shadow:none;">
+                    <div class="section-title" style="margin:0 0 10px 0; background:white; padding:10px; border-radius:8px;">桩位详细参数表</div>
+                    <div class="modern-table-wrapper" style="flex:1; overflow-y:auto;">
+                        <table class="modern-table">
+                            <thead>
+                                <tr>
+                                    <th>段落</th><th>桩位</th><th>中心桩号</th><th>桩长(m)</th><th>顶标高</th><th>变化点</th><th>底标高</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>第1段</td><td>1#</td><td>K40+370</td><td class="val-font">17</td><td class="val-font">90.15</td><td class="val-font">83.15</td><td class="val-font">73.15</td></tr>
+                                <tr><td></td><td>2#</td><td>K40+375</td><td class="val-font">17</td><td class="val-font">90.15</td><td class="val-font">83.15</td><td class="val-font">73.15</td></tr>
+                                <tr><td></td><td>3#</td><td>K40+380</td><td class="val-font">17</td><td class="val-font">90.15</td><td class="val-font">83.15</td><td class="val-font">73.15</td></tr>
+                                <tr class="row-hl-yellow"><td>第2段</td><td>4#</td><td>K40+385</td><td class="val-font">17</td><td class="val-font">92.41</td><td class="val-font">83.41</td><td class="val-font">75.41</td></tr>
+                                <tr class="row-hl-yellow"><td></td><td>5#</td><td>K40+390</td><td class="val-font">17</td><td class="val-font">92.41</td><td class="val-font">83.41</td><td class="val-font">75.41</td></tr>
+                                <tr><td></td><td>6#</td><td>K40+395</td><td class="val-font">19</td><td class="val-font">92.41</td><td class="val-font">83.41</td><td class="val-font">73.41</td></tr>
+                                <tr><td></td><td>7#</td><td>K40+400</td><td class="val-font">19</td><td class="val-font">92.41</td><td class="val-font">83.41</td><td class="val-font">73.41</td></tr>
+                                <tr class="row-hl-yellow"><td>第3段</td><td>8#</td><td>K40+405</td><td class="val-font">19</td><td class="val-font">93.65</td><td class="val-font">83.65</td><td class="val-font">74.65</td></tr>
+                                <tr class="row-hl-yellow"><td></td><td>9#</td><td>K40+410</td><td class="val-font">19</td><td class="val-font">93.65</td><td class="val-font">83.65</td><td class="val-font">74.65</td></tr>
+                                <tr class="row-hl-yellow"><td></td><td>10#</td><td>K40+415</td><td class="val-font">19</td><td class="val-font">93.65</td><td class="val-font">83.65</td><td class="val-font">74.65</td></tr>
+                                <tr><td></td><td>11#</td><td>K40+420</td><td class="val-font">20</td><td class="val-font">93.65</td><td class="val-font">83.65</td><td class="val-font">73.65</td></tr>
+                                <tr class="row-hl-yellow"><td>第4段</td><td>12#</td><td>K40+425</td><td class="val-font">20</td><td class="val-font">95.87</td><td class="val-font">83.87</td><td class="val-font">75.87</td></tr>
+                                <tr class="row-hl-yellow"><td></td><td>13#</td><td>K40+430</td><td class="val-font">20</td><td class="val-font">95.87</td><td class="val-font">83.87</td><td class="val-font">75.87</td></tr>
+                                <tr class="row-hl-yellow"><td></td><td>14#</td><td>K40+435</td><td class="val-font">20</td><td class="val-font">95.87</td><td class="val-font">83.87</td><td class="val-font">75.87</td></tr>
+                                <tr><td>第5段</td><td>15#~19#</td><td>K40+440~</td><td class="val-font">24</td><td class="val-font">96.07</td><td class="val-font">84.07</td><td class="val-font">72.07</td></tr>
+                                <tr><td>第6段</td><td>20#~23#</td><td>K40+465~</td><td class="val-font">24</td><td class="val-font">96.25</td><td class="val-font">84.25</td><td class="val-font">72.25</td></tr>
+                                <tr class="row-hl-blue"><td>第7段</td><td>24#</td><td>K40+485</td><td class="val-font">24</td><td class="val-font">94.40</td><td class="val-font">84.4</td><td class="val-font">70.4</td></tr>
+                                <tr class="row-hl-blue"><td></td><td>25#</td><td>K40+490</td><td class="val-font">24</td><td class="val-font">94.40</td><td class="val-font">84.4</td><td class="val-font">70.4</td></tr>
+                                <tr class="row-hl-blue"><td></td><td>26#</td><td>K40+495</td><td class="val-font">24</td><td class="val-font">94.40</td><td class="val-font">84.4</td><td class="val-font">70.4</td></tr>
+                                <tr><td>第8段</td><td>27#~32#</td><td>K40+500~</td><td class="val-font">22</td><td class="val-font">94.4~</td><td class="val-font">84.4~</td><td class="val-font">72.4~</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 2: 部署与工期 -->
+        <div id="tab2" class="tab-pane">
+            <div class="section-box animate-item">
+                <div class="section-title">施工部署：隔桩跳挖、分期实施</div>
+                
+                <div class="stage-card stage-1">
+                    <h3 style="color:var(--status-blue); margin-bottom:8px;">第一阶段：偶数桩施工 (骨架形成)</h3>
+                    <div style="display:flex; justify-content:space-between; font-size:0.95rem;">
+                        <span><strong>范围：</strong>32#、30# ... 2# (共16根)</span>
+                        <span><strong>时间：</strong>2025.10初 - 12月中旬</span>
+                    </div>
+                    <p style="margin-top:8px; color:#666;">核心：先行形成抗滑阻力骨架，控制边坡变形。</p>
+                </div>
+
+                <div class="stage-card stage-2">
+                    <h3 style="color:var(--plan-orange); margin-bottom:8px;">第二阶段：奇数桩施工 (全面闭合)</h3>
+                    <div style="display:flex; justify-content:space-between; font-size:0.95rem;">
+                        <span><strong>范围：</strong>31#、29# ... 1# (共16根)</span>
+                        <span><strong>时间：</strong>2025.12下旬 - 2026.2月中旬</span>
+                    </div>
+                    <p style="margin-top:8px; color:#666;">核心：待第一批桩体强度满足后进行，完成主体结构。</p>
+                </div>
+
+                <div class="stage-card stage-3">
+                    <h3 style="color:var(--status-green); margin-bottom:8px;">第三阶段：附属结构及装修</h3>
+                    <div style="display:flex; justify-content:space-between; font-size:0.95rem;">
+                        <span><strong>范围：</strong>全段 1# - 32#</span>
+                        <span><strong>时间：</strong>2026.2下旬 - 3月下旬</span>
+                    </div>
+                    <!-- 修改点：400kN -> 600kN -->
+                    <p style="margin-top:8px; color:#666;">核心：桩前土方开挖、挡土板安装、锚索张拉(<strong>600kN</strong>)。</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 3: 关键工艺 -->
+        <div id="tab3" class="tab-pane">
+            <div class="grid-3-col animate-item">
+                <div class="section-box">
+                    <div class="section-title" style="color:var(--tech-teal);">成孔与护壁</div>
+                    <ul class="detail-list">
+                        <li><strong>锁口：</strong>C30砼，高出地面30cm防倒灌。</li>
+                        <li><strong>掘进：</strong>土层人工挖；入岩浅孔松动爆破。</li>
+                        <li><strong>护壁：</strong>每挖1.0m立模浇筑C30砼(20cm厚)。</li>
+                        <li><strong>通风：</strong>深超5m或爆破后，强制通风>15min。</li>
+                    </ul>
+                </div>
+                <div class="section-box">
+                    <div class="section-title" style="color:var(--crcc-blue);">钢筋与混凝土</div>
+                    <ul class="detail-list">
+                        <li><strong>钢筋笼：</strong>孔内绑扎，套筒连接。</li>
+                        <li><strong>灌注：</strong>干孔灌注法，串筒导料，分层振捣。</li>
+                        <li><strong>严控：</strong>防止混凝土离析，确保密实度。</li>
+                    </ul>
+                </div>
+                <div class="section-box">
+                    <div class="section-title" style="color:var(--plan-orange);">锚索与挡土板</div>
+                    <ul class="detail-list">
+                        <li><strong>时机：</strong>桩身强度达标后施工锚索。</li>
+                        <li><strong>挡土板：</strong>预制安装，板缝10-20mm。</li>
+                        <li><strong>回填：</strong>板后回填透水砂砾石，保排水。</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 4: 进度与监测 (核心图表) -->
+        <div id="tab4" class="tab-pane">
+            
+            <div class="grid-2-col animate-item" style="grid-template-columns: 2.5fr 1fr;">
+                <!-- 左侧：32根桩状态图 -->
+                <div class="section-box">
+                    <div class="section-title">
+                        目前施工进展可视化 (截止2026.1.20)
+                        <div style="display:flex;">
+                            <div class="legend-item"><div class="legend-dot status-poured"></div>已浇筑(8)</div>
+                            <div class="legend-item"><div class="legend-dot status-hole"></div>已成孔(8)</div>
+                            <div class="legend-item"><div class="legend-dot status-digging"></div>开挖中(5)</div>
+                            <div class="legend-item"><div class="legend-dot status-wait"></div>未成孔(11)</div>
+                        </div>
+                    </div>
+                    
+                    <!-- 32宫格桩位图 -->
+                    <div class="pile-grid" id="pileGrid">
+                        <!-- JS将自动生成 -->
+                    </div>
+                    
+                    <div style="margin-top:15px; font-size:0.9rem; color:#666;">
+                        * 提示：17, 19, 21, 23, 25号桩预计 <strong>1月30日</strong> 成孔；剩余成孔未浇筑8个预计 <strong>2月3日</strong> 完成。
+                    </div>
+                </div>
+
+                <!-- 右侧：数据统计 -->
+                <div class="section-box">
+                    <div class="section-title">核心数据统计</div>
+                    <div style="text-align:center; padding:10px;">
+                        <div style="margin-bottom:20px;">
+                            <div style="font-size:0.9rem; color:#718096;">累计开挖</div>
+                            <div style="font-size:2.5rem; font-weight:bold; color:var(--crcc-blue);">395<span style="font-size:1rem;">m</span></div>
+                        </div>
+                        <div style="margin-bottom:20px;">
+                            <div style="font-size:0.9rem; color:#718096;">锁口完成</div>
+                            <div style="font-size:1.8rem; font-weight:bold; color:var(--tech-teal);">30<span style="font-size:1rem;">/32</span></div>
+                        </div>
+                        <hr style="border:0; border-top:1px dashed #e2e8f0; margin:15px 0;">
+                        <div style="text-align:left;">
+                            <strong style="color:var(--crcc-red);">⚠️ 监测预警：</strong>
+                            <ul class="detail-list" style="font-size:0.85rem; margin-top:5px;">
+                                <li>锁口沉降限值：30mm</li>
+                                <li>必须执行"先通风、再检测"</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<a href="p20.html" class="nav-btn prev-btn">上一页</a>
+<a href="p22.html" class="nav-btn next-btn">下一页</a>
+
+<script>
+    function openTab(evt, tabName) {
+        var i, tabcontent, tablinks;
+        tabcontent = document.getElementsByClassName("tab-pane");
+        for (i = 0; i < tabcontent.length; i++) {
+            tabcontent[i].classList.remove("active");
+        }
+        tablinks = document.getElementsByClassName("tab-btn");
+        for (i = 0; i < tablinks.length; i++) {
+            tablinks[i].classList.remove("active");
+        }
+        document.getElementById(tabName).classList.add("active");
+        evt.currentTarget.classList.add("active");
+    }
+
+    // 生成32根桩的状态
+    function renderPiles() {
+        const grid = document.getElementById('pileGrid');
+        
+        // 定义状态逻辑
+        // 已浇筑(8个): 16, 18, 20, 22, 24, 26, 28, 30
+        // 正在挖孔(5个): 17, 19, 21, 23, 25
+        // 已成孔未浇筑(8个): 剩余的偶数桩 (2,4,6,8,10,12,14,32)
+        
+        const poured = [16, 18, 20, 22, 24, 26, 28, 30];
+        const digging = [17, 19, 21, 23, 25];
+        
+        for (let i = 1; i <= 32; i++) {
+            const div = document.createElement('div');
+            div.className = 'pile-box';
+            
+            let statusClass = 'status-wait';
+            let label = '未';
+
+            if (poured.includes(i)) {
+                statusClass = 'status-poured';
+                label = '浇筑';
+            } else if (digging.includes(i)) {
+                statusClass = 'status-digging';
+                label = '开挖';
+            } else if (i % 2 === 0) {
+                // 剩余的偶数桩
+                statusClass = 'status-hole';
+                label = '成孔';
+            } else {
+                // 剩余的奇数桩
+                statusClass = 'status-wait';
+                label = '待';
+            }
+
+            div.classList.add(statusClass);
+            div.innerHTML = `<span class="pile-id">${i}#</span><span>${label}</span>`;
+            grid.appendChild(div);
+        }
+    }
+
+    window.onload = renderPiles;
+</script>
+
+</body>
+</html>

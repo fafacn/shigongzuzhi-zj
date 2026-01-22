@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>总体资源配置与工效分析 - p24</title>
+    <style>
+        /* --- 设计系统 --- */
+        :root {
+            --crcc-blue: #003366;
+            --crcc-red: #E60012;
+            --tech-teal: #319795;
+            --warn-orange: #dd6b20;
+            --success-green: #38a169;
+            --bg-grad: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            --glass-bg: rgba(255,255,255,0.96);
+            --border-light: rgba(0,0,0,0.08);
+            
+            /* 工班色系 */
+            --t1-color: #319795; 
+            --t2-color: #c53030; /* 二工班核心红 */
+            --t3-color: #805ad5;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+            height: 100vh; width: 100vw; overflow: hidden;
+            background: var(--bg-grad);
+            display: flex; justify-content: center; align-items: center;
+            color: #2d3748;
+        }
+
+        .container {
+            width: 98vw; height: 96vh;
+            display: flex; flex-direction: column;
+            padding: 20px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            box-shadow: 0 15px 50px rgba(0,0,0,0.15);
+            border: 1px solid rgba(255,255,255,0.6);
+        }
+
+        /* --- 头部 --- */
+        .header-section {
+            flex: 0 0 auto;
+            border-bottom: 2px solid rgba(0, 51, 102, 0.1);
+            padding-bottom: 10px; margin-bottom: 10px;
+            display: flex; justify-content: space-between; align-items: flex-end;
+        }
+        h2 { font-size: 1.6rem; color: var(--crcc-blue); display: flex; align-items: center; gap: 12px; margin: 0; }
+        h2::before { content:''; width: 6px; height: 26px; background: var(--crcc-red); display: block; }
+        .subtitle { font-size: 0.9rem; color: #718096; }
+
+        /* --- 布局网格 --- */
+        .main-grid {
+            flex: 1; display: grid; 
+            grid-template-columns: 1.8fr 1.2fr; /* 左:设备表 右:时间+人员+产能 */
+            grid-template-rows: 1fr;
+            gap: 15px; overflow: hidden;
+        }
+        .col-left { display: flex; flex-direction: column; gap: 15px; overflow: hidden; }
+        .col-right { display: flex; flex-direction: column; gap: 15px; overflow-y: auto; padding-right: 5px; }
+
+        /* --- 通用卡片 --- */
+        .card {
+            background: white; border-radius: 10px; padding: 15px;
+            border: 1px solid var(--border-light);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+            display: flex; flex-direction: column;
+        }
+        .card-title {
+            font-size: 1rem; font-weight: bold; color: var(--crcc-blue);
+            margin-bottom: 10px; padding-left: 8px; border-left: 4px solid var(--tech-teal);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+
+        /* --- 模块1：有效施工期漏斗 (Time Funnel) --- */
+        .time-funnel {
+            display: flex; align-items: center; justify-content: space-between;
+            background: #f7fafc; padding: 10px; border-radius: 8px;
+            position: relative; overflow: hidden;
+        }
+        .tf-item { text-align: center; position: relative; z-index: 2; flex: 1; }
+        .tf-val { font-size: 1.2rem; font-weight: bold; line-height: 1.2; }
+        .tf-label { font-size: 0.75rem; color: #718096; }
+        
+        .minus-arrow { color: var(--warn-orange); font-weight: bold; font-size: 1.2rem; }
+        .equal-sign { color: var(--success-green); font-weight: bold; font-size: 1.2rem; }
+
+        .golden-period {
+            margin-top: 8px; background: linear-gradient(90deg, #f6e05e, #ecc94b);
+            color: #744210; padding: 5px 10px; border-radius: 4px; font-weight: bold; font-size: 0.85rem;
+            text-align: center; display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+
+        /* --- 模块2：机械设备表 (Machine Table) --- */
+        .table-container { flex: 1; overflow: hidden; border-radius: 8px; border: 1px solid #e2e8f0; }
+        .machine-table {
+            width: 100%; border-collapse: collapse; font-size: 0.85rem;
+        }
+        .machine-table thead { background: #e2e8f0; position: sticky; top: 0; z-index: 10; }
+        .machine-table th { padding: 10px 5px; color: #4a5568; font-weight: bold; text-align: center; border-bottom: 2px solid #cbd5e0; }
+        .machine-table td { padding: 8px 5px; text-align: center; border-bottom: 1px solid #edf2f7; color: #2d3748; }
+        
+        /* 重点加强列样式 */
+        .col-highlight { background: rgba(197, 48, 48, 0.08); border-left: 2px solid rgba(197,48,48,0.2); border-right: 2px solid rgba(197,48,48,0.2); }
+        .machine-table th.col-highlight { background: rgba(197, 48, 48, 0.15); color: var(--t2-color); }
+        .val-focus { font-weight: 800; color: var(--t2-color); font-size: 1rem; }
+        
+        .row-group-1 { background-color: #fff; }
+        .row-group-2 { background-color: #fafafa; }
+        
+        .note-text { font-size: 0.75rem; color: #718096; text-align: left !important; padding-left: 10px !important; }
+
+        /* --- 模块3：人员配置 (Personnel) --- */
+        .person-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+        }
+        .p-card {
+            background: #f7fafc; padding: 10px; border-radius: 6px; border: 1px solid #edf2f7;
+            position: relative;
+        }
+        .p-card.t2 { grid-column: span 2; background: #fff5f5; border-color: #feb2b2; }
+        
+        .p-num { font-size: 1.4rem; font-weight: bold; color: var(--crcc-blue); }
+        .p-unit { font-size: 0.8rem; color: #718096; }
+        .p-title { font-weight: bold; font-size: 0.9rem; margin-bottom: 5px; display: flex; justify-content: space-between; }
+        
+        .special-badge {
+            display: inline-block; background: var(--crcc-red); color: white; 
+            font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; margin-right: 5px;
+        }
+
+        /* --- 模块4：产能目标 (Targets) --- */
+        .target-list { display: flex; flex-direction: column; gap: 12px; }
+        .target-item { display: flex; align-items: center; font-size: 0.9rem; }
+        .t-label { width: 80px; font-weight: bold; }
+        .t-bar-bg { flex: 1; height: 16px; background: #edf2f7; border-radius: 8px; margin: 0 10px; overflow: hidden; position: relative; }
+        .t-bar-fill { height: 100%; border-radius: 8px; display: flex; align-items: center; justify-content: flex-end; padding-right: 5px; color: white; font-size: 0.7rem; transition: width 1s; }
+        .t-val { width: 90px; text-align: right; font-weight: bold; font-family: monospace; }
+        
+        .total-box {
+            margin-top: 10px; padding: 10px; background: var(--crcc-blue); color: white; border-radius: 8px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+
+        /* 底部策略栏 */
+        .strategy-footer {
+            margin-top: 10px; padding: 10px; background: #fffaf0; border: 1px solid #fbd38d; border-radius: 8px;
+            font-size: 0.85rem; color: #744210; display: flex; align-items: center; gap: 10px;
+        }
+
+        /* 导航 */
+        .nav-btn {
+            position: fixed; bottom: 30px; padding: 12px 30px;
+            background: var(--crcc-blue); color: white;
+            border-radius: 30px; text-decoration: none; font-weight: bold;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2); transition: 0.3s; z-index: 200; font-size: 1rem;
+        }
+        .nav-btn:hover { background: var(--crcc-red); transform: scale(1.05); }
+        .prev-btn { right: 150px; background: white; color: var(--crcc-blue); border: 1px solid var(--crcc-blue); }
+        .next-btn { right: 30px; }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header-section">
+        <div>
+            <h2>总体资源配置与工效分析 <span style="font-size:1rem; color:#718096; margin-left:10px;">G4222和含高速二分部</span></h2>
+            <div class="subtitle">针对性配置原则：保高峰、强核心、歇人不歇机</div>
+        </div>
+    </div>
+
+    <div class="main-grid">
+        
+        <div class="col-left">
+            <div class="card" style="height:100%;">
+                <div class="card-title">
+                    <span>机械设备配置计划 (高峰期双班倒)</span>
+                    <span style="font-size:0.8rem; color:var(--crcc-red); font-weight:normal;">*重点强化路基二工班</span>
+                </div>
+                
+                <div class="table-container">
+                    <table class="machine-table">
+                        <thead>
+                            <tr>
+                                <th style="width:15%">设备名称</th>
+                                <th style="width:15%">规格</th>
+                                <th style="width:10%">一工班</th>
+                                <th class="col-highlight" style="width:15%">二工班<br><span style="font-size:0.7rem">(重点)</span></th>
+                                <th style="width:10%">三工班</th>
+                                <th style="width:10%">合计</th>
+                                <th style="width:25%">配置说明</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="row-group-1">
+                                <td>挖掘机 </td>
+                                <td>1.2/2.0m³</td>
+                                <td>6</td>
+                                <td class="col-highlight val-focus">12</td>
+                                <td>4</td>
+                                <td>22</td>
+                                <td class="note-text">二工班需含4台带破碎锤 (配合石方)</td>
+                            </tr>
+                            <tr class="row-group-1">
+                                <td>自卸车</td>
+                                <td>20t</td>
+                                <td>15</td>
+                                <td class="col-highlight val-focus">40</td>
+                                <td>15</td>
+                                <td>70</td>
+                                <td class="note-text">二工班承担服务区石方远运任务</td>
+                            </tr>
+                            <tr class="row-group-1">
+                                <td>潜孔钻</td>
+                                <td>D100</td>
+                                <td>-</td>
+                                <td class="col-highlight val-focus">4</td>
+                                <td>-</td>
+                                <td>4</td>
+                                <td class="note-text">服务区石方爆破专用</td>
+                            </tr>
+                            
+                            <tr class="row-group-2">
+                                <td>路拌机</td>
+                                <td>宝马格</td>
+                                <td>2</td>
+                                <td class="col-highlight">4</td>
+                                <td>2</td>
+                                <td>8</td>
+                                <td class="note-text">灰土改良核心设备，必须足额</td>
+                            </tr>
+                            <tr class="row-group-2">
+                                <td>石灰撒布车</td>
+                                <td>智能型</td>
+                                <td>1</td>
+                                <td class="col-highlight">2</td>
+                                <td>1</td>
+                                <td>4</td>
+                                <td class="note-text">精准控制灰剂量</td>
+                            </tr>
+
+                            <tr class="row-group-1">
+                                <td>推土机</td>
+                                <td>SD22</td>
+                                <td>2</td>
+                                <td class="col-highlight">6</td>
+                                <td>2</td>
+                                <td>10</td>
+                                <td class="note-text">保证摊铺效率</td>
+                            </tr>
+                            <tr class="row-group-1">
+                                <td>平地机</td>
+                                <td>GR180</td>
+                                <td>1</td>
+                                <td class="col-highlight">2</td>
+                                <td>1</td>
+                                <td>4</td>
+                                <td class="note-text">精平，保证改良土层厚度</td>
+                            </tr>
+                            <tr class="row-group-1">
+                                <td>压路机</td>
+                                <td>22t双钢轮</td>
+                                <td>3</td>
+                                <td class="col-highlight">6</td>
+                                <td>3</td>
+                                <td>12</td>
+                                <td class="note-text">-</td>
+                            </tr>
+                            <tr class="row-group-1">
+                                <td>羊角碾</td>
+                                <td>22t凸块</td>
+                                <td>1</td>
+                                <td class="col-highlight">2</td>
+                                <td>1</td>
+                                <td>4</td>
+                                <td class="note-text">针对膨胀土大块破碎压实</td>
+                            </tr>
+                            <tr class="row-group-1">
+                                <td>洒水车</td>
+                                <td>10m³</td>
+                                <td>2</td>
+                                <td class="col-highlight">4</td>
+                                <td>2</td>
+                                <td>8</td>
+                                <td class="note-text">养生及消解石灰</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-right">
+            
+            <div class="card">
+                <div class="card-title">有效施工日折算 (全年)</div>
+                <div class="time-funnel">
+                    <div class="tf-item">
+                        <div class="tf-val">365</div>
+                        <div class="tf-label">日历天</div>
+                    </div>
+                    <div class="minus-arrow">-</div>
+                    <div class="tf-item">
+                        <div class="tf-val" style="color:#e53e3e">100</div>
+                        <div class="tf-label">雨季/冬雨</div>
+                    </div>
+                    <div class="minus-arrow">-</div>
+                    <div class="tf-item">
+                        <div class="tf-val" style="color:#e53e3e">40</div>
+                        <div class="tf-label">低温/干扰</div>
+                    </div>
+                    <div class="equal-sign">=</div>
+                    <div class="tf-item">
+                        <div class="tf-val" style="color:var(--success-green); font-size:1.5rem;">210</div>
+                        <div class="tf-label">有效天数</div>
+                    </div>
+                </div>
+                <div class="golden-period">
+                    <span>☀️ 黄金施工期: 10月 ~ 次年5月</span>
+                    <span style="border-left:1px solid rgba(0,0,0,0.2); padding-left:8px;">双班倒作业</span>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">人员配置计划</div>
+                <div class="person-grid">
+                    <div class="p-card" style="border-top:3px solid var(--t1-color);">
+                        <div class="p-title" style="color:var(--t1-color);">一工班</div>
+                        <div><span class="p-num">45</span> <span class="p-unit">人</span></div>
+                    </div>
+                    <div class="p-card" style="border-top:3px solid var(--t3-color);">
+                        <div class="p-title" style="color:var(--t3-color);">三工班</div>
+                        <div><span class="p-num">40</span> <span class="p-unit">人</span></div>
+                    </div>
+                    <div class="p-card t2">
+                        <div class="p-title" style="color:var(--t2-color);">二工班 (90人)</div>
+                        <div style="display:flex; justify-content:space-between; align-items:end;">
+                            <div><span class="p-num" style="color:var(--t2-color);">90</span> <span class="p-unit">人</span></div>
+                            <div style="text-align:right; font-size:0.8rem;">
+                                <div style="margin-bottom:4px;"><span class="special-badge">增</span>爆破班 20人</div>
+                                <div><span class="special-badge">增</span>夜间赶工班</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card" style="flex:1;">
+                <div class="card-title">日工效指标 (压实方)</div>
+                <div class="target-list">
+                    <div class="target-item">
+                        <div class="t-label" style="color:var(--t1-color);">一工班</div>
+                        <div class="t-bar-bg"><div class="t-bar-fill" style="width:20%; background:var(--t1-color);"></div></div>
+                        <div class="t-val">1,500</div>
+                    </div>
+                    <div class="target-item">
+                        <div class="t-label" style="color:var(--t2-color);">二工班</div>
+                        <div class="t-bar-bg"><div class="t-bar-fill" style="width:62%; background:var(--t2-color);"></div></div>
+                        <div class="t-val">4,500</div>
+                    </div>
+                    <div class="target-item">
+                        <div class="t-label" style="color:var(--t3-color);">三工班</div>
+                        <div class="t-bar-bg"><div class="t-bar-fill" style="width:16%; background:var(--t3-color);"></div></div>
+                        <div class="t-val">1,200</div>
+                    </div>
+                </div>
+                
+                <div class="total-box">
+                    <div>
+                        <div style="font-size:0.8rem; opacity:0.8;">全线日合计</div>
+                        <div style="font-weight:bold; font-size:1.4rem;">7,200 <span style="font-size:0.9rem;">m³/天</span></div>
+                    </div>
+                    <div style="text-align:right;">
+                        <div style="font-size:0.8rem; opacity:0.8;">高峰期突破</div>
+                        <div style="font-weight:bold;">10,000+</div>
+                    </div>
+                </div>
+
+                <div class="strategy-footer">
+                    <div style="font-size:1.2rem;">💡</div>
+                    <div>
+                        <strong>策略核心：</strong> 重点强化二工班挖掘运输能力，确保服务区50万方石方及时调配至梁场。
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<a href="p23.html" class="nav-btn prev-btn">上一页</a>
+<a href="p25.html" class="nav-btn next-btn">下一页</a>
+
+</body>
+</html>

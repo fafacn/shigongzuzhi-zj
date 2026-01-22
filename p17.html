@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>梁场段路基施工方案</title>
+    <style>
+        /* --- 1. 核心配色 --- */
+        :root {
+            --crcc-blue: #003366;
+            --crcc-red: #E60012;
+            --tech-teal: #319795;   /* 技术方案 */
+            --plan-orange: #dd6b20; /* 进度计划 */
+            --data-purple: #805ad5; /* 数据分析 */
+            --bg-grad: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            --card-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            background: var(--bg-grad);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #333;
+        }
+
+        /* --- 2. 主容器 --- */
+        .container {
+            width: 98vw;
+            height: 96vh;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            padding: 20px;
+            background: rgba(255,255,255,0.9);
+            backdrop-filter: blur(15px);
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+            border: 1px solid rgba(255,255,255,0.6);
+        }
+
+        /* 标题区 */
+        .header-section {
+            flex: 0 0 auto;
+            border-bottom: 2px solid rgba(0, 51, 102, 0.1);
+            padding-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        h2 { font-size: 1.8rem; color: var(--crcc-blue); display: flex; align-items: center; gap: 15px; margin: 0; }
+        h2::before { content:''; width: 8px; height: 32px; background: var(--crcc-red); display: block; }
+        .subtitle { font-size: 1rem; color: #666; margin-top: 6px; font-weight: normal; background: #eee; padding: 2px 8px; border-radius: 4px; }
+
+        /* 红圈序号 */
+        .num-badge {
+            display: inline-flex; justify-content: center; align-items: center;
+            width: 24px; height: 24px; background: var(--crcc-red); color: white;
+            border-radius: 50%; font-size: 0.9rem; font-weight: bold; margin-right: 8px;
+            flex-shrink: 0; box-shadow: 0 2px 5px rgba(230, 0, 18, 0.3);
+        }
+
+        /* --- 3. 三列布局 --- */
+        .grid-layout {
+            flex: 1;
+            display: grid;
+            /* 左30% 中38% 右32% */
+            grid-template-columns: 30% 38% 32%;
+            gap: 15px;
+            overflow: hidden;
+        }
+
+        .column {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            overflow: hidden;
+        }
+
+        /* 通用卡片 */
+        .card {
+            background: white;
+            border-radius: 8px;
+            padding: 12px;
+            box-shadow: var(--card-shadow);
+            border-top: 3px solid #ccc;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .card-title {
+            font-size: 1.05rem; font-weight: bold; margin-bottom: 10px;
+            display: flex; align-items: center;
+            padding-bottom: 5px; border-bottom: 1px dashed #eee;
+        }
+        .card-body {
+            font-size: 0.85rem; color: #555; line-height: 1.5;
+            flex: 1; 
+            overflow-y: auto; padding-right: 5px;
+        }
+        .card-body::-webkit-scrollbar { width: 4px; }
+        .card-body::-webkit-scrollbar-thumb { background: #cbd5e0; border-radius: 2px; }
+
+        /* === 左列 === */
+        .c-overview { border-top-color: var(--crcc-blue); flex: 0 0 auto; }
+        
+        .geo-box { background: #f0f7ff; padding: 8px; border-radius: 4px; margin-bottom: 8px; }
+        .geo-item { display: flex; justify-content: space-between; margin-bottom: 4px; }
+        .geo-val { font-weight: bold; color: var(--crcc-blue); }
+
+        .earth-chart { margin-top: 10px; }
+        .ec-bar-group { margin-bottom: 8px; }
+        .ec-label { display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 2px; }
+        .ec-bar-bg { height: 10px; background: #eee; border-radius: 5px; overflow: hidden; }
+        .ec-bar { height: 100%; border-radius: 5px; }
+
+        /* 资源配置 */
+        .c-resource { border-top-color: #3182ce; flex: 1; }
+        .res-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; text-align: center; }
+        .res-table th { background: #ebf8ff; color: #2b6cb0; padding: 5px; }
+        .res-table td { border: 1px solid #e2e8f0; padding: 4px; }
+        .res-table tr:nth-child(even) { background: #f7fafc; }
+
+        /* === 中列 === */
+        .c-strategy { border-top-color: var(--plan-orange); flex: 0 0 auto; }
+        .strat-box { background: #fffaf0; padding: 10px; border-left: 4px solid var(--plan-orange); margin-bottom: 5px; }
+        
+        .timeline-container { display: flex; flex-direction: column; gap: 8px; margin-top: 5px; }
+        .time-step { 
+            display: flex; gap: 10px; 
+            background: #fff; border: 1px solid #eee; padding: 8px; border-radius: 6px;
+            transition: transform 0.2s;
+        }
+        .time-step:hover { transform: translateX(5px); border-color: var(--plan-orange); }
+        .ts-left { 
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            min-width: 60px; background: var(--plan-orange); color: white; border-radius: 4px; padding: 5px;
+        }
+        .ts-days { font-weight: bold; font-size: 0.9rem; line-height: 1.2; white-space: nowrap; }
+        .ts-unit { font-size: 0.7rem; }
+        .ts-content { display: flex; flex-direction: column; justify-content: center; }
+        .ts-title { font-weight: bold; color: #2d3748; font-size: 0.9rem; margin-bottom: 2px; }
+        .ts-desc { font-size: 0.8rem; color: #718096; line-height: 1.3; }
+
+        /* 结构物表格 */
+        .c-struct { border-top-color: var(--data-purple); flex: 1; }
+        .struct-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+        .struct-table th { background: #f3e8ff; color: #553c9a; padding: 6px; }
+        .struct-table td { border-bottom: 1px solid #eee; padding: 6px 4px; }
+        .struct-table tr:hover { background: #faf5ff; }
+        .hl-red { color: var(--crcc-red); font-weight: bold; }
+
+        /* === 右列 === */
+        .c-tech { border-top-color: var(--tech-teal); flex: 1; }
+        
+        .tech-item { margin-bottom: 10px; border: 1px solid #e6fffa; border-radius: 6px; }
+        .ti-head { 
+            background: #e6fffa; color: #234e52; padding: 6px 10px; 
+            font-weight: bold; font-size: 0.9rem;
+        }
+        .ti-body { padding: 8px 10px; font-size: 0.85rem; color: #444; }
+        .ti-point { margin-bottom: 4px; padding-left: 10px; position: relative; }
+        .ti-point::before { content: '•'; position: absolute; left: 0; color: var(--tech-teal); }
+
+        /* 90天总结 */
+        .target-summary {
+            margin-top: auto; 
+            background: #f7fafc; padding: 10px; border-radius: 6px; border: 1px dashed #cbd5e0;
+        }
+        .ts-header { font-weight:bold; color:var(--crcc-blue); margin-bottom:5px; font-size:0.9rem; }
+        .ts-list { list-style: none; padding: 0; margin: 0; font-size: 0.85rem; color: #555; }
+        .ts-list li { margin-bottom: 4px; display: flex; align-items: center; gap: 6px; }
+        .ts-icon { color: var(--crcc-red); }
+
+        /* 导航按钮 */
+        .nav-btn {
+            position: fixed; bottom: 30px; right: 30px;
+            padding: 12px 30px; background: var(--crcc-blue); color: white;
+            border-radius: 30px; text-decoration: none; font-weight: bold;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2); transition: 0.3s; z-index: 100;
+        }
+        .nav-btn:hover { background: var(--crcc-red); }
+        .prev-btn { right: 150px; background: white; color: var(--crcc-blue); border: 1px solid var(--crcc-blue); }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="header-section">
+            <h2>G4222和含高速二分部梁场段路基施工方案</h2>
+            <div class="subtitle">前期建设攻坚 • 90天工期目标</div>
+        </div>
+
+        <div class="grid-layout">
+            
+            <!-- 左列：数据 + 资源 -->
+            <div class="column">
+                <!-- 1. 概况 -->
+                <div class="card c-overview">
+                    <div class="card-title" style="color:var(--crcc-blue)">
+                        <span class="num-badge">1</span>工程概况与数据分析
+                    </div>
+                    <div class="card-body" style="flex:0 0 auto;">
+                        <div class="geo-box">
+                            <div class="geo-item"><span>桩号范围</span><span class="geo-val">K26+700 ~ K27+900</span></div>
+                            <div class="geo-item"><span>全长</span><span class="geo-val">1.2 km</span></div>
+                            <div class="geo-item"><span>特征</span><span>北高南低，起伏较大</span></div>
+                        </div>
+                        
+                        <div class="earth-chart">
+                            <div class="ec-bar-group">
+                                <div class="ec-label"><span>挖方总量</span><span style="color:#c53030; font-weight:bold;">20.8万 m³</span></div>
+                                <div class="ec-bar-bg"><div class="ec-bar" style="width: 100%; background: #fc8181;"></div></div>
+                            </div>
+                            <div class="ec-bar-group">
+                                <div class="ec-label"><span>填方总量</span><span style="color:#2f855a; font-weight:bold;">5.2万 m³</span></div>
+                                <div class="ec-bar-bg"><div class="ec-bar" style="width: 25%; background: #68d391;"></div></div>
+                            </div>
+                            <div class="ec-bar-group">
+                                <div class="ec-label"><span>需外运/调配</span><span style="color:#d69e2e; font-weight:bold;">15.6万 m³</span></div>
+                                <div class="ec-bar-bg"><div class="ec-bar" style="width: 75%; background: #f6ad55;"></div></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 5. 资源配置 -->
+                <div class="card c-resource">
+                    <div class="card-title" style="color:#2b6cb0">
+                        <span class="num-badge">5</span>资源配置 (针对土石方挖运)
+                    </div>
+                    <div class="card-body">
+                        <table class="res-table">
+                            <thead><tr><th>设备名称</th><th>规格</th><th>数量</th><th>用途</th></tr></thead>
+                            <tbody>
+                                <tr><td>挖掘机</td><td>PC360</td><td>3台</td><td>挖方、装车</td></tr>
+                                <tr><td>挖掘机</td><td>PC220</td><td>1台</td><td>鱼塘清淤/修坡</td></tr>
+                                <tr><td>自卸车</td><td>20m³</td><td>25辆</td><td>土石方调配及外运</td></tr>
+                                <tr><td>路拌机</td><td>维特根</td><td>1台</td><td>石灰土强制拌合</td></tr>
+                                <tr><td>推土机</td><td>SD22</td><td>1台</td><td>填筑区推铺</td></tr>
+                                <tr><td>平地机</td><td>-</td><td>1台</td><td>路基整平</td></tr>
+                                <tr><td>石灰洒布车</td><td>-</td><td>1台</td><td>石灰撒布</td></tr>
+                                <tr><td>压路机</td><td>22T</td><td>2台</td><td>填方区压实</td></tr>
+                                <tr><td>羊角碾</td><td>20T</td><td>1台</td><td>膨胀土破碎压实</td></tr>
+                                <tr><td>洒水车</td><td>10m³</td><td>2台</td><td>扬尘控制/养生</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 中列：部署 + 结构物 -->
+            <div class="column">
+                <!-- 3. 总体部署 -->
+                <div class="card c-strategy">
+                    <div class="card-title" style="color:var(--plan-orange)">
+                        <span class="num-badge">3</span>总体施组部署
+                    </div>
+                    <div class="card-body" style="flex:0 0 auto;">
+                        <div class="strat-box">
+                            <strong>核心策略：</strong>移方垫底，石方垫底，灰土封顶。<br>
+                            <span style="font-size:0.8rem; color:#666;">利用K27+000段挖出石方优先用于K26+700鱼塘软基换填。</span>
+                        </div>
+
+                        <div class="timeline-container">
+                            <div class="time-step">
+                                <div class="ts-left"><span class="ts-days">0-20天</span></div>
+                                <div class="ts-content">
+                                    <div class="ts-title">阶段一：清淤与结构物突击</div>
+                                    <div class="ts-desc">启动鱼塘清淤；全线10道涵洞突击。</div>
+                                </div>
+                            </div>
+                            <div class="time-step">
+                                <div class="ts-left" style="background:#ed8936"><span class="ts-days">20-60天</span></div>
+                                <div class="ts-content">
+                                    <div class="ts-title">阶段二：土石方大规模调配</div>
+                                    <div class="ts-desc">K27+大规模开挖，纵向调运至K26+填筑。</div>
+                                </div>
+                            </div>
+                            <div class="time-step">
+                                <div class="ts-left" style="background:#2f855a"><span class="ts-days">60-90天</span></div>
+                                <div class="ts-content">
+                                    <div class="ts-title">阶段三：路床改良与场地硬化</div>
+                                    <div class="ts-desc">路床顶面灰土改良施工；精平压实；硬化。</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. 结构物分布 -->
+                <div class="card c-struct">
+                    <div class="card-title" style="color:var(--data-purple)">
+                        <span class="num-badge">2</span>结构物分布 (10道涵洞/2座天桥)
+                    </div>
+                    <div class="card-body" style="overflow:visible;">
+                        <table class="struct-table">
+                            <thead><tr><th>桩号</th><th>类型</th><th>备注/策略</th></tr></thead>
+                            <tbody>
+                                <tr><td>K26+745</td><td>装配式箱涵</td><td class="hl-red">优先施工(便道贯通)</td></tr>
+                                <tr><td>K26+847</td><td>圆管涵</td><td>预制拼装</td></tr>
+                                <tr><td>K27+038</td><td>盖板涵</td><td>灌溉水系(现浇)</td></tr>
+                                <tr><td>K27+163</td><td>倒虹吸</td><td>灌溉</td></tr>
+                                <tr><td>K27+220</td><td>分离立交</td><td class="hl-red">重点(桩基需在此处)</td></tr>
+                                <tr><td>K27+264</td><td>倒虹吸</td><td>灌溉</td></tr>
+                                <tr><td>K27+360</td><td>倒虹吸</td><td>灌溉</td></tr>
+                                <tr><td>K27+511</td><td>倒虹吸</td><td>排水</td></tr>
+                                <tr><td>K27+571</td><td>倒虹吸</td><td>灌溉</td></tr>
+                                <tr><td>K27+741</td><td>分离立交</td><td>位于挖方段</td></tr>
+                                <tr><td>K27+757</td><td>倒虹吸</td><td>灌溉</td></tr>
+                                <tr><td>K27+855</td><td>倒虹吸</td><td>灌溉</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 右列：技术方案 -->
+            <div class="column">
+                <!-- 4. 关键技术方案 -->
+                <div class="card c-tech">
+                    <div class="card-title" style="color:var(--tech-teal)">
+                        <span class="num-badge">4</span>关键技术方案
+                    </div>
+                    <div class="card-body">
+                        <!-- 1. 鱼塘 -->
+                        <div class="tech-item">
+                            <div class="ti-head">1. 鱼塘处理 (K26+700~950)</div>
+                            <div class="ti-body">
+                                <div class="ti-point"><strong>清淤:</strong> 抽干积水，挖除流塑状淤泥(约1.5m深)至原状土。</div>
+                                <!-- 修改点：去掉了强夯 -->
+                                <div class="ti-point"><strong>回填:</strong> 利用K27+段挖出的石方进行回填，分层填筑(≤50cm)，形成稳定地基。</div>
+                            </div>
+                        </div>
+                        <!-- 2. 膨胀土 -->
+                        <div class="tech-item">
+                            <div class="ti-head">2. 膨胀土路基挖方 (K27+000~900)</div>
+                            <div class="ti-body">
+                                <div class="ti-point"><strong>分层开挖:</strong> 采用“横向分层、纵向分段、两端同步”方式。</div>
+                                <div class="ti-point"><strong>保护:</strong> 边坡预留30-50cm保护层，待防护施工前再刷坡，防雨水浸泡。</div>
+                            </div>
+                        </div>
+                        <!-- 3. 灰土改良 -->
+                        <div class="tech-item">
+                            <div class="ti-head">3. 石灰土改良填筑 (上路堤/路床)</div>
+                            <div class="ti-body">
+                                <div class="ti-point"><strong>工艺:</strong> 路拌法。素土摊铺→打格布灰→冷再生机拌合→强夯/碾压。</div>
+                                <div class="ti-point"><strong>控制:</strong> 含水率是关键。若遇梅雨，掺入磨细生石灰粉降低含水率。</div>
+                                <div class="ti-point"><strong>标准:</strong> 梁场区压实度建议全面按96区控制。</div>
+                            </div>
+                        </div>
+                        <!-- 4. 涵洞 -->
+                        <div class="tech-item">
+                            <div class="ti-head">4. 梁场范围涵洞施工</div>
+                            <div class="ti-body">
+                                <div class="ti-point"><strong>倒虹吸(7道):</strong> 涉及水利灌溉，施工期间必须埋设临时管涵导流。</div>
+                                <div class="ti-point"><strong>时序:</strong> 涵洞必须在K27+挖方降坡至涵顶标高前完成，或在K26+段填方前完成，避免阻断通道。</div>
+                            </div>
+                        </div>
+
+                        <!-- 90天总结 -->
+                        <div class="target-summary">
+                            <div class="ts-header">🎯 90天攻坚期预期成果：</div>
+                            <ul class="ts-list">
+                                <li><span class="ts-icon">✔</span> 鱼塘软基处理全部完成，无沉降隐患</li>
+                                <li><span class="ts-icon">✔</span> 梁场段路基基本成型，达到制梁台座建设标准</li>
+                                <li><span class="ts-icon">✔</span> 场内排水系统完善，具备雨季施工条件</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- 导航 -->
+    <a href="p16.html" class="nav-btn prev-btn">上一页</a>
+    <a href="p18.html" class="nav-btn">下一页</a>
+
+</body>
+</html>

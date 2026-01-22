@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>施工便道布置</title>
+    <style>
+        /* --- 1. 核心配色 --- */
+        :root {
+            --crcc-blue: #003366;
+            --crcc-light: #f0f7ff;
+            --crcc-red: #E60012;
+            --text-main: #1a202c;
+            --text-sub: #4a5568;
+            --bg-grad: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            --card-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            background: var(--bg-grad);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: var(--text-main);
+        }
+
+        /* --- 2. 主容器 --- */
+        .container {
+            width: 96vw;
+            height: 94vh;
+            display: flex;
+            flex-direction: column;
+            gap: 15px; /* 减小间距以容纳新模块 */
+            padding: 25px;
+            background: rgba(255,255,255,0.7);
+            backdrop-filter: blur(15px);
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+            border: 1px solid rgba(255,255,255,0.6);
+        }
+
+        /* 标题区 */
+        .header-section {
+            flex: 0 0 auto;
+            border-bottom: 2px solid rgba(0, 51, 102, 0.1);
+            padding-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        h2 { font-size: 2rem; color: var(--crcc-blue); display: flex; align-items: center; gap: 15px; }
+        h2::before { content:''; width: 8px; height: 35px; background: var(--crcc-red); display: block; }
+        .subtitle { font-size: 1rem; color: var(--text-sub); margin-top: 8px; }
+
+        /* --- 上部内容：规划与标准 --- */
+        .top-panel {
+            flex: 0 0 30%; /* 调整高度占比 */
+            display: flex;
+            gap: 20px;
+        }
+
+        /* 左侧文字描述 */
+        .text-card {
+            flex: 1.2;
+            background: white; border-radius: 12px; padding: 20px;
+            box-shadow: var(--card-shadow);
+            display: flex; flex-direction: column; justify-content: center;
+        }
+        .text-row { margin-bottom: 10px; font-size: 0.9rem; line-height: 1.5; color: #444; text-align: justify; }
+        .text-row strong { color: var(--crcc-blue); }
+        .road-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 5px; }
+        .road-tag { background: #e2e8f0; color: #4a5568; padding: 2px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; }
+
+        /* 右侧标准卡片 */
+        .std-wrapper {
+            flex: 1;
+            display: flex; gap: 15px;
+        }
+        .std-card {
+            flex: 1; background: white; border-radius: 12px; padding: 15px;
+            box-shadow: var(--card-shadow); border-top: 4px solid #ccc;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            transition: transform 0.3s;
+        }
+        .std-card:hover { transform: translateY(-5px); }
+        
+        .sc-main { border-top-color: var(--crcc-blue); background: linear-gradient(to bottom, #f0f7ff, #fff); }
+        .sc-branch { border-top-color: #38a169; background: linear-gradient(to bottom, #f0fff4, #fff); }
+
+        .sc-icon { font-size: 1.8rem; margin-bottom: 8px; }
+        .sc-title { font-weight: bold; font-size: 1rem; color: #333; margin-bottom: 5px; }
+        .sc-desc { font-size: 0.85rem; color: #666; text-align: center; }
+        .sc-val { font-weight: 900; font-size: 1.2rem; margin: 0 5px; }
+
+        /* --- 中部：便道走向 (新增) --- */
+        .route-panel {
+            flex: 0 0 auto;
+            background: white; border-radius: 12px; padding: 15px 20px;
+            box-shadow: var(--card-shadow);
+            border-left: 5px solid var(--crcc-red);
+            display: flex; flex-direction: column; justify-content: center;
+        }
+        .rp-title { font-size: 1rem; font-weight: bold; color: var(--crcc-blue); margin-bottom: 10px; }
+        
+        /* 路线流式布局 */
+        .route-flow {
+            display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
+            font-size: 0.85rem; line-height: 1.8;
+        }
+        .r-node { 
+            background: #f1f5f9; padding: 2px 8px; border-radius: 4px; 
+            color: #333; border: 1px solid #e2e8f0; 
+        }
+        .r-arrow { color: #999; font-weight: bold; font-family: monospace; }
+        
+        /* 核心节点高亮 */
+        .r-hub { background: var(--crcc-red); color: white; border-color: var(--crcc-red); font-weight: bold; }
+        .r-start { background: var(--crcc-blue); color: white; border-color: var(--crcc-blue); }
+
+        /* --- 下部内容：数据统计 --- */
+        .bottom-panel {
+            flex: 1;
+            display: flex; flex-direction: column;
+            background: white; border-radius: 12px; padding: 20px;
+            box-shadow: var(--card-shadow);
+        }
+        
+        .panel-title { 
+            font-size: 1.1rem; font-weight: bold; color: var(--crcc-blue); 
+            margin-bottom: 15px; border-left: 4px solid var(--crcc-blue); padding-left: 10px; 
+        }
+
+        .data-grid {
+            flex: 1;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+        }
+
+        /* 数据组 */
+        .data-group {
+            background: #f8fafc; border-radius: 10px; padding: 12px;
+            border: 1px solid #e2e8f0;
+            display: flex; flex-direction: column;
+        }
+        .dg-title { 
+            font-size: 0.95rem; font-weight: bold; color: #333; 
+            margin-bottom: 10px; border-bottom: 1px dashed #cbd5e0; padding-bottom: 5px;
+            display: flex; align-items: center; gap: 8px;
+        }
+        
+        /* 单个数据项 */
+        .stat-item {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 8px;
+        }
+        .stat-label { font-size: 0.85rem; color: #666; }
+        .stat-num { font-weight: bold; font-size: 1.05rem; color: var(--crcc-blue); }
+        .stat-unit { font-size: 0.75rem; color: #999; margin-left: 2px; }
+        
+        .hl-num { color: var(--crcc-red); font-size: 1.2rem; }
+
+        /* 导航按钮 */
+        .nav-btn {
+            position: fixed; bottom: 30px; right: 30px;
+            padding: 12px 30px; background: var(--crcc-blue); color: white;
+            border-radius: 30px; text-decoration: none; font-weight: bold;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2); transition: 0.3s; z-index: 100;
+        }
+        .nav-btn:hover { background: var(--crcc-red); }
+        .prev-btn { right: 150px; background: white; color: var(--crcc-blue); border: 1px solid var(--crcc-blue); }
+
+        /* 动画 */
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .text-card, .std-card, .route-panel, .bottom-panel { animation: fadeInUp 0.6s ease backwards; }
+        .std-card:nth-child(2) { animation-delay: 0.1s; }
+        .route-panel { animation-delay: 0.2s; }
+        .bottom-panel { animation-delay: 0.3s; }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- 标题 -->
+        <div class="header-section">
+            <h2>施工便道布置及工程数量</h2>
+            <div class="subtitle">科学规划 • 永临结合 • 节约用地</div>
+        </div>
+
+        <!-- 上部：规划原则与标准 -->
+        <div class="top-panel">
+            <!-- 选线原则 -->
+            <div class="text-card">
+                <div class="text-row">
+                    <strong>选线原则：</strong>利用有利地形尽可能靠近线路（红线范围），通往拌和站、互通、隧道口等重点工点。
+                </div>
+                <div class="text-row">
+                    <strong>依托路网：</strong>场外充分利用既有国省干道及乡道作为主运输通道。
+                    <div class="road-tags">
+                        <span class="road-tag">G346国道</span>
+                        <span class="road-tag">S212省道</span>
+                        <span class="road-tag">S213省道</span>
+                        <span class="road-tag">Y003乡道</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 标准卡片：主干线 -->
+            <div class="std-card sc-main">
+                <div class="sc-icon">🚛</div>
+                <div class="sc-title">主干线及场站进出</div>
+                <div class="sc-desc">
+                    双车道标准<br>
+                    路面宽度 <span class="sc-val" style="color:var(--crcc-blue)">6.5</span> m
+                </div>
+            </div>
+
+            <!-- 标准卡片：支线 -->
+            <div class="std-card sc-branch">
+                <div class="sc-icon">🚚</div>
+                <div class="sc-title">支线便道</div>
+                <div class="sc-desc">
+                    单车道标准 (设错车道)<br>
+                    路面宽度 <span class="sc-val" style="color:#2f855a">4.5</span> m
+                </div>
+            </div>
+        </div>
+
+        <!-- 中部：主便道走向 (新增模块) -->
+        <div class="route-panel">
+            <div class="rp-title">📍 主便道走向示意 (以拌和站为中心)</div>
+            <div class="route-flow">
+                <span class="r-node r-start">线路起点</span>
+                <span class="r-arrow">←</span>
+                <span class="r-node">K16+778</span>
+                <span class="r-arrow">←</span>
+                <span class="r-node">K17+858</span>
+                <span class="r-arrow">←</span>
+                <span class="r-node">K18+188</span>
+                <span class="r-arrow">←</span>
+                <span class="r-node">K20+743</span>
+                <span class="r-arrow">←</span>
+                <span class="r-node">K22+725</span>
+                <span class="r-arrow">←</span>
+                <span class="r-node">K24+284</span>
+                <span class="r-arrow">←</span>
+                <span class="r-node r-hub">三场 (拌和站)</span>
+                <span class="r-arrow">→</span>
+                <span class="r-node">含山北互通</span>
+                <span class="r-arrow">→</span>
+                <span class="r-node">K27+971</span>
+                <span class="r-arrow">→</span>
+                <span class="r-node">K31+018</span>
+                <span class="r-arrow">→</span>
+                <span class="r-node">K31+625</span>
+                <span class="r-arrow">→</span>
+                <span class="r-node">K38+533</span>
+                <span class="r-arrow">→</span>
+                <span class="r-node r-start">长山隧道</span>
+            </div>
+        </div>
+
+        <!-- 下部：工程数量统计 -->
+        <div class="bottom-panel">
+            <div class="panel-title">工程数量总汇 (数据基于全线1-8号便道及取弃土场统计)</div>
+            
+            <div class="data-grid">
+                <!-- 1. 道路规模 -->
+                <div class="data-group">
+                    <div class="dg-title">🛣️ 道路规模</div>
+                    <div class="stat-item">
+                        <span class="stat-label">新建便道长度</span>
+                        <div><span class="stat-num hl-num">34.5</span><span class="stat-unit">km</span></div>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">利用既有便道</span>
+                        <div><span class="stat-num">8.39</span><span class="stat-unit">km</span></div>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">设置错车道</span>
+                        <div><span class="stat-num">115</span><span class="stat-unit">处</span></div>
+                    </div>
+                </div>
+
+                <!-- 2. 土石方作业 -->
+                <div class="data-group">
+                    <div class="dg-title">🚜 土石方作业</div>
+                    <div class="stat-item">
+                        <span class="stat-label">挖方总量</span>
+                        <div><span class="stat-num hl-num">67.2</span><span class="stat-unit">万m³</span></div>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">填方总量</span>
+                        <div><span class="stat-num">23.7</span><span class="stat-unit">万m³</span></div>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">基底换填山皮石</span>
+                        <div><span class="stat-num">4.0</span><span class="stat-unit">万m³</span></div>
+                    </div>
+                </div>
+
+                <!-- 3. 路面结构 -->
+                <div class="data-group">
+                    <div class="dg-title">🏗️ 路面结构</div>
+                    <div class="stat-item">
+                        <span class="stat-label">泥结碎石 (30cm)</span>
+                        <div><span class="stat-num">4.35</span><span class="stat-unit">万m³</span></div>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">山皮石填筑 (30cm)</span>
+                        <div><span class="stat-num">5.70</span><span class="stat-unit">万m³</span></div>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">C20混凝土 (20cm)</span>
+                        <div><span class="stat-num">3049</span><span class="stat-unit">m³</span></div>
+                    </div>
+                </div>
+
+                <!-- 4. 附属与恢复 -->
+                <div class="data-group">
+                    <div class="dg-title">🌿 附属与恢复</div>
+                    <div class="stat-item">
+                        <span class="stat-label">涵管埋设 (1.5m)</span>
+                        <div><span class="stat-num">1212</span><span class="stat-unit">m</span></div>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">安全防护设施</span>
+                        <div><span class="stat-num">4077</span><span class="stat-unit">m</span></div>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">场地恢复/复垦</span>
+                        <div><span class="stat-num">10.36</span><span class="stat-unit">万m²</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- 导航 -->
+    <a href="p10.html" class="nav-btn prev-btn">上一页</a>
+    <a href="p12.html" class="nav-btn">下一页</a>
+
+</body>
+</html>

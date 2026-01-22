@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>长山隧道三台阶法(预留核心土)施工工艺及进度演示 - p32</title>
+    <style>
+        :root {
+            --bg-color: #0b1120;
+            --panel-bg: rgba(30, 41, 59, 0.75);
+            --primary: #00f2ff;       /* 科技蓝 */
+            --secondary: #fbbf24;     /* 工程黄 */
+            --danger: #ef4444;        /* 警示红 */
+            --success: #10b981;       /* 成功绿 */
+            --text-main: #e2e8f0;
+            --text-muted: #94a3b8;
+            --border: 1px solid rgba(0, 242, 255, 0.2);
+            --glass: blur(12px);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: "Microsoft YaHei", "Segoe UI", sans-serif; }
+
+        body {
+            background-color: var(--bg-color);
+            background-image: 
+                linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+            background-size: 50px 50px;
+            color: var(--text-main);
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- 头部 --- */
+        header {
+            height: 80px;
+            padding: 0 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(90deg, rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.5));
+            border-bottom: 2px solid var(--primary);
+            box-shadow: 0 0 25px rgba(0, 242, 255, 0.15);
+            z-index: 100;
+            flex-shrink: 0;
+        }
+
+        h1 {
+            font-size: 28px;
+            letter-spacing: 2px;
+            background: linear-gradient(to right, #fff, var(--primary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 15px rgba(0, 242, 255, 0.4);
+            font-style: italic;
+        }
+
+        .header-meta {
+            font-size: 14px;
+            color: var(--text-muted);
+            text-align: right;
+            line-height: 1.4;
+        }
+        .header-meta span { color: var(--secondary); font-weight: bold; }
+
+        /* --- 主布局 --- */
+        .main-container {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 25px;
+            padding: 25px;
+            overflow: hidden;
+        }
+
+        /* --- 左侧导航 --- */
+        .sidebar {
+            background: var(--panel-bg);
+            border: var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            backdrop-filter: var(--glass);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .nav-btn {
+            background: transparent;
+            border: 1px solid rgba(255,255,255,0.05);
+            color: var(--text-muted);
+            padding: 16px 20px;
+            text-align: left;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 15px;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+        }
+
+        .nav-btn:hover {
+            background: rgba(255,255,255,0.05);
+            color: #fff;
+            padding-left: 25px;
+            border-color: rgba(255,255,255,0.2);
+        }
+
+        .nav-btn.active {
+            background: linear-gradient(90deg, rgba(0, 242, 255, 0.15), transparent);
+            border: 1px solid var(--primary);
+            color: var(--primary);
+            font-weight: bold;
+            padding-left: 25px;
+            box-shadow: 0 0 15px rgba(0, 242, 255, 0.1);
+        }
+
+        .nav-btn .num {
+            font-size: 24px;
+            opacity: 0.2;
+            margin-right: 15px;
+            font-family: 'Arial';
+            font-style: italic;
+        }
+        .nav-btn.active .num { opacity: 0.8; color: var(--primary); }
+
+        /* --- 右侧内容区 --- */
+        .content-area {
+            position: relative;
+            background: var(--panel-bg);
+            border: var(--border);
+            border-radius: 12px;
+            padding: 30px 40px;
+            overflow-y: auto;
+            backdrop-filter: var(--glass);
+        }
+
+        /* 滚动条美化 */
+        .content-area::-webkit-scrollbar { width: 6px; }
+        .content-area::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); }
+        .content-area::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 3px; }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        .tab-content.active { display: block; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* --- 排版样式 --- */
+        h2 {
+            font-size: 24px;
+            color: var(--secondary);
+            margin-bottom: 25px;
+            border-bottom: 1px dashed rgba(255,255,255,0.15);
+            padding-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+        h2::before {
+            content: '';
+            display: inline-block;
+            width: 8px;
+            height: 24px;
+            background: var(--secondary);
+            margin-right: 15px;
+            border-radius: 2px;
+        }
+
+        h3 {
+            font-size: 18px;
+            color: var(--primary);
+            margin: 30px 0 15px 0;
+            font-weight: bold;
+        }
+
+        p, li {
+            font-size: 15px;
+            line-height: 1.8;
+            color: #d1d5db;
+            margin-bottom: 10px;
+        }
+
+        strong { color: #fff; font-weight: bold; }
+        .highlight { color: var(--secondary); font-weight: bold; }
+        .warn { color: var(--danger); font-weight: bold; }
+        .success { color: var(--success); font-weight: bold; }
+
+        /* --- 表格样式 --- */
+        .tech-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin: 20px 0;
+            font-size: 14px;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .tech-table th, .tech-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .tech-table th {
+            background: rgba(0, 242, 255, 0.1);
+            color: var(--primary);
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 13px;
+        }
+        .tech-table tr:last-child td { border-bottom: none; }
+        .tech-table tr:hover { background: rgba(255,255,255,0.03); }
+
+        /* --- 专用卡片样式 --- */
+        .info-card {
+            background: rgba(255,255,255,0.03);
+            border-left: 4px solid var(--secondary);
+            padding: 20px;
+            margin-bottom: 15px;
+            border-radius: 0 8px 8px 0;
+            position: relative;
+        }
+        .info-card.green { border-left-color: var(--success); background: rgba(16, 185, 129, 0.05); }
+        .info-card.red { border-left-color: var(--danger); background: rgba(239, 68, 68, 0.05); }
+
+        .spec-tag {
+            display: inline-block;
+            background: rgba(255,255,255,0.1);
+            color: var(--text-muted);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            margin-right: 8px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        /* --- 三台阶可视化 --- */
+        .tunnel-visual {
+            width: 300px;
+            height: 260px;
+            margin: 20px auto;
+            border: 3px dashed #555;
+            border-radius: 50% 50% 0 0 / 45% 45% 0 0; /* 拱形 */
+            position: relative;
+            background: rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+        
+        .bench-upper {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 35%;
+            border-bottom: 2px solid var(--text-muted);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: var(--secondary);
+            font-weight: bold;
+        }
+        .core-soil {
+            position: absolute;
+            top: 15%; left: 30%; width: 40%; height: 20%;
+            background: rgba(251, 191, 36, 0.3);
+            border: 1px dashed var(--secondary);
+            border-radius: 50% 50% 0 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 12px;
+            color: #fff;
+        }
+        .bench-middle {
+            position: absolute;
+            top: 35%; left: 0; width: 100%; height: 35%;
+            border-bottom: 2px solid var(--text-muted);
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+        }
+        .bm-left, .bm-right {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: var(--text-main);
+            font-size: 12px;
+        }
+        .bm-left { border-right: 1px dashed #444; }
+        
+        .bench-lower {
+            position: absolute;
+            bottom: 0; left: 0; width: 100%; height: 30%;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+        }
+        .invert {
+            position: absolute;
+            bottom: 0; width: 100%; height: 10px;
+            background: var(--primary);
+            opacity: 0.5;
+        }
+
+        /* --- 进度条 --- */
+        .progress-group { margin: 20px 0; }
+        .pg-label { display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 14px; }
+        .pg-track { background: rgba(255,255,255,0.1); height: 12px; border-radius: 6px; overflow: hidden; }
+        .pg-fill { height: 100%; border-radius: 6px; transition: width 1s ease; }
+
+        /* 水印 */
+        .watermark {
+            position: fixed;
+            bottom: 15px;
+            right: 25px;
+            color: rgba(255,255,255,0.15);
+            font-size: 16px;
+            font-weight: bold;
+            z-index: 999;
+            pointer-events: none;
+            letter-spacing: 2px;
+        }
+
+        /* --- 新增：悬浮导航按钮样式 --- */
+        .nav-btn-float {
+            position: fixed; bottom: 30px; padding: 12px 30px;
+            background: var(--primary); 
+            color: #000; /* 与主题对比明显的黑色文字 */
+            border-radius: 30px; text-decoration: none; font-weight: bold;
+            box-shadow: 0 5px 15px rgba(0, 242, 255, 0.3); 
+            transition: 0.3s; z-index: 9999; font-size: 1rem;
+            font-family: "Microsoft YaHei", sans-serif;
+        }
+        .nav-btn-float:hover { 
+            background: var(--secondary); 
+            box-shadow: 0 5px 20px rgba(251, 191, 36, 0.5);
+            transform: scale(1.05); 
+        }
+        .prev-btn { right: 150px; background: rgba(255,255,255,0.1); color: var(--primary); border: 1px solid var(--primary); }
+        .prev-btn:hover { color: #000; border-color: var(--secondary); background: var(--secondary); }
+        .next-btn { right: 30px; }
+
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>G4222长山隧道<span>三台阶法(预留核心土)</span>施工演示</h1>
+    <div class="header-meta">
+        依据：《公路隧道施工技术规范》 (JTG/T 3660—2020)<br>
+        适用：V级围岩、浅埋偏压段 (优于CRD/CD)
+    </div>
+</header>
+
+<div class="main-container">
+    
+    <div class="sidebar">
+        <div class="nav-btn active" onclick="switchTab('tab1')"><span class="num">01</span> 逻辑概述与优势</div>
+        <div class="nav-btn" onclick="switchTab('tab2')"><span class="num">02</span> 详细施工工序</div>
+        <div class="nav-btn" onclick="switchTab('tab3')"><span class="num">03</span> 工时与工效分析</div>
+        <div class="nav-btn" onclick="switchTab('tab4')"><span class="num">04</span> 月进度推演</div>
+        <div class="nav-btn" onclick="switchTab('tab5')"><span class="num">05</span> 核心控制与红线</div>
+    </div>
+
+    <div class="content-area">
+        
+        <div id="tab1" class="tab-content active">
+            <h2>一、三台阶法（预留核心土）施工逻辑概述</h2>
+            
+            <div style="display: flex; gap: 30px; align-items: flex-start;">
+                <div style="flex: 1;">
+                    <h3>适用性分析</h3>
+                    <p>虽然原设计图纸在洞口最浅埋段采用了CRD法，但在<strong>渡过最危险的洞口浅埋偏压段后</strong>（进入深埋V级或IV级段），三台阶法是目前国内隧道施工平衡“进度”与“安全”的首选工法。</p>
+                    
+                    <h3>核心逻辑</h3>
+                    <p>将大断面分为<strong>上、中、下三个台阶</strong>，上台阶超前，预留核心土支撑掌子面，中、下台阶左右错开（或同时）开挖，仰拱紧跟。</p>
+                    
+                    <div class="info-card green">
+                        <strong>最大优势：</strong> 无临时中隔壁（对比CD/CRD），省去了大量临时钢架安装和拆除时间，机械化作业空间大。
+                    </div>
+                </div>
+                
+                <div>
+                    <div class="tunnel-visual">
+                        <div class="bench-upper">上台阶 (超前)
+                            <div class="core-soil">核心土</div>
+                        </div>
+                        <div class="bench-middle">
+                            <div class="bm-left">左中台阶</div>
+                            <div class="bm-right">右中台阶</div>
+                        </div>
+                        <div class="bench-lower">
+                            <div class="bm-left" style="align-items: flex-end; padding-bottom:10px;">左下台阶</div>
+                            <div class="bm-right" style="align-items: flex-end; padding-bottom:10px;">右下台阶</div>
+                        </div>
+                        <div class="invert"></div>
+                    </div>
+                    <p style="text-align: center; font-size: 12px; color: var(--text-muted);">三台阶法断面示意图</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="tab2" class="tab-content">
+            <h2>二、三台阶法详细施工工序及规范依据</h2>
+            
+            <div style="background: rgba(0,0,0,0.2); padding: 10px 15px; border-radius: 6px; margin-bottom: 20px;">
+                <span class="highlight">设定参数：</span> 循环进尺 <strong>0.6m/榀</strong>（V级围岩标准进尺） | 钢架型号：I22b工字钢
+            </div>
+
+            <h3>1. 上台阶施工（工序关键路径）</h3>
+            <div class="info-card">
+                <p><strong>步骤1：超前地质核对与支护（同前）。</strong></p>
+                <p><strong>步骤2：上台阶环形开挖（保留核心土）</strong></p>
+                <ul>
+                    <li><strong>操作：</strong>利用挖掘机开挖上部弧形导坑，<span class="warn">必须保留核心土</span>。</li>
+                    <li><strong>数据要求：</strong>核心土长度 ≥3~5m，宽度 ≥1/3~1/2 隧道宽度。</li>
+                    <li><span class="spec-tag">规范依据</span>《规范》7.2.4条：拱部超前支护完成后方可开挖；留核心土面积不应小于断面面积的50%。</li>
+                </ul>
+                <p><strong>步骤3：上台阶初期支护</strong></p>
+                <ul>
+                    <li><strong>流程：</strong>初喷4cm → 挂网 → 立拱架 → 打设系统锚杆及锁脚锚杆 → 复喷至设计厚度（30cm）。</li>
+                    <li><strong>重点：</strong>上台阶钢架拱脚必须架立在稳固的岩土上，必要时垫设混凝土垫块。</li>
+                </ul>
+            </div>
+
+            <h3>2. 中台阶施工（左右错开）</h3>
+            <div class="info-card">
+                <p><strong>步骤4：中台阶开挖</strong></p>
+                <ul>
+                    <li><strong>操作：</strong>滞后上台阶 <strong>3~5m</strong>。采用挖掘机开挖，<strong>左右侧错开 2~3m</strong>（避免同一断面同时悬空）。</li>
+                    <li><span class="spec-tag">规范依据</span>《规范》7.2.3条：下台阶左、右侧开挖宜前后错开3~5m，同一榀钢架两侧不得同时悬空。</li>
+                </ul>
+                <p><strong>步骤5：中台阶支护</strong> —— 接长钢架，打设锁脚锚杆，喷射混凝土。</p>
+            </div>
+
+            <h3>3. 下台阶施工</h3>
+            <div class="info-card">
+                <p><strong>步骤6：下台阶开挖与支护</strong> —— 滞后中台阶 <strong>3~5m</strong>。工序同中台阶。</p>
+                <p><span class="warn">控制：</span>开挖到底后，必须立即清理拱脚虚渣，架立钢架单元并喷砼，防止边墙内挤。</p>
+            </div>
+
+            <h3>4. 仰拱与二衬（封闭成环）</h3>
+            <div class="info-card green">
+                <p><strong>步骤7：仰拱开挖与浇筑</strong></p>
+                <ul>
+                    <li><strong>操作：</strong>全幅开挖仰拱，架设仰拱钢架（如有）或绑扎钢筋，浇筑C30混凝土。</li>
+                    <li><strong>距离控制：</strong>仰拱距离掌子面距离应控制在 <span class="highlight">30~40m</span>（V级围岩）。</li>
+                    <li><span class="spec-tag">规范依据</span>《规范》7.2.8条：仰拱应紧跟掌子面，及时封闭成环。</li>
+                </ul>
+            </div>
+        </div>
+
+        <div id="tab3" class="tab-content">
+            <h2>三、工序时间与工效分析（单循环）</h2>
+            <p><strong>前提：</strong> V级围岩，机械开挖，单循环进尺 <strong>0.6m</strong>（1榀），24小时连续作业。</p>
+
+            <table class="tech-table">
+                <thead>
+                    <tr>
+                        <th width="10%">序号</th>
+                        <th width="25%">工序名称</th>
+                        <th width="15%">耗时 (h)</th>
+                        <th>工效分析与数据支撑</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>1</td><td>超前支护/准备</td><td>1</td><td>包含测量放线、超前小导管钻注（摊销时间）。</td></tr>
+                    <tr><td>2</td><td>上台阶开挖</td><td>1.5</td><td>机械挖弧形导坑+人工修边。土方量约20m³，耗时较短。</td></tr>
+                    <tr><td>3</td><td>初喷混凝土</td><td>0.5</td><td>封闭拱顶，确保护顶安全。</td></tr>
+                    <tr><td>4</td><td>上台阶立架挂网</td><td>2</td><td>安装拱部钢架，连接螺栓，挂网。这是<strong>占用时间最长</strong>的单一工序。</td></tr>
+                    <tr><td>5</td><td>钻设锚杆(含锁脚)</td><td>1.5</td><td>平行作业：在立架同时，钻孔台车或风钻班组打设系统锚杆及锁脚锚杆。</td></tr>
+                    <tr><td>6</td><td>上台阶复喷</td><td>1.5</td><td>喷射C25混凝土至30cm厚。</td></tr>
+                    <tr><td>7</td><td>中/下台阶作业</td><td>(平行)</td><td>中下台阶的开挖支护通常在<strong>上台阶立架或喷浆时穿插进行</strong>，不完全占用直线工期，增加约 <strong>1.0h</strong> 的干扰时间。</td></tr>
+                    <tr><td>8</td><td>出渣与清理</td><td>1</td><td>全断面出渣。</td></tr>
+                    <tr style="background: rgba(0, 242, 255, 0.15); font-weight:bold;">
+                        <td>合计</td><td>综合循环时间</td><td>10.0 h</td>
+                        <td>理想状态下，每天可完成 2.4 个循环。</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div id="tab4" class="tab-content">
+            <h2>四、月进度工效推演</h2>
+            <p>相比CRD法，三台阶法减少了中隔壁的安装、拆除及临时仰拱工序，工效显著提升。</p>
+
+            <h3>1. 日进尺计算</h3>
+            <div class="info-card">
+                <p>单循环耗时：10小时。</p>
+                <p>日循环数：24 / 10 = 2.4个。</p>
+                <p><strong>日进尺：2.4 × 0.6m = 1.44m/天。</strong></p>
+            </div>
+
+            <h3>2. 月进尺计算</h3>
+            <p>考虑设备故障、地质变化、测量等因素，每月有效作业天数按25天计算。</p>
+            <p>综合工效系数：0.85（考虑V级围岩的不确定性）。</p>
+            <p class="success" style="font-size: 18px;"><strong>月进尺 = 1.44m/天 × 30天 × 0.85 ≈ 36.7m。</strong></p>
+
+            <h3 style="margin-top:30px;">3. 结论与对比</h3>
+            <p>采用三台阶法施工，V级围岩的月进度指标可定为 <span class="highlight">35m ~ 45m</span>。</p>
+            
+            <div class="progress-group">
+                <div class="pg-label"><span>三台阶法 (预留核心土)</span><span>35m ~ 45m</span></div>
+                <div class="pg-track"><div class="pg-fill" style="width: 90%; background: var(--success);"></div></div>
+            </div>
+            <div class="progress-group">
+                <div class="pg-label"><span>CD法</span><span>26m ~ 30m</span></div>
+                <div class="pg-track"><div class="pg-fill" style="width: 65%; background: var(--primary);"></div></div>
+            </div>
+            <div class="progress-group">
+                <div class="pg-label"><span>CRD法</span><span>20m ~ 25m</span></div>
+                <div class="pg-track"><div class="pg-fill" style="width: 50%; background: var(--secondary);"></div></div>
+            </div>
+        </div>
+
+        <div id="tab5" class="tab-content">
+            <h2>五、施工中的核心注意事项与把控点</h2>
+            <p>三台阶法虽然快，但在浅埋偏压段风险高于CRD法，必须严控以下**“生命线”**：</p>
+
+            <div class="info-card red">
+                <h3>1. 核心土——“掌子面的定海神针”</h3>
+                <p><strong>把控点：</strong>严禁为了方便挖掘机干活而一次性挖掉核心土。</p>
+                <p><strong>数据要求：</strong>上台阶开挖长度3-5m内，必须保留核心土。</p>
+                <p><strong>后果：</strong>若挖掉核心土，掌子面极易发生挤出性坍塌。</p>
+            </div>
+
+            <div class="info-card red">
+                <h3>2. 锁脚锚杆——“钢架的生根点”</h3>
+                <p><strong>把控点：</strong>三台阶法钢架是“悬空”在土体上的，全靠锁脚锚杆提供承载力。</p>
+                <p><strong>规范依据：</strong>《规范》 9.3.16条。</p>
+                <p><strong>执行标准：</strong>每榀钢架拱脚（上台阶脚+中台阶脚）必须打设 <strong>2根 Φ42小导管 (L=4m)</strong>，且必须注浆饱满。尾部必须用L型钢筋与钢架<strong>双面焊接</strong>。如果不注浆或不焊接，钢架必下沉。</p>
+            </div>
+
+            <div class="info-card red">
+                <h3>3. 左右错开距离——“防止群桩效应”</h3>
+                <p><strong>把控点：</strong>中、下台阶的左右侧开挖必须错开，严禁对齐开挖。</p>
+                <p><strong>数据要求：</strong>错开距离 <strong>≥ 3m</strong> (约5榀钢架)。</p>
+                <p><strong>风险：</strong>若对齐开挖，拱架瞬间两侧悬空，极易整体下沉导致坍塌。</p>
+            </div>
+
+            <div class="info-card red">
+                <h3>4. 仰拱封闭距离——“止损线”</h3>
+                <p><strong>把控点：</strong>V级围岩变形速率快，必须强制规定仰拱到掌子面的距离。</p>
+                <p><strong>数据红线：</strong>仰拱距离掌子面不得超过 <strong>35m</strong>。若监控量测显示变形大，应压缩至 <strong>20m</strong> 以内。二衬距离掌子面不得超过 <strong>70m</strong>。</p>
+            </div>
+
+            <div class="info-card">
+                <h3>5. 沉降控制（偏压段特有）</h3>
+                <p><strong>把控点：</strong>由于是偏压隧道，靠山侧压力大。</p>
+                <p><strong>措施：</strong>在偏压侧（深埋侧）的拱脚处，可增设加大拱脚（如扩大基础）或增加锁脚锚杆数量，防止钢架向临空侧倾斜。</p>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<div class="watermark">制作：张建</div>
+
+<a href="p31.html" class="nav-btn-float prev-btn">上一页</a>
+<a href="p33.html" class="nav-btn-float next-btn">下一页</a>
+
+<script>
+    function switchTab(tabId) {
+        // 1. 按钮状态切换
+        const buttons = document.querySelectorAll('.nav-btn');
+        buttons.forEach(btn => btn.classList.remove('active'));
+        if(event && event.currentTarget) {
+            event.currentTarget.classList.add('active');
+        }
+
+        // 2. 内容区域切换
+        const contents = document.querySelectorAll('.tab-content');
+        contents.forEach(content => content.classList.remove('active'));
+        document.getElementById(tabId).classList.add('active');
+    }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>工程概况</title>
+    <style>
+        /* --- 1. 核心配色 --- */
+        :root {
+            --crcc-blue: #003366;
+            --crcc-light-blue: #e6f0ff;
+            --crcc-red: #E60012;
+            --text-main: #1a202c;
+            --text-sub: #4a5568;
+            --bg-grad: linear-gradient(135deg, #f0f4f8 0%, #d9e2ec 100%);
+            --glass: rgba(255, 255, 255, 0.85); /* 稍微增加不透明度 */
+            --border: rgba(255, 255, 255, 0.8);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            background: var(--bg-grad);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: var(--text-main);
+        }
+
+        /* --- 2. 主容器 --- */
+        .container {
+            width: 96vw;
+            height: 94vh;
+            display: grid;
+            grid-template-columns: 35% 63%;
+            grid-template-rows: auto 1fr 32%;
+            gap: 15px;
+            padding: 20px;
+        }
+
+        /* 通用卡片样式 */
+        .card {
+            background: var(--glass);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            transition: transform 0.3s;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        .card:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(0,0,0,0.08); }
+
+        /* --- 区域 1：标题 --- */
+        .area-title {
+            grid-column: 1 / 2;
+            grid-row: 1 / 2;
+            border-left: 8px solid var(--crcc-red);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        h2 { font-size: 2rem; color: var(--crcc-blue); margin-bottom: 5px; font-weight: 800; }
+        .sub-header { font-size: 1rem; color: var(--text-sub); }
+
+        /* --- 区域 2：基础信息 --- */
+        .area-basic {
+            grid-column: 1 / 2;
+            grid-row: 2 / 3;
+            justify-content: flex-start;
+            gap: 15px;
+        }
+        .info-row { font-size: 0.95rem; line-height: 1.6; text-align: justify; }
+        .highlight { color: var(--crcc-blue); font-weight: bold; }
+        
+        .tag-group { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+        .tag { 
+            background: var(--crcc-light-blue); color: var(--crcc-blue); 
+            padding: 4px 10px; border-radius: 6px; font-size: 0.85rem; font-weight: bold;
+            border: 1px solid var(--crcc-blue);
+        }
+
+        /* --- 区域 3：数据仪表盘 --- */
+        .area-data {
+            grid-column: 2 / 3;
+            grid-row: 1 / 3;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: auto 1fr 1fr;
+            gap: 12px;
+            background: transparent;
+            box-shadow: none; border: none; backdrop-filter: none; padding: 0;
+        }
+
+        .data-header {
+            grid-column: 1 / -1;
+            background: white;
+            border-radius: 12px;
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            font-size: 0.95rem;
+            border-left: 5px solid var(--crcc-blue);
+        }
+        .data-badge { background: var(--crcc-red); color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.8rem; margin-right: 5px; }
+
+        .stat-box {
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        /* 
+           修改点1：移除了 .stat-box::before { content: attr(data-bg) ... } 
+           这样背景的水印数字就完全消失了
+        */
+
+        .stat-label { font-size: 0.9rem; color: #666; margin-bottom: 5px; z-index: 1; }
+        .stat-val-wrap { z-index: 1; display: flex; align-items: baseline; gap: 2px;}
+        .stat-val { font-size: 1.8rem; font-weight: 800; color: var(--crcc-blue); font-family: Impact, sans-serif; }
+        .stat-unit { font-size: 0.8rem; font-weight: bold; color: #888; }
+        
+        .progress-container { width: 100%; height: 6px; background: #eee; border-radius: 3px; margin-top: 8px; overflow: hidden;}
+        .progress-bar { height: 100%; background: linear-gradient(90deg, var(--crcc-blue), #4facfe); width: 0; animation: growBar 1.5s ease-out forwards 0.5s; }
+
+        .desc-box {
+            grid-column: 1 / -1;
+            background: linear-gradient(to right, #f8fbff, #fff);
+            border-radius: 12px;
+            padding: 15px;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            color: #333;
+            border-left: 4px solid #f6ad55;
+        }
+
+        /* --- 区域 4：图片展示 --- */
+        .area-images {
+            grid-column: 1 / -1;
+            grid-row: 3 / 4;
+            display: flex;
+            gap: 20px;
+        }
+        
+        .img-card {
+            flex: 1;
+            position: relative;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            cursor: pointer;
+        }
+        .img-card img {
+            width: 100%; height: 100%; object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+        .img-card:hover img { transform: scale(1.1); }
+        
+        .img-label-fixed {
+            position: absolute; top: 10px; left: 10px;
+            background: rgba(0, 51, 102, 0.9); color: white;
+            padding: 4px 12px; border-radius: 4px; font-size: 0.9rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            z-index: 2;
+        }
+
+        /* 
+           修改点2：底部标签样式优化 
+           为了容纳更长的文字，稍微增加了高度和内边距，并允许自动换行
+        */
+        .img-label {
+            position: absolute; bottom: 0; left: 0; width: 100%;
+            background: linear-gradient(to top, rgba(0,0,0,0.9), rgba(0,0,0,0.4));
+            color: white; 
+            padding: 15px 15px 10px; /* 增加内边距 */
+            font-size: 0.85rem; /* 稍微调小一点字体以容纳长文字 */
+            line-height: 1.4;
+            transform: translateY(100%); 
+            animation: slideUpLabel 0.5s ease forwards 1s;
+            text-align: left;
+        }
+
+        /* 重点数字高亮 */
+        .img-label strong { color: #ffd700; font-size: 0.95rem; }
+
+        .nav-btn {
+            position: fixed; bottom: 30px; right: 30px;
+            padding: 12px 30px; background: var(--crcc-blue); color: white;
+            border-radius: 30px; text-decoration: none; font-weight: bold;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2); transition: 0.3s; z-index: 100;
+        }
+        .nav-btn:hover { background: var(--crcc-red); }
+        .prev-btn { right: 150px; background: white; color: var(--crcc-blue); border: 1px solid var(--crcc-blue); }
+
+        @keyframes growBar { from { width: 0; } }
+        @keyframes slideUpLabel { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        .area-basic { animation: fadeInUp 0.8s ease 0.1s backwards; }
+        .stat-box { animation: fadeInUp 0.6s ease backwards; }
+        .area-images { animation: fadeInUp 0.8s ease 0.5s backwards; }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        
+        <!-- 1. 标题区 -->
+        <div class="card area-title">
+            <h2>工程概况</h2>
+            <div class="sub-header">PROJECT OVERVIEW</div>
+        </div>
+
+        <!-- 2. 基础信息区 -->
+        <div class="card area-basic">
+            <div class="info-row">
+                <span class="highlight">地理位置：</span>和含高速二分部位于安徽省马鞍山市含山县境内，起于和县与含山县交界，终于长山林场，接在建S18宁合高速。
+            </div>
+            <div class="info-row">
+                <span class="highlight">标段参数：</span>桩号 <strong>K15+236 ~ K41+105</strong>，全长 <strong>25.869公里</strong>。
+            </div>
+            <div class="info-row">
+                <span class="highlight">建设标准：</span>双向六车道，设计时速 <strong>120km/h</strong>，路基宽34.5米。
+            </div>
+            
+            <div class="tag-group">
+                <div class="tag">合同造价 14.18亿元</div>
+                <div class="tag">计划工期 3年</div>
+            </div>
+
+            <div style="margin-top:15px; padding-top:15px; border-top:1px dashed #ccc;">
+                <div style="font-weight:bold; color:var(--crcc-red); margin-bottom:5px;">显著特点：</div>
+                <div class="info-row">路基占比高、预制任务重、土方调配难。工程体量大且结构形式多样。</div>
+            </div>
+        </div>
+
+        <!-- 3. 数据区 -->
+        <div class="area-data">
+            <div class="data-header">
+                <span class="data-badge">控制性节点</span>
+                <span style="font-weight:bold;">一互通 (含山北)</span> • 
+                <span style="font-weight:bold;">一服务区 (褒禅山)</span> • 
+                <span style="font-weight:bold;">一隧道 (长山隧道)</span>
+            </div>
+
+            <div class="stat-box">
+                <div class="stat-label">路基全长 (占比91.1%)</div>
+                <div class="stat-val-wrap"><span class="stat-val">23.57</span><span class="stat-unit">km</span></div>
+                <div class="progress-container"><div class="progress-bar" style="width: 91%;"></div></div>
+            </div>
+
+            <div class="stat-box">
+                <div class="stat-label">挖方 / 填方</div>
+                <div class="stat-val-wrap">
+                    <span class="stat-val" style="font-size:1.4rem">226</span><span class="stat-unit">/</span>
+                    <span class="stat-val" style="font-size:1.4rem; color:var(--crcc-red)">329</span><span class="stat-unit">万方</span>
+                </div>
+                <div style="font-size:0.75rem; color:#888; margin-top:4px;">含改良土233.6万方</div>
+            </div>
+
+             <div class="stat-box">
+                <div class="stat-label">桥梁 (含互通主线)</div>
+                <div class="stat-val-wrap"><span class="stat-val">11</span><span class="stat-unit">座</span></div>
+                <div style="font-size:0.75rem; color:#888; margin-top:4px;">占比6.58%</div>
+            </div>
+
+            <div class="stat-box" style="background:#f8fbff;">
+                <div class="stat-label">桩基 / 墩柱</div>
+                <div class="stat-val-wrap">
+                    <span class="stat-val" style="font-size:1.4rem">742</span><span class="stat-unit">/</span>
+                    <span class="stat-val" style="font-size:1.4rem">426</span><span class="stat-unit">根</span>
+                </div>
+            </div>
+
+            <div class="stat-box" style="background:#f8fbff;">
+                <div class="stat-label">预制梁板 (任务重)</div>
+                <div class="stat-val-wrap"><span class="stat-val" style="color:#d69e2e">1205</span><span class="stat-unit">片</span></div>
+                <div style="font-size:0.75rem; color:#888;">13m T梁/25m/35m箱梁</div>
+            </div>
+
+             <div class="stat-box" style="background:#f8fbff;">
+                <div class="stat-label">混凝土 / 钢筋</div>
+                <div class="stat-val-wrap">
+                    <span class="stat-val" style="font-size:1.4rem">27</span><span class="stat-unit">万方</span>
+                    <span style="margin:0 4px">/</span>
+                    <span class="stat-val" style="font-size:1.4rem">1.84</span><span class="stat-unit">万吨</span>
+                </div>
+            </div>
+
+            <div class="desc-box">
+                <strong>其他构造物：</strong>全线涵洞及通道共185道（总长>7.4km），预制装配化率超80%。沥青路面铺装139.02万平米。
+            </div>
+        </div>
+
+        <!-- 4. 图片展示区 (修改点：更新文字) -->
+        <div class="area-images">
+            <!-- 隧道 -->
+            <div class="img-card">
+                <div class="img-label-fixed">长山隧道</div>
+                <img src="images/tunnel.png" alt="长山隧道效果图">
+                <div class="img-label">
+                    隧道1座（右线长<strong>579.352m</strong>、左线长<strong>615.879m</strong>）<br>
+                    进口里程 <strong>K40+532</strong>
+                </div>
+            </div>
+
+            <!-- 互通 -->
+            <div class="img-card">
+                <div class="img-label-fixed">含山北互通</div>
+                <img src="images/interchange.png" alt="互通立交平面效果图">
+                <div class="img-label">
+                    互通主线为特大桥<br>
+                    <strong>K25+500 至 K27+025</strong>
+                </div>
+            </div>
+
+            <!-- 服务区 -->
+            <div class="img-card">
+                <div class="img-label-fixed">褒禅山服务区</div>
+                <img src="images/service.png" alt="服务区效果图">
+                <div class="img-label">
+                    1处服务区 <strong>K29+300</strong><br>
+                    占地 <strong>114亩</strong>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- 导航 -->
+    <a href="p02.html" class="nav-btn prev-btn">上一页</a>
+    <a href="p04.html" class="nav-btn">下一页</a>
+
+</body>
+</html>

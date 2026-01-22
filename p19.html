@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小型构件预制场总体施工方案 - p19</title>
+    <style>
+        /* --- 1. 核心配色 --- */
+        :root {
+            --crcc-blue: #003366;
+            --crcc-red: #E60012;
+            --tech-teal: #319795;
+            --plan-orange: #dd6b20;
+            --bg-grad: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            --glass-bg: rgba(255,255,255,0.95);
+            --text-main: #1a202c;
+            --border-color: #e2e8f0;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+            height: 100vh; width: 100vw; overflow: hidden;
+            background: var(--bg-grad);
+            display: flex; justify-content: center; align-items: center;
+            color: var(--text-main);
+        }
+
+        .container {
+            width: 98vw; height: 96vh;
+            display: flex; flex-direction: column;
+            padding: 25px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            box-shadow: 0 15px 50px rgba(0,0,0,0.15);
+            border: 1px solid rgba(255,255,255,0.6);
+        }
+
+        /* --- 标题区 --- */
+        .header-section {
+            flex: 0 0 auto;
+            border-bottom: 2px solid rgba(0, 51, 102, 0.1);
+            padding-bottom: 15px; margin-bottom: 20px;
+            display: flex; justify-content: space-between; align-items: flex-end;
+        }
+        h2 { font-size: 2.0rem; color: var(--crcc-blue); display: flex; align-items: center; gap: 15px; margin: 0; }
+        h2::before { content:''; width: 8px; height: 32px; background: var(--crcc-red); display: block; }
+        .subtitle { font-size: 1rem; color: #718096; font-weight: 500;}
+
+        /* --- 2. 选项卡导航 --- */
+        .tabs-nav {
+            display: flex; gap: 10px; margin-bottom: 20px; 
+            padding-bottom: 5px; 
+        }
+        
+        .tab-btn {
+            flex: 1;
+            padding: 12px 10px;
+            background: #eef2f6; 
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: bold;
+            color: #64748b;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.03);
+        }
+
+        .badge {
+            width: 24px; height: 24px;
+            background: var(--crcc-red); color: white; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.85rem; font-weight: 800;
+            box-shadow: 0 2px 4px rgba(230, 0, 18, 0.3);
+            transition: transform 0.3s;
+        }
+
+        .tab-btn.active {
+            background: var(--crcc-blue); color: white;
+            transform: translateY(-4px); 
+            box-shadow: 0 8px 20px rgba(0, 51, 102, 0.3); 
+        }
+        
+        .tab-btn.active .badge { background: white; color: var(--crcc-blue); transform: scale(1.1); }
+        .tab-btn:hover:not(.active) { background: #e2e8f0; transform: translateY(-2px); }
+
+        /* --- 3. 内容区域布局 --- */
+        .content-area {
+            flex: 1; overflow: hidden; position: relative; padding: 5px;
+        }
+        
+        .tab-pane {
+            display: none; height: 100%; 
+            overflow-y: auto; scrollbar-width: none; -ms-overflow-style: none;
+        }
+        .tab-pane::-webkit-scrollbar { display: none; }
+        .tab-pane.active { display: flex; flex-direction: column; gap: 20px; } 
+
+        .animate-item {
+            opacity: 0; transform: translateY(20px);
+            animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        .animate-item:nth-child(1) { animation-delay: 0.05s; }
+        .animate-item:nth-child(2) { animation-delay: 0.15s; }
+        .animate-item:nth-child(3) { animation-delay: 0.25s; }
+        .animate-item:nth-child(4) { animation-delay: 0.35s; }
+
+        @keyframes slideUp { to { opacity: 1; transform: translateY(0); } }
+
+        /* --- 模块卡片样式 --- */
+        .section-box {
+            background: white; border-radius: 12px; padding: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+            border: 1px solid #f0f0f0;
+            transition: transform 0.3s;
+        }
+        .section-box:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(0,0,0,0.06); }
+
+        .section-title { 
+            font-size: 1.15rem; font-weight: 800; color: var(--crcc-blue); 
+            margin-bottom: 15px; padding-bottom: 8px;
+            border-bottom: 2px dashed #e2e8f0;
+            display: flex; align-items: center;
+        }
+        .section-title::before {
+            content: ''; display: inline-block; width: 6px; height: 18px; 
+            background: var(--crcc-blue); margin-right: 10px; border-radius: 3px;
+        }
+
+        .text-content { font-size: 1rem; line-height: 1.7; color: #2d3748; }
+        
+        ul.detail-list li { margin-bottom: 10px; position: relative; padding-left: 18px; }
+        ul.detail-list li::before { 
+            content: "✦"; color: var(--crcc-red); font-size: 10px;
+            position: absolute; left: 0; top: 3px; 
+        }
+
+        .custom-table { width: 100%; border-collapse: separate; border-spacing: 0; border-radius: 8px; overflow: hidden; border: 1px solid #e2e8f0; }
+        .custom-table th { background: #eff6ff; color: var(--crcc-blue); padding: 12px; font-weight: bold; border-bottom: 2px solid #e2e8f0; white-space: nowrap;}
+        .custom-table td { padding: 10px; border-bottom: 1px solid #f0f0f0; text-align: center; color: #4a5568; vertical-align: middle; }
+        .custom-table tr:last-child td { border-bottom: none; }
+        
+        .process-flow { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 10px; }
+        .p-step { 
+            background: #e6fffa; border: 1px solid var(--tech-teal); color: var(--tech-teal); 
+            padding: 6px 16px; border-radius: 20px; font-weight: bold; font-size: 0.9rem;
+            box-shadow: 0 2px 5px rgba(49, 151, 149, 0.1);
+        }
+        .p-arrow { color: #cbd5e0; font-size: 1.2rem; display: flex; align-items: center;}
+
+        .grid-2-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; height: 100%; }
+        
+        .priority-group { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; }
+        .priority-card { 
+            background: linear-gradient(to bottom right, #fff, #fcfcfc);
+            border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px;
+            position: relative; overflow: hidden;
+            transition: transform 0.3s;
+        }
+        .priority-card:hover { transform: translateY(-5px); }
+        .priority-card::before {
+            content: ''; position: absolute; top: 0; left: 0; width: 6px; height: 100%;
+        }
+        .pc-1::before { background: var(--crcc-red); }
+        .pc-2::before { background: var(--plan-orange); }
+        .pc-3::before { background: var(--tech-teal); }
+
+        .nav-btn {
+            position: fixed; bottom: 30px; padding: 12px 30px;
+            background: var(--crcc-blue); color: white;
+            border-radius: 30px; text-decoration: none; font-weight: bold;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2); transition: 0.3s; z-index: 200; font-size: 1rem;
+        }
+        .nav-btn:hover { background: var(--crcc-red); transform: scale(1.05); }
+        .prev-btn { right: 150px; background: white; color: var(--crcc-blue); border: 1px solid var(--crcc-blue); }
+        .next-btn { right: 30px; }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header-section">
+        <div>
+            <h2>小型构件预制场总体施工方案</h2>
+            <div class="subtitle">三场同建 · 流水化作业 · 核心工艺 · 调度策略</div>
+        </div>
+    </div>
+
+    <!-- 选项卡导航 -->
+    <div class="tabs-nav">
+        <button class="tab-btn active" onclick="openTab(event, 'tab1')">
+            <span class="badge">1</span> 场站规划与布局
+        </button>
+        <button class="tab-btn" onclick="openTab(event, 'tab2')">
+            <span class="badge">2</span> 任务与模板配置
+        </button>
+        <button class="tab-btn" onclick="openTab(event, 'tab3')">
+            <span class="badge">3</span> 核心施工工艺
+        </button>
+        <button class="tab-btn" onclick="openTab(event, 'tab4')">
+            <span class="badge">4</span> 计划与调度策略
+        </button>
+        <button class="tab-btn" onclick="openTab(event, 'tab5')">
+            <span class="badge">5</span> 质量与安全保障
+        </button>
+    </div>
+
+    <div class="content-area">
+        
+        <!-- Tab 1: 场站规划 -->
+        <div id="tab1" class="tab-pane active">
+            <div class="section-box animate-item">
+                <div class="section-title">选址与规模（三场同建）</div>
+                <div class="text-content" style="display:flex; justify-content: space-between;">
+                    <div><span style="color:#718096">模式：</span> <strong style="color:var(--crcc-blue)">“拌合站 + 钢筋加工场 + 小型预制场”</strong> 零距离直供</div>
+                    <div><span style="color:#718096">占地：</span> <strong>11亩</strong></div>
+                    <div><span style="color:#718096">尺寸：</span> 208m × 30m</div>
+                </div>
+            </div>
+
+            <div class="grid-2-col animate-item">
+                <div class="section-box" style="height:100%">
+                    <div class="section-title">场地功能分区</div>
+                    <ul class="detail-list text-content">
+                        <li><strong>钢筋加工区 (室内)：</strong><br>50×30m大棚，集中加工骨架网片。</li>
+                        <li><strong>露天生产区：</strong><br>含悬辊机组、箱涵台座、喷淋养生区。</li>
+                        <li><strong>成品存放区：</strong><br>场地全硬化，配套装车通道。</li>
+                    </ul>
+                </div>
+                <div class="section-box" style="height:100%">
+                    <div class="section-title">起重设备与产能</div>
+                    <div class="text-content">
+                        <div style="margin-bottom:15px; background:#f7fafc; padding:10px; border-radius:8px;">
+                            <strong>🏗️ 龙门吊配置 (全覆盖)：</strong><br>
+                            <span style="color:var(--crcc-red); font-weight:bold;">1台 50T</span>：主攻大型箱涵移运<br>
+                            <span style="color:var(--crcc-blue); font-weight:bold;">2台 10T</span>：主攻管涵及钢筋吊装
+                        </div>
+                        <div>
+                            <strong>⚙️ 产能设计：</strong><br>
+                            机械化流水线，日产能力 <strong>80-100m³</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 2: 任务与配置 (含新增附属构件表) -->
+        <div id="tab2" class="tab-pane">
+            <div class="grid-2-col animate-item" style="grid-template-columns: 2fr 1fr;">
+                <div class="section-box">
+                    <div class="section-title">核心模板配置：箱涵分体快拆模</div>
+                    <table class="custom-table">
+                        <thead>
+                            <tr><th>部位</th><th>规格</th><th>数量</th><th>备注</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td rowspan="2"><strong>顶板</strong></td>
+                                <td>4m宽 / 30cm厚</td>
+                                <td><strong>7套</strong></td>
+                                <td>新购3套</td>
+                            </tr>
+                            <tr>
+                                <td>6m宽 / 35cm厚</td>
+                                <td>3套</td>
+                                <td>含异形</td>
+                            </tr>
+                            <tr>
+                                <td rowspan="2"><strong>侧墙</strong></td>
+                                <td>4m宽 / 2.7m高</td>
+                                <td><strong>8根</strong></td>
+                                <td>组装4套</td>
+                            </tr>
+                            <tr>
+                                <td>4m宽 / 3.5m高</td>
+                                <td><strong>10根</strong></td>
+                                <td>组装5套</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="section-box">
+                    <div class="section-title">其他模具</div>
+                    <div class="text-content">
+                        <p><strong>圆管涵模板：</strong><br>20节 (单节2m)，配斜口专用挡板。</p>
+                        <hr style="border:0; border-top:1px dashed #e2e8f0; margin:15px 0;">
+                        <p><strong>小型构件：</strong><br>六棱块、拱形骨架等模具 <strong>4000+套</strong>，满足自动化生产。</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 新增：附属类构件表 -->
+            <div class="section-box animate-item">
+                <div class="section-title">附属类构件明细 (数量庞大，种类繁杂)</div>
+                <table class="custom-table">
+                    <thead>
+                        <tr>
+                            <th>类别</th>
+                            <th>构件名称</th>
+                            <th>主要型号/尺寸</th>
+                            <th>估算数量</th>
+                            <th>备注</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>路基防护</strong></td>
+                            <td>拱形护坡预制块<br>六棱块</td>
+                            <td>1号~7号预制块<br>边长17cm, 空心/实心</td>
+                            <td>约4454m³<br>约3722m³</td>
+                            <td>数量巨大，需流水线生产<br>用于路堤/拦水/排水</td>
+                        </tr>
+                        <tr>
+                            <td><strong>路基排水</strong></td>
+                            <td>边沟/截水沟盖板<br>急流槽/超高排水</td>
+                            <td>92×60×13、100×60×13<br>集水井、预制盖板</td>
+                            <td>约2200m³<br>少量</td>
+                            <td>含II-1, II-3型<br>节点工程用</td>
+                        </tr>
+                        <tr>
+                            <td><strong>路面附属</strong></td>
+                            <td>路缘石<br>路肩加固预制块</td>
+                            <td>A型/B型<br>路肩A-1A-6, B-1B-6</td>
+                            <td>约994m³<br>约3565m³</td>
+                            <td>A型42kg, B型22kg<br>结构复杂，需定制模具</td>
+                        </tr>
+                        <tr>
+                            <td><strong>隧道附属</strong></td>
+                            <td>电缆沟盖板<br>中心水沟盖板</td>
+                            <td>C型/B型/A型<br>50×75×15</td>
+                            <td>约2500块<br>80块</td>
+                            <td>含RPC盖板 (活性粉末砼)</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Tab 3: 核心工艺 (更新箱涵工艺) -->
+        <div id="tab3" class="tab-pane">
+            <!-- 预制箱涵工艺 -->
+            <div class="section-box animate-item" style="border-left:5px solid var(--crcc-blue);">
+                <div class="section-title" style="color:var(--crcc-blue);">1. 分体快拆模板预制箱涵 (大吨位吊装)</div>
+                <div class="text-content">
+                    <p style="margin-bottom:10px;"><strong>工艺原理：</strong>采用定型钢筋胎架进行钢筋精准绑扎。模板系统采用分体式大块钢模，<strong style="color:var(--crcc-red)">先浇筑侧墙及底座，后浇筑顶板</strong>，利用快拆装置迅速脱模。</p>
+                    
+                    <div style="background:#f0f4ff; padding:15px; border-radius:10px; margin-bottom:10px;">
+                        <strong>工艺流程：</strong>
+                        <div class="process-flow">
+                            <span class="p-step">胎架钢筋绑扎</span><span class="p-arrow">➔</span>
+                            <span class="p-step">底模清理</span><span class="p-arrow">➔</span>
+                            <span class="p-step">钢筋笼吊装入模</span><span class="p-arrow">➔</span>
+                            <span class="p-step">侧模及顶模组装</span><span class="p-arrow">➔</span>
+                            <span class="p-step">混凝土浇筑及振捣</span><span class="p-arrow">➔</span>
+                            <span class="p-step">养护</span><span class="p-arrow">➔</span>
+                            <span class="p-step">拆除模板</span><span class="p-arrow">➔</span>
+                            <span class="p-step" style="background:#eef2ff; border-color:#4c51bf; color:#4c51bf;">50T龙门吊移运存放</span>
+                        </div>
+                    </div>
+
+                    <p><strong>优势：</strong>利用拌合站直供混凝土，减少中间环节；50T龙门吊解决了大型箱涵节段（单节重达20-40吨）的场内转运难题。</p>
+                </div>
+            </div>
+
+            <!-- 悬辊制管工艺 -->
+            <div class="section-box animate-item" style="border-left:5px solid var(--tech-teal);">
+                <div class="section-title" style="color:var(--tech-teal);">2. 悬辊制管工艺 (效率之王)</div>
+                <div class="text-content">
+                    <div style="margin-bottom:10px;">
+                         单节预制仅需 <strong style="color:var(--crcc-red)">7分钟</strong>，全流程20分钟。
+                    </div>
+                    <div class="process-flow">
+                        <span class="p-step">钢筋安装</span><span class="p-arrow">➔</span>
+                        <span class="p-step">吊至悬辊机</span><span class="p-arrow">➔</span>
+                        <span class="p-step">喂料辊压</span><span class="p-arrow">➔</span>
+                        <span class="p-step">净辊赶光</span><span class="p-arrow">➔</span>
+                        <span class="p-step">蒸汽养护</span><span class="p-arrow">➔</span>
+                        <span class="p-step">脱模</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 自动化生产 -->
+            <div class="section-box animate-item">
+                <div class="section-title">3. 小型构件自动化</div>
+                <div class="text-content">
+                    <div class="process-flow">
+                        <span class="p-step">自动布料</span>
+                        <span class="p-step">高频成型</span>
+                        <span class="p-step">自动脱模</span>
+                        <span class="p-step">码垛</span>
+                    </div>
+                    <p style="margin-top:10px; font-size:0.9rem; color:#718096;">* 保证外观色泽一致，完全消除气泡。</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 4: 计划与调度 -->
+        <div id="tab4" class="tab-pane">
+            <div class="section-box animate-item">
+                <div class="section-title" style="color:var(--plan-orange);">核心调度策略：三级优先级</div>
+            </div>
+            
+            <div class="priority-group animate-item">
+                <!-- P1 -->
+                <div class="priority-card pc-1">
+                    <div style="font-size:3rem; color:rgba(230,0,18,0.1); position:absolute; right:10px; top:0;">01</div>
+                    <h3 style="color:var(--crcc-red); margin-bottom:10px;">🥇 梁场路基段</h3>
+                    <p style="font-size:0.9rem; color:#4a5568;"><strong>范围：</strong>K26+700~K27+900 (10道涵)</p>
+                    <p style="font-size:0.9rem; color:#4a5568;"><strong>时间：</strong>2025.10 - 12</p>
+                    <p style="margin-top:10px; font-weight:bold; color:#2d3748;">目标：路基开工即"随挖随安"，不耽误梁场建设。</p>
+                </div>
+
+                <!-- P2 -->
+                <div class="priority-card pc-2">
+                    <div style="font-size:3rem; color:rgba(221,107,32,0.1); position:absolute; right:10px; top:0;">02</div>
+                    <h3 style="color:var(--plan-orange); margin-bottom:10px;">🥈 架梁通道段</h3>
+                    <p style="font-size:0.9rem; color:#4a5568;"><strong>范围：</strong>全线运梁便道涵洞</p>
+                    <p style="font-size:0.9rem; color:#4a5568;"><strong>策略：</strong>先小里程(攻坚) ➔ 后大里程(服务区/深挖方)</p>
+                    <p style="margin-top:10px; font-weight:bold; color:#2d3748;">目标：涵洞回填到位，保障运梁车通行。</p>
+                </div>
+
+                <!-- P3 -->
+                <div class="priority-card pc-3">
+                    <div style="font-size:3rem; color:rgba(49,151,149,0.1); position:absolute; right:10px; top:0;">03</div>
+                    <h3 style="color:var(--tech-teal); margin-bottom:10px;">🥉 附属工程</h3>
+                    <p style="font-size:0.9rem; color:#4a5568;"><strong>对象：</strong>骨架防护、六棱块</p>
+                    <p style="font-size:0.9rem; color:#4a5568;"><strong>时间：</strong>2026年下半年</p>
+                    <p style="margin-top:10px; font-weight:bold; color:#2d3748;">目标：填筑一级、防护一级，后期平稳生产。</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 5: 质安保障 -->
+        <div id="tab5" class="tab-pane">
+            <div class="grid-2-col animate-item">
+                <div class="section-box" style="border-top: 4px solid var(--crcc-blue);">
+                    <div class="section-title">💎 质量控制体系</div>
+                    <div class="text-content">
+                        <div style="margin-bottom:15px;">
+                            <strong>1. 混凝土源头控制</strong>
+                            <p style="font-size:0.9rem; color:#666;">依托拌合站直供，严控RPC盖板及高性能砼配合比。</p>
+                        </div>
+                        <div>
+                            <strong>2. 蒸汽养护制度</strong>
+                            <p style="font-size:0.9rem; color:#666;">严格执行升温、恒温、降温曲线控制。力争实现模具 <strong style="color:var(--crcc-blue)">24小时周转</strong>。</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section-box" style="border-top: 4px solid var(--crcc-red);">
+                    <div class="section-title" style="color:var(--crcc-red);">🛡️ 安全生产红线</div>
+                    <div class="text-content">
+                        <div style="margin-bottom:15px;">
+                            <strong>1. 特种设备管理</strong>
+                            <p style="font-size:0.9rem; color:#666;">50T龙门吊定期探伤。双机(10T+10T)抬吊时必须设专人指挥。</p>
+                        </div>
+                        <div>
+                            <strong>2. 成品保护</strong>
+                            <p style="font-size:0.9rem; color:#666;">运输必须使用专用托架+橡胶垫，杜绝边角磕碰。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<a href="p18.html" class="nav-btn prev-btn">上一页</a>
+<a href="p20.html" class="nav-btn next-btn">下一页</a>
+
+<script>
+    function openTab(evt, tabName) {
+        var i, tabcontent, tablinks;
+        tabcontent = document.getElementsByClassName("tab-pane");
+        for (i = 0; i < tabcontent.length; i++) {
+            tabcontent[i].classList.remove("active");
+        }
+        tablinks = document.getElementsByClassName("tab-btn");
+        for (i = 0; i < tablinks.length; i++) {
+            tablinks[i].classList.remove("active");
+        }
+        document.getElementById(tabName).classList.add("active");
+        evt.currentTarget.classList.add("active");
+    }
+</script>
+
+</body>
+</html>
